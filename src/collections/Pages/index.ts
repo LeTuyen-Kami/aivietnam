@@ -6,7 +6,12 @@ import { Archive } from '../../blocks/ArchiveBlock/config'
 import { CallToAction } from '../../blocks/CallToAction/config'
 import { Content } from '../../blocks/Content/config'
 import { FormBlock } from '../../blocks/Form/config'
+import { EnhancedMediaBlock } from '../../blocks/EnhancedMediaBlock/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
+import { FeaturedPostsSideMedia } from '../../blocks/FeaturedPostsSideMedia/config'
+import { MediaHubTriptych } from '../../blocks/MediaHubTriptych/config'
+import { NewsletterSignup } from '../../blocks/NewsletterSignup/config'
+import { PortalSplitLayout } from '../../blocks/PortalSplitLayout/config'
 import { hero } from '@/heros/config'
 import { slugField } from 'payload'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
@@ -72,7 +77,18 @@ export const Pages: CollectionConfig<'pages'> = {
             {
               name: 'layout',
               type: 'blocks',
-              blocks: [CallToAction, Content, MediaBlock, Archive, FormBlock],
+              blocks: [
+                CallToAction,
+                Content,
+                MediaBlock,
+                EnhancedMediaBlock,
+                Archive,
+                FormBlock,
+                FeaturedPostsSideMedia,
+                PortalSplitLayout,
+                MediaHubTriptych,
+                NewsletterSignup,
+              ],
               required: true,
               admin: {
                 initCollapsed: true,

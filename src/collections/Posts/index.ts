@@ -1,18 +1,27 @@
 import type { CollectionConfig } from 'payload'
 
 import {
+  AlignFeature,
+  BlockquoteFeature,
   BlocksFeature,
+  EXPERIMENTAL_TableFeature,
   FixedToolbarFeature,
   HeadingFeature,
   HorizontalRuleFeature,
+  IndentFeature,
   InlineToolbarFeature,
+  LinkFeature,
   lexicalEditor,
+  RelationshipFeature,
+  TextStateFeature,
+  UploadFeature,
 } from '@payloadcms/richtext-lexical'
 
 import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
 import { Banner } from '../../blocks/Banner/config'
 import { Code } from '../../blocks/Code/config'
+import { EnhancedMediaBlock } from '../../blocks/EnhancedMediaBlock/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { populateAuthors } from './hooks/populateAuthors'
@@ -89,10 +98,44 @@ export const Posts: CollectionConfig<'posts'> = {
                   return [
                     ...rootFeatures,
                     HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
-                    BlocksFeature({ blocks: [Banner, Code, MediaBlock] }),
+                    BlocksFeature({ blocks: [Banner, Code, MediaBlock, EnhancedMediaBlock] }),
                     FixedToolbarFeature(),
                     InlineToolbarFeature(),
                     HorizontalRuleFeature(),
+                    // Link - internal (posts, pages) + external URLs
+                    LinkFeature({
+                      enabledCollections: ['posts', 'pages'],
+                    }),
+                    // Blockquote
+                    BlockquoteFeature(),
+                    // Upload - chèn ảnh trực tiếp vào nội dung
+                    UploadFeature({
+                      collections: {
+                        media: {
+                          fields: [
+                            {
+                              name: 'caption',
+                              type: 'text',
+                              admin: {
+                                description: 'Chú thích cho ảnh',
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    }),
+                    // Relationship - link đến bài viết/trang khác trong editor
+                    RelationshipFeature({
+                      enabledCollections: ['posts', 'pages'],
+                    }),
+                    // Căn chỉnh văn bản (trái, giữa, phải)
+                    AlignFeature(),
+                    // Thụt lề
+                    IndentFeature(),
+                    // Màu chữ & highlight
+                    TextStateFeature(),
+                    // Bảng (experimental)
+                    EXPERIMENTAL_TableFeature(),
                   ]
                 },
               }),

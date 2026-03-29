@@ -31,6 +31,30 @@ src/
 └── payload.config.ts        # Main config
 ```
 
+## Frontend (Next.js)
+
+### SmartLink (`src/components/SmartLink`)
+
+Use **`SmartLink`** whenever CMS or block fields store a **string URL** that might be an in-app path (`/posts/slug`), an external `http(s)` link, or `mailto:` / `tel:`. It picks **Next.js `Link`** for internal routes and a **native `<a>`** for special schemes.
+
+- **`SmartLink`**: `href` is required (trim before passing). For http(s), opens in a new tab with `rel` / `target`; mailto/tel stay default behavior.
+- **`isNativeHref(href)`**: same classification rule if you only need a boolean (tests, branching).
+
+If the URL is optional, keep the “no href” branch yourself (e.g. render children in a `<div>` without `SmartLink`).
+
+```tsx
+import { SmartLink } from '@/components/SmartLink'
+
+const raw = href?.trim() ?? ''
+return raw ? (
+  <SmartLink className="group block" href={raw}>
+    {children}
+  </SmartLink>
+) : (
+  <div className="block">{children}</div>
+)
+```
+
 ## Configuration
 
 ### Minimal Config Pattern

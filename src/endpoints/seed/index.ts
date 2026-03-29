@@ -1,28 +1,28 @@
-import type { CollectionSlug, GlobalSlug, Payload, PayloadRequest, File } from 'payload'
+import type { CollectionSlug, Payload, PayloadRequest, File } from 'payload'
+
+import type { Category } from '@/payload-types'
 
 import { contactForm as contactFormData } from './contact-form'
 import { contact as contactPageData } from './contact-page'
 import { home } from './home'
+import { createNavPage, navPages } from './nav-pages'
 import { image1 } from './image-1'
 import { image2 } from './image-2'
 import { imageHero1 } from './image-hero-1'
-import { post1 } from './post-1'
-import { post2 } from './post-2'
-import { post3 } from './post-3'
+import { SEED_CATEGORY_DEFS, seedBulkPosts } from './bulk-posts'
 
-const collections: CollectionSlug[] = [
+/** Thứ tự xóa phải tôn trọng FK Postgres (ví dụ posts → categories). Không dùng Promise.all song song. */
+const COLLECTIONS_CLEAR_ORDER: CollectionSlug[] = [
+  'search',
+  'form-submissions',
+  'posts',
+  'pages',
   'categories',
   'media',
-  'pages',
-  'posts',
   'forms',
-  'form-submissions',
-  'search',
 ]
 
-const globals: GlobalSlug[] = ['header', 'footer']
-
-const categories = ['Technology', 'News', 'Finance', 'Design', 'Software', 'Engineering']
+const globals = ['header', 'footer'] as const
 
 // Next.js revalidation errors are normal when seeding the database without a server running
 // i.e. running `yarn seed` locally instead of using the admin UI within an active app
@@ -59,15 +59,15 @@ export const seed = async ({
     ),
   )
 
-  await Promise.all(
-    collections.map((collection) => payload.db.deleteMany({ collection, req, where: {} })),
-  )
+  for (const collection of COLLECTIONS_CLEAR_ORDER) {
+    await payload.db.deleteMany({ collection, req, where: {} })
+  }
 
-  await Promise.all(
-    collections
-      .filter((collection) => Boolean(payload.collections[collection].config.versions))
-      .map((collection) => payload.db.deleteVersions({ collection, req, where: {} })),
-  )
+  for (const collection of COLLECTIONS_CLEAR_ORDER) {
+    if (payload.collections[collection]?.config.versions) {
+      await payload.db.deleteVersions({ collection, req, where: {} })
+    }
+  }
 
   payload.logger.info(`— Seeding demo author and user...`)
 
@@ -127,69 +127,33 @@ export const seed = async ({
       data: imageHero1,
       file: hero1Buffer,
     }),
-    categories.map((category) =>
-      payload.create({
-        collection: 'categories',
-        data: {
-          title: category,
-          slug: category,
-        },
-      }),
-    ),
   ])
 
-  payload.logger.info(`— Seeding posts...`)
+  payload.logger.info(`— Seeding categories (5)…`)
 
-  // Do not create posts with `Promise.all` because we want the posts to be created in order
-  // This way we can sort them by `createdAt` or `publishedAt` and they will be in the expected order
-  const post1Doc = await payload.create({
-    collection: 'posts',
-    depth: 0,
-    context: {
-      disableRevalidate: true,
-    },
-    data: post1({ heroImage: image1Doc, blockImage: image2Doc, author: demoAuthor }),
-  })
+  const categoryDocs: Category[] = []
+  for (const c of SEED_CATEGORY_DEFS) {
+    const doc = await payload.create({
+      collection: 'categories',
+      data: {
+        title: c.title,
+        slug: c.slug,
+        parent: null,
+      },
+      req,
+      context: { disableRevalidate: true },
+    })
+    categoryDocs.push(doc)
+  }
 
-  const post2Doc = await payload.create({
-    collection: 'posts',
-    depth: 0,
-    context: {
-      disableRevalidate: true,
-    },
-    data: post2({ heroImage: image2Doc, blockImage: image3Doc, author: demoAuthor }),
-  })
+  payload.logger.info(`— Seeding posts (50: 5 categories × 10)…`)
 
-  const post3Doc = await payload.create({
-    collection: 'posts',
-    depth: 0,
-    context: {
-      disableRevalidate: true,
-    },
-    data: post3({ heroImage: image3Doc, blockImage: image1Doc, author: demoAuthor }),
-  })
-
-  // update each post with related posts
-  await payload.update({
-    id: post1Doc.id,
-    collection: 'posts',
-    data: {
-      relatedPosts: [post2Doc.id, post3Doc.id],
-    },
-  })
-  await payload.update({
-    id: post2Doc.id,
-    collection: 'posts',
-    data: {
-      relatedPosts: [post1Doc.id, post3Doc.id],
-    },
-  })
-  await payload.update({
-    id: post3Doc.id,
-    collection: 'posts',
-    data: {
-      relatedPosts: [post1Doc.id, post2Doc.id],
-    },
+  await seedBulkPosts({
+    payload,
+    req,
+    demoAuthor,
+    images: [image1Doc, image2Doc, image3Doc],
+    categoryDocs,
   })
 
   payload.logger.info(`— Seeding contact form...`)
@@ -202,48 +166,69 @@ export const seed = async ({
 
   payload.logger.info(`— Seeding pages...`)
 
-  const [_, contactPage] = await Promise.all([
-    payload.create({
+  // Trang chủ uses home(), other 8 pages from navPages[1..8].
+  // Create pages sequentially to avoid relation race conditions in hooks/plugins.
+  const homePage = await payload.create({
+    collection: 'pages',
+    depth: 0,
+    context: { disableRevalidate: true },
+    data: home({ heroImage: imageHomeDoc, metaImage: image2Doc }),
+  })
+
+  await payload.create({
+    collection: 'pages',
+    depth: 0,
+    context: { disableRevalidate: true },
+    data: contactPageData({ contactForm }),
+  })
+
+  const navPageDocs: Array<{ id: number }> = []
+  for (const { title, slug } of navPages.slice(1)) {
+    const page = await payload.create({
       collection: 'pages',
       depth: 0,
-      data: home({ heroImage: imageHomeDoc, metaImage: image2Doc }),
-    }),
-    payload.create({
-      collection: 'pages',
-      depth: 0,
-      data: contactPageData({ contactForm: contactForm }),
-    }),
-  ])
+      context: { disableRevalidate: true },
+      data: createNavPage(title, slug),
+    })
+    navPageDocs.push({ id: page.id })
+  }
 
   payload.logger.info(`— Seeding globals...`)
+
+  const headerNavItems = [
+    {
+      link: {
+        type: 'reference' as const,
+        label: navPages[0].title,
+        reference: {
+          relationTo: 'pages' as const,
+          value: homePage.id,
+        },
+      },
+    },
+    ...navPageDocs.map((page, i) => ({
+      link: {
+        type: 'reference' as const,
+        label: navPages[i + 1].title,
+        reference: {
+          relationTo: 'pages' as const,
+          value: page.id,
+        },
+      },
+    })),
+  ]
 
   await Promise.all([
     payload.updateGlobal({
       slug: 'header',
       data: {
-        navItems: [
-          {
-            link: {
-              type: 'custom',
-              label: 'Posts',
-              url: '/posts',
-            },
-          },
-          {
-            link: {
-              type: 'reference',
-              label: 'Contact',
-              reference: {
-                relationTo: 'pages',
-                value: contactPage.id,
-              },
-            },
-          },
-        ],
+        navItems: headerNavItems,
       },
+      context: { disableRevalidate: true },
     }),
     payload.updateGlobal({
       slug: 'footer',
+      context: { disableRevalidate: true },
       data: {
         navItems: [
           {

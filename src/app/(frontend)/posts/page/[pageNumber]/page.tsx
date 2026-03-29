@@ -70,6 +70,12 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 }
 
 export async function generateStaticParams() {
+  // Workaround for Payload + Postgres dev spam:
+  // avoid prebuilding params in development to prevent repetitive schema pulls.
+  if (process.env.NODE_ENV === 'development') {
+    return []
+  }
+
   const payload = await getPayload({ config: configPromise })
   const { totalDocs } = await payload.count({
     collection: 'posts',

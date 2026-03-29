@@ -1,3 +1,4 @@
+import { EnhancedMediaBlock } from '@/blocks/EnhancedMediaBlock/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import {
   DefaultNodeTypes,
@@ -9,6 +10,7 @@ import {
   JSXConvertersFunction,
   LinkJSXConverter,
   RichText as ConvertRichText,
+  UploadJSXConverter,
 } from '@payloadcms/richtext-lexical/react'
 
 import { CodeBlock, CodeBlockProps } from '@/blocks/Code/Component'
@@ -16,6 +18,7 @@ import { CodeBlock, CodeBlockProps } from '@/blocks/Code/Component'
 import type {
   BannerBlock as BannerBlockProps,
   CallToActionBlock as CTABlockProps,
+  EnhancedMediaBlock as EnhancedMediaBlockProps,
   MediaBlock as MediaBlockProps,
 } from '@/payload-types'
 import { BannerBlock } from '@/blocks/Banner/Component'
@@ -24,7 +27,9 @@ import { cn } from '@/utilities/ui'
 
 type NodeTypes =
   | DefaultNodeTypes
-  | SerializedBlockNode<CTABlockProps | MediaBlockProps | BannerBlockProps | CodeBlockProps>
+  | SerializedBlockNode<
+      CTABlockProps | MediaBlockProps | EnhancedMediaBlockProps | BannerBlockProps | CodeBlockProps
+    >
 
 const internalDocToHref = ({ linkNode }: { linkNode: SerializedLinkNode }) => {
   const { value, relationTo } = linkNode.fields.doc!
@@ -42,6 +47,16 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) 
     banner: ({ node }) => <BannerBlock className="col-start-2 mb-4" {...node.fields} />,
     mediaBlock: ({ node }) => (
       <MediaBlock
+        className="col-start-1 col-span-3"
+        imgClassName="m-0"
+        {...node.fields}
+        captionClassName="mx-auto max-w-[48rem]"
+        enableGutter={false}
+        disableInnerContainer={true}
+      />
+    ),
+    enhancedMediaBlock: ({ node }) => (
+      <EnhancedMediaBlock
         className="col-start-1 col-span-3"
         imgClassName="m-0"
         {...node.fields}

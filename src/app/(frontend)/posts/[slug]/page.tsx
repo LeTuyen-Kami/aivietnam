@@ -16,6 +16,12 @@ import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 
 export async function generateStaticParams() {
+  // Workaround for Payload + Postgres dev spam:
+  // avoid prebuilding params in development to prevent repetitive schema pulls.
+  if (process.env.NODE_ENV === 'development') {
+    return []
+  }
+
   const payload = await getPayload({ config: configPromise })
   const posts = await payload.find({
     collection: 'posts',
@@ -52,7 +58,7 @@ export default async function Post({ params: paramsPromise }: Args) {
   if (!post) return <PayloadRedirects url={url} />
 
   return (
-    <article className="pt-16 pb-16">
+    <article>
       <PageClient />
 
       {/* Allows redirects for valid pages too */}

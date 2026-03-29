@@ -64,6 +64,7 @@ export type SupportedTimezones =
 export interface Config {
   auth: {
     users: UserAuthOperations;
+    'payload-mcp-api-keys': PayloadMcpApiKeyAuthOperations;
   };
   blocks: {};
   collections: {
@@ -76,6 +77,7 @@ export interface Config {
     forms: Form;
     'form-submissions': FormSubmission;
     search: Search;
+    'payload-mcp-api-keys': PayloadMcpApiKey;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-folders': FolderInterface;
@@ -98,6 +100,7 @@ export interface Config {
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
     search: SearchSelect<false> | SearchSelect<true>;
+    'payload-mcp-api-keys': PayloadMcpApiKeysSelect<false> | PayloadMcpApiKeysSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-folders': PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
@@ -106,19 +109,24 @@ export interface Config {
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: string;
+    defaultIDType: number;
   };
   fallbackLocale: null;
   globals: {
     header: Header;
     footer: Footer;
+    'general-settings': GeneralSetting;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    'general-settings': GeneralSettingsSelect<false> | GeneralSettingsSelect<true>;
   };
   locale: null;
-  user: User;
+  widgets: {
+    collections: CollectionsWidget;
+  };
+  user: User | PayloadMcpApiKey;
   jobs: {
     tasks: {
       schedulePublish: TaskSchedulePublish;
@@ -148,12 +156,30 @@ export interface UserAuthOperations {
     password: string;
   };
 }
+export interface PayloadMcpApiKeyAuthOperations {
+  forgotPassword: {
+    email: string;
+    password: string;
+  };
+  login: {
+    email: string;
+    password: string;
+  };
+  registerFirstUser: {
+    email: string;
+    password: string;
+  };
+  unlock: {
+    email: string;
+    password: string;
+  };
+}
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages".
  */
 export interface Page {
-  id: string;
+  id: number;
   title: string;
   hero: {
     type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
@@ -180,11 +206,11 @@ export interface Page {
             reference?:
               | ({
                   relationTo: 'pages';
-                  value: string | Page;
+                  value: number | Page;
                 } | null)
               | ({
                   relationTo: 'posts';
-                  value: string | Post;
+                  value: number | Post;
                 } | null);
             url?: string | null;
             label: string;
@@ -196,15 +222,26 @@ export interface Page {
           id?: string | null;
         }[]
       | null;
-    media?: (string | null) | Media;
+    media?: (number | null) | Media;
   };
-  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock)[];
+  layout: (
+    | CallToActionBlock
+    | ContentBlock
+    | MediaBlock
+    | EnhancedMediaBlock
+    | ArchiveBlock
+    | FormBlock
+    | FeaturedPostsSideMediaBlock
+    | PortalSplitLayoutBlock
+    | MediaHubTriptychBlock
+    | NewsletterSignupBlock
+  )[];
   meta?: {
     title?: string | null;
     /**
      * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
      */
-    image?: (string | null) | Media;
+    image?: (number | null) | Media;
     description?: string | null;
   };
   publishedAt?: string | null;
@@ -222,9 +259,9 @@ export interface Page {
  * via the `definition` "posts".
  */
 export interface Post {
-  id: string;
+  id: number;
   title: string;
-  heroImage?: (string | null) | Media;
+  heroImage?: (number | null) | Media;
   content: {
     root: {
       type: string;
@@ -240,18 +277,18 @@ export interface Post {
     };
     [k: string]: unknown;
   };
-  relatedPosts?: (string | Post)[] | null;
-  categories?: (string | Category)[] | null;
+  relatedPosts?: (number | Post)[] | null;
+  categories?: (number | Category)[] | null;
   meta?: {
     title?: string | null;
     /**
      * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
      */
-    image?: (string | null) | Media;
+    image?: (number | null) | Media;
     description?: string | null;
   };
   publishedAt?: string | null;
-  authors?: (string | User)[] | null;
+  authors?: (number | User)[] | null;
   populatedAuthors?:
     | {
         id?: string | null;
@@ -272,7 +309,7 @@ export interface Post {
  * via the `definition` "media".
  */
 export interface Media {
-  id: string;
+  id: number;
   alt?: string | null;
   caption?: {
     root: {
@@ -289,7 +326,7 @@ export interface Media {
     };
     [k: string]: unknown;
   } | null;
-  folder?: (string | null) | FolderInterface;
+  folder?: (number | null) | FolderInterface;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -365,18 +402,18 @@ export interface Media {
  * via the `definition` "payload-folders".
  */
 export interface FolderInterface {
-  id: string;
+  id: number;
   name: string;
-  folder?: (string | null) | FolderInterface;
+  folder?: (number | null) | FolderInterface;
   documentsAndFolders?: {
     docs?: (
       | {
           relationTo?: 'payload-folders';
-          value: string | FolderInterface;
+          value: number | FolderInterface;
         }
       | {
           relationTo?: 'media';
-          value: string | Media;
+          value: number | Media;
         }
     )[];
     hasNextPage?: boolean;
@@ -391,17 +428,17 @@ export interface FolderInterface {
  * via the `definition` "categories".
  */
 export interface Category {
-  id: string;
+  id: number;
   title: string;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
   generateSlug?: boolean | null;
   slug: string;
-  parent?: (string | null) | Category;
+  parent?: (number | null) | Category;
   breadcrumbs?:
     | {
-        doc?: (string | null) | Category;
+        doc?: (number | null) | Category;
         url?: string | null;
         label?: string | null;
         id?: string | null;
@@ -415,7 +452,7 @@ export interface Category {
  * via the `definition` "users".
  */
 export interface User {
-  id: string;
+  id: number;
   name?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -464,11 +501,11 @@ export interface CallToActionBlock {
           reference?:
             | ({
                 relationTo: 'pages';
-                value: string | Page;
+                value: number | Page;
               } | null)
             | ({
                 relationTo: 'posts';
-                value: string | Post;
+                value: number | Post;
               } | null);
           url?: string | null;
           label: string;
@@ -514,11 +551,11 @@ export interface ContentBlock {
           reference?:
             | ({
                 relationTo: 'pages';
-                value: string | Page;
+                value: number | Page;
               } | null)
             | ({
                 relationTo: 'posts';
-                value: string | Post;
+                value: number | Post;
               } | null);
           url?: string | null;
           label: string;
@@ -539,10 +576,40 @@ export interface ContentBlock {
  * via the `definition` "MediaBlock".
  */
 export interface MediaBlock {
-  media: string | Media;
+  media: number | Media;
   id?: string | null;
   blockName?: string | null;
   blockType: 'mediaBlock';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "EnhancedMediaBlock".
+ */
+export interface EnhancedMediaBlock {
+  media: number | Media;
+  /**
+   * If set, the image/video becomes clickable. Internal paths (e.g. /posts/slug) or https://, mailto:, tel:.
+   */
+  href?: string | null;
+  /**
+   * Container: media stays inside the site content width. Viewport: breaks out to full browser width.
+   */
+  widthScope?: ('container' | 'viewport') | null;
+  priority?: boolean | null;
+  maxWidth?: ('full' | '7xl' | '5xl' | '3xl') | null;
+  alignment?: ('left' | 'center' | 'right') | null;
+  aspectRatio?: ('auto' | '1/1' | '4/3' | '3/2' | '16/9' | '21/9' | '2/3' | '9/16' | 'custom') | null;
+  /**
+   * Width and height separated by / or : (examples: 16/9, 2.35:1, 1.85/1).
+   */
+  aspectRatioCustom?: string | null;
+  objectFit?: ('cover' | 'contain') | null;
+  cornerRadius?: ('none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full') | null;
+  borderStyle?: ('none' | 'subtle' | 'default') | null;
+  shadow?: ('none' | 'sm' | 'md' | 'lg' | 'xl') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'enhancedMediaBlock';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -566,12 +633,12 @@ export interface ArchiveBlock {
   } | null;
   populateBy?: ('collection' | 'selection') | null;
   relationTo?: 'posts' | null;
-  categories?: (string | Category)[] | null;
+  categories?: (number | Category)[] | null;
   limit?: number | null;
   selectedDocs?:
     | {
         relationTo: 'posts';
-        value: string | Post;
+        value: number | Post;
       }[]
     | null;
   id?: string | null;
@@ -583,7 +650,7 @@ export interface ArchiveBlock {
  * via the `definition` "FormBlock".
  */
 export interface FormBlock {
-  form: string | Form;
+  form: number | Form;
   enableIntro?: boolean | null;
   introContent?: {
     root: {
@@ -609,7 +676,7 @@ export interface FormBlock {
  * via the `definition` "forms".
  */
 export interface Form {
-  id: string;
+  id: number;
   title: string;
   fields?:
     | (
@@ -780,10 +847,243 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeaturedPostsSideMediaBlock".
+ */
+export interface FeaturedPostsSideMediaBlock {
+  /**
+   * Choose data source for posts.
+   */
+  source: 'manual' | 'latest';
+  /**
+   * Main post
+   */
+  mainPost?: (number | null) | Post;
+  /**
+   * Exactly 2 small posts (first row under the main post).
+   */
+  subPosts?: (number | Post)[] | null;
+  /**
+   * Third column: full-height image (replaces the former 3rd small post). Optional.
+   */
+  smallRowPromoImage?: (number | null) | Media;
+  /**
+   * Optional link when the promo image is clicked (e.g. /posts/slug or https://…).
+   */
+  smallRowPromoHref?: string | null;
+  /**
+   * Image/GIF displayed on the right side.
+   */
+  sideMedia: number | Media;
+  /**
+   * Optional link when the side image is clicked (e.g. /posts/slug or https://…).
+   */
+  sideMediaHref?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featuredPostsSideMedia';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PortalSplitLayoutBlock".
+ */
+export interface PortalSplitLayoutBlock {
+  /**
+   * Left column: vertical post feed.
+   */
+  leftSource: 'manual' | 'latest';
+  /**
+   * Posts for the left column (order is preserved).
+   */
+  leftPosts?: (number | Post)[] | null;
+  /**
+   * How many latest posts to show on the left.
+   */
+  leftLatestLimit?: number | null;
+  row1LeftTitle?: string | null;
+  row1LeftAccent?: ('gold' | 'yellow' | 'green' | 'purple' | 'blue' | 'red' | 'teal') | null;
+  /**
+   * Central graphic (ecosystem diagram).
+   */
+  row1CenterGraphic?: (number | null) | Media;
+  row1TagItems?:
+    | {
+        label: string;
+        /**
+         * Optional URL
+         */
+        href?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Smallest radius as % of the box’s shorter side (tags closer to center). Pair with max below (default 16–52).
+   */
+  row1OrbitRadiusMinPct?: number | null;
+  /**
+   * Largest radius before angle squeezing (tags farther out). Must be greater than min.
+   */
+  row1OrbitRadiusMaxPct?: number | null;
+  row1GridItems?:
+    | {
+        /**
+         * Optional small icon
+         */
+        icon?: (number | null) | Media;
+        label: string;
+        /**
+         * Optional URL (leave empty for text-only cell).
+         */
+        href?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  row1RightTitle?: string | null;
+  row1RightAccent?: ('gold' | 'yellow' | 'green' | 'purple' | 'blue' | 'red' | 'teal') | null;
+  row1RightCards?:
+    | {
+        image: number | Media;
+        caption: string;
+        /**
+         * Optional URL (leave empty for non-clickable card).
+         */
+        href?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  standardSections?:
+    | {
+        sectionTitle: string;
+        accent: 'gold' | 'yellow' | 'green' | 'purple' | 'blue' | 'red' | 'teal';
+        featuredPost: number | Post;
+        /**
+         * Exactly 3 smaller posts
+         */
+        subPosts?: (number | Post)[] | null;
+        /**
+         * Exactly 6 posts for the 2×3 title grid
+         */
+        footerPosts?: (number | Post)[] | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'portalSplitLayout';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MediaHubTriptychBlock".
+ */
+export interface MediaHubTriptychBlock {
+  podcastColumn?: {
+    sectionTitle?: string | null;
+    items?:
+      | {
+          title: string;
+          meta?: string | null;
+          thumbnail: number | Media;
+          /**
+           * Internal path or https://
+           */
+          link?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  videoColumn: {
+    sectionTitle?: string | null;
+    featured: {
+      source: 'embed' | 'media';
+      /**
+       * https only. Supports YouTube/Vimeo watch links or a direct video file URL.
+       */
+      embedUrl?: string | null;
+      /**
+       * Uploaded video (MP4, WebM, etc.). Renders with native controls.
+       */
+      videoMedia?: (number | null) | Media;
+      /**
+       * Optional preview or poster image (e.g. before play, or when only thumbnail is set).
+       */
+      thumbnail?: (number | null) | Media;
+      caption?: string | null;
+    };
+    gridItems?:
+      | {
+          source: 'embed' | 'media';
+          /**
+           * https only. Supports YouTube/Vimeo watch links or a direct video file URL.
+           */
+          embedUrl?: string | null;
+          /**
+           * Uploaded video (MP4, WebM, etc.). Renders with native controls.
+           */
+          videoMedia?: (number | null) | Media;
+          /**
+           * Optional preview / poster for native or uploaded video; or static preview when no URL/file.
+           */
+          thumbnail?: (number | null) | Media;
+          title: string;
+          /**
+           * Wraps title in a link when set.
+           */
+          link?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  photoColumn: {
+    sectionTitle?: string | null;
+    featured: {
+      image: number | Media;
+      title: string;
+      /**
+       * e.g. Thứ 6, 25/05/2025 | 23:43
+       */
+      dateLine?: string | null;
+    };
+    bottomItems?:
+      | {
+          image: number | Media;
+          title: string;
+          link?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'mediaHubTriptych';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsletterSignupBlock".
+ */
+export interface NewsletterSignupBlock {
+  /**
+   * Tạo form trong Forms với ít nhất một trường Email. Gửi bài sẽ lưu vào Form Submissions (đọc qua MCP Payload: findFormSubmissions).
+   */
+  form: number | Form;
+  eyebrow?: string | null;
+  headline?: string | null;
+  description?: string | null;
+  emailPlaceholder?: string | null;
+  submitLabel?: string | null;
+  disclaimer?: string | null;
+  /**
+   * URL cho từ “điều khoản” (vd. /terms hoặc https://...).
+   */
+  termsUrl?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'newsletterSignup';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
-  id: string;
+  id: number;
   /**
    * You will need to rebuild the website when changing this field.
    */
@@ -793,11 +1093,11 @@ export interface Redirect {
     reference?:
       | ({
           relationTo: 'pages';
-          value: string | Page;
+          value: number | Page;
         } | null)
       | ({
           relationTo: 'posts';
-          value: string | Post;
+          value: number | Post;
         } | null);
     url?: string | null;
   };
@@ -809,8 +1109,8 @@ export interface Redirect {
  * via the `definition` "form-submissions".
  */
 export interface FormSubmission {
-  id: string;
-  form: string | Form;
+  id: number;
+  form: number | Form;
   submissionData?:
     | {
         field: string;
@@ -828,18 +1128,18 @@ export interface FormSubmission {
  * via the `definition` "search".
  */
 export interface Search {
-  id: string;
+  id: number;
   title?: string | null;
   priority?: number | null;
   doc: {
     relationTo: 'posts';
-    value: string | Post;
+    value: number | Post;
   };
   slug?: string | null;
   meta?: {
     title?: string | null;
     description?: string | null;
-    image?: (string | null) | Media;
+    image?: (number | null) | Media;
   };
   categories?:
     | {
@@ -853,11 +1153,116 @@ export interface Search {
   createdAt: string;
 }
 /**
+ * API keys control which collections, resources, tools, and prompts MCP clients can access
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-mcp-api-keys".
+ */
+export interface PayloadMcpApiKey {
+  id: number;
+  /**
+   * The user that the API key is associated with.
+   */
+  user: number | User;
+  /**
+   * A useful label for the API key.
+   */
+  label?: string | null;
+  /**
+   * The purpose of the API key.
+   */
+  description?: string | null;
+  posts?: {
+    /**
+     * Allow clients to find posts.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to update posts.
+     */
+    update?: boolean | null;
+  };
+  pages?: {
+    /**
+     * Allow clients to find pages.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to update pages.
+     */
+    update?: boolean | null;
+  };
+  media?: {
+    /**
+     * Allow clients to find media.
+     */
+    find?: boolean | null;
+  };
+  categories?: {
+    /**
+     * Allow clients to find categories.
+     */
+    find?: boolean | null;
+  };
+  forms?: {
+    /**
+     * Allow clients to find forms.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create forms.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update forms.
+     */
+    update?: boolean | null;
+    /**
+     * Allow clients to delete forms.
+     */
+    delete?: boolean | null;
+  };
+  formSubmissions?: {
+    /**
+     * Allow clients to find form-submissions.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create form-submissions.
+     */
+    create?: boolean | null;
+  };
+  header?: {
+    /**
+     * Allow clients to find header global.
+     */
+    find?: boolean | null;
+  };
+  footer?: {
+    /**
+     * Allow clients to find footer global.
+     */
+    find?: boolean | null;
+  };
+  generalSettings?: {
+    /**
+     * Allow clients to find general-settings global.
+     */
+    find?: boolean | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  enableAPIKey?: boolean | null;
+  apiKey?: string | null;
+  apiKeyIndex?: string | null;
+  collection: 'payload-mcp-api-keys';
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
-  id: string;
+  id: number;
   key: string;
   data:
     | {
@@ -874,7 +1279,7 @@ export interface PayloadKv {
  * via the `definition` "payload-jobs".
  */
 export interface PayloadJob {
-  id: string;
+  id: number;
   /**
    * Input data provided to the job
    */
@@ -966,53 +1371,62 @@ export interface PayloadJob {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string;
+  id: number;
   document?:
     | ({
         relationTo: 'pages';
-        value: string | Page;
+        value: number | Page;
       } | null)
     | ({
         relationTo: 'posts';
-        value: string | Post;
+        value: number | Post;
       } | null)
     | ({
         relationTo: 'media';
-        value: string | Media;
+        value: number | Media;
       } | null)
     | ({
         relationTo: 'categories';
-        value: string | Category;
+        value: number | Category;
       } | null)
     | ({
         relationTo: 'users';
-        value: string | User;
+        value: number | User;
       } | null)
     | ({
         relationTo: 'redirects';
-        value: string | Redirect;
+        value: number | Redirect;
       } | null)
     | ({
         relationTo: 'forms';
-        value: string | Form;
+        value: number | Form;
       } | null)
     | ({
         relationTo: 'form-submissions';
-        value: string | FormSubmission;
+        value: number | FormSubmission;
       } | null)
     | ({
         relationTo: 'search';
-        value: string | Search;
+        value: number | Search;
+      } | null)
+    | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
       } | null)
     | ({
         relationTo: 'payload-folders';
-        value: string | FolderInterface;
+        value: number | FolderInterface;
       } | null);
   globalSlug?: string | null;
-  user: {
-    relationTo: 'users';
-    value: string | User;
-  };
+  user:
+    | {
+        relationTo: 'users';
+        value: number | User;
+      }
+    | {
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      };
   updatedAt: string;
   createdAt: string;
 }
@@ -1021,11 +1435,16 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
-  user: {
-    relationTo: 'users';
-    value: string | User;
-  };
+  id: number;
+  user:
+    | {
+        relationTo: 'users';
+        value: number | User;
+      }
+    | {
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      };
   key?: string | null;
   value?:
     | {
@@ -1044,7 +1463,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -1084,8 +1503,13 @@ export interface PagesSelect<T extends boolean = true> {
         cta?: T | CallToActionBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
+        enhancedMediaBlock?: T | EnhancedMediaBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
+        featuredPostsSideMedia?: T | FeaturedPostsSideMediaBlockSelect<T>;
+        portalSplitLayout?: T | PortalSplitLayoutBlockSelect<T>;
+        mediaHubTriptych?: T | MediaHubTriptychBlockSelect<T>;
+        newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
       };
   meta?:
     | T
@@ -1162,6 +1586,26 @@ export interface MediaBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "EnhancedMediaBlock_select".
+ */
+export interface EnhancedMediaBlockSelect<T extends boolean = true> {
+  media?: T;
+  href?: T;
+  widthScope?: T;
+  priority?: T;
+  maxWidth?: T;
+  alignment?: T;
+  aspectRatio?: T;
+  aspectRatioCustom?: T;
+  objectFit?: T;
+  cornerRadius?: T;
+  borderStyle?: T;
+  shadow?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ArchiveBlock_select".
  */
 export interface ArchiveBlockSelect<T extends boolean = true> {
@@ -1182,6 +1626,155 @@ export interface FormBlockSelect<T extends boolean = true> {
   form?: T;
   enableIntro?: T;
   introContent?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeaturedPostsSideMediaBlock_select".
+ */
+export interface FeaturedPostsSideMediaBlockSelect<T extends boolean = true> {
+  source?: T;
+  mainPost?: T;
+  subPosts?: T;
+  smallRowPromoImage?: T;
+  smallRowPromoHref?: T;
+  sideMedia?: T;
+  sideMediaHref?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PortalSplitLayoutBlock_select".
+ */
+export interface PortalSplitLayoutBlockSelect<T extends boolean = true> {
+  leftSource?: T;
+  leftPosts?: T;
+  leftLatestLimit?: T;
+  row1LeftTitle?: T;
+  row1LeftAccent?: T;
+  row1CenterGraphic?: T;
+  row1TagItems?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        id?: T;
+      };
+  row1OrbitRadiusMinPct?: T;
+  row1OrbitRadiusMaxPct?: T;
+  row1GridItems?:
+    | T
+    | {
+        icon?: T;
+        label?: T;
+        href?: T;
+        id?: T;
+      };
+  row1RightTitle?: T;
+  row1RightAccent?: T;
+  row1RightCards?:
+    | T
+    | {
+        image?: T;
+        caption?: T;
+        href?: T;
+        id?: T;
+      };
+  standardSections?:
+    | T
+    | {
+        sectionTitle?: T;
+        accent?: T;
+        featuredPost?: T;
+        subPosts?: T;
+        footerPosts?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MediaHubTriptychBlock_select".
+ */
+export interface MediaHubTriptychBlockSelect<T extends boolean = true> {
+  podcastColumn?:
+    | T
+    | {
+        sectionTitle?: T;
+        items?:
+          | T
+          | {
+              title?: T;
+              meta?: T;
+              thumbnail?: T;
+              link?: T;
+              id?: T;
+            };
+      };
+  videoColumn?:
+    | T
+    | {
+        sectionTitle?: T;
+        featured?:
+          | T
+          | {
+              source?: T;
+              embedUrl?: T;
+              videoMedia?: T;
+              thumbnail?: T;
+              caption?: T;
+            };
+        gridItems?:
+          | T
+          | {
+              source?: T;
+              embedUrl?: T;
+              videoMedia?: T;
+              thumbnail?: T;
+              title?: T;
+              link?: T;
+              id?: T;
+            };
+      };
+  photoColumn?:
+    | T
+    | {
+        sectionTitle?: T;
+        featured?:
+          | T
+          | {
+              image?: T;
+              title?: T;
+              dateLine?: T;
+            };
+        bottomItems?:
+          | T
+          | {
+              image?: T;
+              title?: T;
+              link?: T;
+              id?: T;
+            };
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsletterSignupBlock_select".
+ */
+export interface NewsletterSignupBlockSelect<T extends boolean = true> {
+  form?: T;
+  eyebrow?: T;
+  headline?: T;
+  description?: T;
+  emailPlaceholder?: T;
+  submitLabel?: T;
+  disclaimer?: T;
+  termsUrl?: T;
   id?: T;
   blockName?: T;
 }
@@ -1547,6 +2140,71 @@ export interface SearchSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-mcp-api-keys_select".
+ */
+export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
+  user?: T;
+  label?: T;
+  description?: T;
+  posts?:
+    | T
+    | {
+        find?: T;
+        update?: T;
+      };
+  pages?:
+    | T
+    | {
+        find?: T;
+        update?: T;
+      };
+  media?:
+    | T
+    | {
+        find?: T;
+      };
+  categories?:
+    | T
+    | {
+        find?: T;
+      };
+  forms?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  formSubmissions?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+      };
+  header?:
+    | T
+    | {
+        find?: T;
+      };
+  footer?:
+    | T
+    | {
+        find?: T;
+      };
+  generalSettings?:
+    | T
+    | {
+        find?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  enableAPIKey?: T;
+  apiKey?: T;
+  apiKeyIndex?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -1633,7 +2291,12 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
  * via the `definition` "header".
  */
 export interface Header {
-  id: string;
+  id: number;
+  bannerImage?: (number | null) | Media;
+  /**
+   * Optional URL when users click the banner image.
+   */
+  bannerLink?: string | null;
   navItems?:
     | {
         link: {
@@ -1642,11 +2305,11 @@ export interface Header {
           reference?:
             | ({
                 relationTo: 'pages';
-                value: string | Page;
+                value: number | Page;
               } | null)
             | ({
                 relationTo: 'posts';
-                value: string | Post;
+                value: number | Post;
               } | null);
           url?: string | null;
           label: string;
@@ -1662,7 +2325,7 @@ export interface Header {
  * via the `definition` "footer".
  */
 export interface Footer {
-  id: string;
+  id: number;
   navItems?:
     | {
         link: {
@@ -1671,11 +2334,11 @@ export interface Footer {
           reference?:
             | ({
                 relationTo: 'pages';
-                value: string | Page;
+                value: number | Page;
               } | null)
             | ({
                 relationTo: 'posts';
-                value: string | Post;
+                value: number | Post;
               } | null);
           url?: string | null;
           label: string;
@@ -1687,10 +2350,60 @@ export interface Footer {
   createdAt?: string | null;
 }
 /**
+ * Configure general site information such as site name, logo, contact details and social links.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "general-settings".
+ */
+export interface GeneralSetting {
+  id: number;
+  siteName?: string | null;
+  siteDescription?: string | null;
+  logo?: (number | null) | Media;
+  favicon?: (number | null) | Media;
+  contact?: {
+    email?: string | null;
+    phone?: string | null;
+    address?: string | null;
+  };
+  /**
+   * Add your social media profile URLs.
+   */
+  socialLinks?: {
+    facebook?: string | null;
+    twitter?: string | null;
+    instagram?: string | null;
+    linkedin?: string | null;
+    youtube?: string | null;
+  };
+  footerContent?: {
+    content?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    copyright?: string | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
+  bannerImage?: T;
+  bannerLink?: T;
   navItems?:
     | T
     | {
@@ -1734,6 +2447,51 @@ export interface FooterSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "general-settings_select".
+ */
+export interface GeneralSettingsSelect<T extends boolean = true> {
+  siteName?: T;
+  siteDescription?: T;
+  logo?: T;
+  favicon?: T;
+  contact?:
+    | T
+    | {
+        email?: T;
+        phone?: T;
+        address?: T;
+      };
+  socialLinks?:
+    | T
+    | {
+        facebook?: T;
+        twitter?: T;
+        instagram?: T;
+        linkedin?: T;
+        youtube?: T;
+      };
+  footerContent?:
+    | T
+    | {
+        content?: T;
+        copyright?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collections_widget".
+ */
+export interface CollectionsWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TaskSchedulePublish".
  */
 export interface TaskSchedulePublish {
@@ -1743,14 +2501,14 @@ export interface TaskSchedulePublish {
     doc?:
       | ({
           relationTo: 'pages';
-          value: string | Page;
+          value: number | Page;
         } | null)
       | ({
           relationTo: 'posts';
-          value: string | Post;
+          value: number | Post;
         } | null);
     global?: string | null;
-    user?: (string | null) | User;
+    user?: (number | null) | User;
   };
   output?: unknown;
 }

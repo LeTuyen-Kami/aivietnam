@@ -10,6 +10,29 @@ export const Header: GlobalConfig = {
   },
   fields: [
     {
+      name: 'bannerImage',
+      type: 'upload',
+      relationTo: 'media',
+      label: {
+        en: 'Header banner image',
+        vi: 'Ảnh banner đầu trang',
+      },
+    },
+    {
+      name: 'bannerLink',
+      type: 'text',
+      label: {
+        en: 'Header banner link',
+        vi: 'Đường dẫn khi bấm banner',
+      },
+      admin: {
+        description: {
+          en: 'Optional URL when users click the banner image.',
+          vi: 'Tuỳ chọn: đường dẫn khi người dùng bấm vào banner.',
+        },
+      },
+    },
+    {
       name: 'navItems',
       type: 'array',
       fields: [
@@ -17,7 +40,7 @@ export const Header: GlobalConfig = {
           appearances: false,
         }),
       ],
-      maxRows: 6,
+      maxRows: 12,
       admin: {
         initCollapsed: true,
         components: {

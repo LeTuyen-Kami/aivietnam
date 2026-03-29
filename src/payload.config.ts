@@ -10,10 +10,14 @@ import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
 import { Footer } from './Footer/config'
+import { GeneralSettings } from './GeneralSettings/config'
 import { Header } from './Header/config'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
+import { vi } from '@payloadcms/translations/languages/vi'
+import { en } from '@payloadcms/translations/languages/en'
+import { lexicalEditor } from '@payloadcms/richtext-lexical'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -31,6 +35,7 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+
     user: Users.slug,
     livePreview: {
       breakpoints: [
@@ -56,7 +61,7 @@ export default buildConfig({
     },
   },
   // This config helps us configure global or default features that the other editors can inherit
-  editor: defaultLexical,
+  editor: lexicalEditor({}),
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
@@ -64,7 +69,7 @@ export default buildConfig({
   }),
   collections: [Pages, Posts, Media, Categories, Users],
   cors: [getServerSideURL()].filter(Boolean),
-  globals: [Header, Footer],
+  globals: [Header, Footer, GeneralSettings],
   plugins,
   secret: process.env.PAYLOAD_SECRET,
   sharp,
@@ -88,5 +93,9 @@ export default buildConfig({
       },
     },
     tasks: [],
+  },
+  i18n: {
+    supportedLanguages: { en, vi },
+    fallbackLanguage: 'en',
   },
 })
