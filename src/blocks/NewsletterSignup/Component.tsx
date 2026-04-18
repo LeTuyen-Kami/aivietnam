@@ -8,6 +8,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import RichText from '@/components/RichText'
 import { SmartLink } from '@/components/SmartLink'
 import { getClientSideURL } from '@/utilities/getURL'
+import { cn } from '@/utilities/ui'
 
 export type NewsletterSignupBlockType = {
   blockType?: 'newsletterSignup'
@@ -19,6 +20,7 @@ export type NewsletterSignupBlockType = {
   submitLabel?: string | null
   disclaimer?: string | null
   termsUrl?: string | null
+  className?: string | null
 }
 
 function isPopulatedForm(form: number | FormType): form is FormType {
@@ -66,6 +68,7 @@ export const NewsletterSignupBlock: React.FC<NewsletterSignupBlockType> = (props
     submitLabel = 'ĐĂNG KÝ',
     disclaimer = '*Khi đăng ký, bạn đồng ý điều khoản của AIVIETNAM',
     termsUrl,
+    className,
   } = props
 
   const router = useRouter()
@@ -165,8 +168,10 @@ export const NewsletterSignupBlock: React.FC<NewsletterSignupBlockType> = (props
 
   return (
     <div
-      className="rounded-sm border border-neutral-200 px-8 py-10 md:px-10"
-      style={{ backgroundColor: '#FDFBF7' }}
+      className={cn(
+        'rounded-sm border border-neutral-200 px-8 py-10 md:px-10 bg-[#FDFBF7]',
+        className,
+      )}
     >
       {hasSubmitted && form.confirmationType === 'message' && form.confirmationMessage ? (
         <RichText
@@ -226,7 +231,11 @@ export const NewsletterSignupBlock: React.FC<NewsletterSignupBlockType> = (props
 
           {disclaimer ? (
             <p className="font-serif text-[11px] leading-snug md:text-xs">
-              <DisclaimerWithTermsLink termsUrl={termsUrl} termsWord={termsWord} text={disclaimer} />
+              <DisclaimerWithTermsLink
+                termsUrl={termsUrl}
+                termsWord={termsWord}
+                text={disclaimer}
+              />
             </p>
           ) : null}
         </form>

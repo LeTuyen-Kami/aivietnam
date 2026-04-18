@@ -91,6 +91,40 @@ export const Posts: CollectionConfig<'posts'> = {
               relationTo: 'media',
             },
             {
+              name: 'footerImage',
+              type: 'upload',
+              relationTo: 'media',
+              admin: {
+                description:
+                  'Ảnh cuối trang chi tiết. Để trống sẽ dùng ảnh mặc định trong General Settings → Default post page images (nếu có).',
+              },
+            },
+            {
+              name: 'footerImageHref',
+              type: 'text',
+              admin: {
+                description:
+                  'Link khi nhấn ảnh cuối trang (tùy chọn). Nếu không set mà dùng ảnh mặc định global, link lấy từ global.',
+              },
+            },
+            {
+              name: 'sidebarAdImage',
+              type: 'upload',
+              relationTo: 'media',
+              admin: {
+                description:
+                  'Ảnh quảng cáo sidebar. Để trống sẽ dùng ảnh mặc định trong General Settings (nếu có).',
+              },
+            },
+            {
+              name: 'sidebarAdHref',
+              type: 'text',
+              admin: {
+                description:
+                  'Link quảng cáo sidebar (tùy chọn). Nếu không set mà dùng ảnh mặc định global, link lấy từ global.',
+              },
+            },
+            {
               name: 'content',
               type: 'richText',
               editor: lexicalEditor({
@@ -179,6 +213,15 @@ export const Posts: CollectionConfig<'posts'> = {
           name: 'meta',
           label: 'SEO',
           fields: [
+            {
+              name: 'seoImageChecker',
+              type: 'ui',
+              admin: {
+                components: {
+                  Field: '@/components/SeoImageChecker#SeoImageChecker',
+                },
+              },
+            },
             OverviewField({
               titlePath: 'meta.title',
               descriptionPath: 'meta.description',
@@ -256,6 +299,16 @@ export const Posts: CollectionConfig<'posts'> = {
           type: 'text',
         },
       ],
+    },
+    {
+      name: 'views',
+      type: 'number',
+      defaultValue: 0,
+      admin: {
+        position: 'sidebar',
+        description: 'Số lượt xem bài viết',
+        readOnly: true,
+      },
     },
     slugField(),
   ],

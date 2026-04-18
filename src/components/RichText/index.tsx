@@ -10,10 +10,10 @@ import {
   JSXConvertersFunction,
   LinkJSXConverter,
   RichText as ConvertRichText,
-  UploadJSXConverter,
 } from '@payloadcms/richtext-lexical/react'
 
 import { CodeBlock, CodeBlockProps } from '@/blocks/Code/Component'
+import Image from 'next/image'
 
 import type {
   BannerBlock as BannerBlockProps,
@@ -43,8 +43,39 @@ const internalDocToHref = ({ linkNode }: { linkNode: SerializedLinkNode }) => {
 const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) => ({
   ...defaultConverters,
   ...LinkJSXConverter({ internalDocToHref }),
+  upload: ({ node }) => {
+    if (node.relationTo === 'media') {
+      const caption = node.fields?.caption
+      const uploadDoc = node.value
+      if (typeof uploadDoc !== 'object') {
+        return null
+      }
+      const { alt, height, url, width } = uploadDoc
+      const aspectRatio = width ? (height ? width / height : 1) : 1
+      return (
+        <span className="block w-full text-center">
+          <Image
+            src={url || ''}
+            alt={alt || ''}
+            width={width || 0}
+            height={height || 0}
+            className={'w-full h-auto my-0!'}
+            style={{ aspectRatio }}
+          />
+          {node.fields?.caption && (
+            <span className="mt-2 block text-sm text-muted-foreground italic">
+              {node.fields.caption}
+            </span>
+          )}
+        </span>
+      )
+    }
+
+    return null
+  },
   blocks: {
     banner: ({ node }) => <BannerBlock className="col-start-2 mb-4" {...node.fields} />,
+
     mediaBlock: ({ node }) => (
       <MediaBlock
         className="col-start-1 col-span-3"

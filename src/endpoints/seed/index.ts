@@ -10,6 +10,8 @@ import { image1 } from './image-1'
 import { image2 } from './image-2'
 import { imageHero1 } from './image-hero-1'
 import { SEED_CATEGORY_DEFS, seedBulkPosts } from './bulk-posts'
+import { buildFooterData } from './footer'
+import { buildGeneralSettingsData } from './general-settings'
 
 /** Thứ tự xóa phải tôn trọng FK Postgres (ví dụ posts → categories). Không dùng Promise.all song song. */
 const COLLECTIONS_CLEAR_ORDER: CollectionSlug[] = [
@@ -21,8 +23,6 @@ const COLLECTIONS_CLEAR_ORDER: CollectionSlug[] = [
   'media',
   'forms',
 ]
-
-const globals = ['header', 'footer'] as const
 
 // Next.js revalidation errors are normal when seeding the database without a server running
 // i.e. running `yarn seed` locally instead of using the admin UI within an active app
@@ -44,20 +44,41 @@ export const seed = async ({
   payload.logger.info(`— Clearing collections and globals...`)
 
   // clear the database
-  await Promise.all(
-    globals.map((global) =>
-      payload.updateGlobal({
-        slug: global,
-        data: {
-          navItems: [],
-        },
-        depth: 0,
-        context: {
-          disableRevalidate: true,
-        },
-      }),
-    ),
-  )
+  await payload.updateGlobal({
+    slug: 'header',
+    data: {
+      navItems: [],
+    },
+    depth: 0,
+    context: {
+      disableRevalidate: true,
+    },
+  })
+
+  await payload.updateGlobal({
+    slug: 'footer',
+    data: {
+      categoryColumns: [],
+      hotlines: [],
+      contactLinks: [],
+    },
+    depth: 0,
+    context: {
+      disableRevalidate: true,
+    },
+  })
+
+  await payload.updateGlobal({
+    slug: 'general-settings',
+    data: {
+      logo: null,
+      favicon: null,
+    },
+    depth: 0,
+    context: {
+      disableRevalidate: true,
+    },
+  })
 
   for (const collection of COLLECTIONS_CLEAR_ORDER) {
     await payload.db.deleteMany({ collection, req, where: {} })
@@ -105,6 +126,7 @@ export const seed = async ({
         name: 'Demo Author',
         email: 'demo-author@example.com',
         password: 'password',
+        roles: ['admin'],
       },
     }),
     payload.create({
@@ -229,33 +251,12 @@ export const seed = async ({
     payload.updateGlobal({
       slug: 'footer',
       context: { disableRevalidate: true },
-      data: {
-        navItems: [
-          {
-            link: {
-              type: 'custom',
-              label: 'Admin',
-              url: '/admin',
-            },
-          },
-          {
-            link: {
-              type: 'custom',
-              label: 'Source Code',
-              newTab: true,
-              url: 'https://github.com/payloadcms/payload/tree/main/templates/website',
-            },
-          },
-          {
-            link: {
-              type: 'custom',
-              label: 'Payload',
-              newTab: true,
-              url: 'https://payloadcms.com/',
-            },
-          },
-        ],
-      },
+      data: buildFooterData(imageHomeDoc.id),
+    }),
+    payload.updateGlobal({
+      slug: 'general-settings',
+      context: { disableRevalidate: true },
+      data: buildGeneralSettingsData(imageHomeDoc.id),
     }),
   ])
 

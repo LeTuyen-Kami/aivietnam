@@ -73,6 +73,8 @@ export interface Config {
     media: Media;
     categories: Category;
     users: User;
+    'comment-moderation-rules': CommentModerationRule;
+    comments: Comment;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -96,6 +98,8 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    'comment-moderation-rules': CommentModerationRulesSelect<false> | CommentModerationRulesSelect<true>;
+    comments: CommentsSelect<false> | CommentsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -262,6 +266,22 @@ export interface Post {
   id: number;
   title: string;
   heroImage?: (number | null) | Media;
+  /**
+   * Ảnh cuối trang chi tiết. Để trống sẽ dùng ảnh mặc định trong General Settings → Default post page images (nếu có).
+   */
+  footerImage?: (number | null) | Media;
+  /**
+   * Link khi nhấn ảnh cuối trang (tùy chọn). Nếu không set mà dùng ảnh mặc định global, link lấy từ global.
+   */
+  footerImageHref?: string | null;
+  /**
+   * Ảnh quảng cáo sidebar. Để trống sẽ dùng ảnh mặc định trong General Settings (nếu có).
+   */
+  sidebarAdImage?: (number | null) | Media;
+  /**
+   * Link quảng cáo sidebar (tùy chọn). Nếu không set mà dùng ảnh mặc định global, link lấy từ global.
+   */
+  sidebarAdHref?: string | null;
   content: {
     root: {
       type: string;
@@ -295,6 +315,10 @@ export interface Post {
         name?: string | null;
       }[]
     | null;
+  /**
+   * Số lượt xem bài viết
+   */
+  views?: number | null;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
@@ -454,6 +478,11 @@ export interface Category {
 export interface User {
   id: number;
   name?: string | null;
+  roles: ('admin' | 'member')[];
+  /**
+   * Google account subject (sub). Set automatically for OAuth sign-in.
+   */
+  googleSub?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -1079,6 +1108,43 @@ export interface NewsletterSignupBlock {
   blockType: 'newsletterSignup';
 }
 /**
+ * Từ khóa cấm hoặc user bị chặn bình luận.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comment-moderation-rules".
+ */
+export interface CommentModerationRule {
+  id: number;
+  ruleType: 'blockedKeyword' | 'blockedUser';
+  /**
+   * Mỗi dòng một cụm từ cấm. So khớp chuỗi con sau khi chuẩn hóa chữ thường (Enter = tách cụm).
+   */
+  keyword?: string | null;
+  blockedUser?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments".
+ */
+export interface Comment {
+  id: number;
+  post: number | Post;
+  author: number | User;
+  body: string;
+  /**
+   * Thành viên: tự động approved nếu qua blacklist, rejected nếu khớp từ khóa cấm. Pending chỉ dùng khi admin đặt tay.
+   */
+  status: 'pending' | 'approved' | 'rejected';
+  /**
+   * Điền tự động khi nội dung khớp blacklist.
+   */
+  rejectionReason?: 'blocked_keyword' | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
@@ -1392,6 +1458,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: number | User;
+      } | null)
+    | ({
+        relationTo: 'comment-moderation-rules';
+        value: number | CommentModerationRule;
+      } | null)
+    | ({
+        relationTo: 'comments';
+        value: number | Comment;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1785,6 +1859,10 @@ export interface NewsletterSignupBlockSelect<T extends boolean = true> {
 export interface PostsSelect<T extends boolean = true> {
   title?: T;
   heroImage?: T;
+  footerImage?: T;
+  footerImageHref?: T;
+  sidebarAdImage?: T;
+  sidebarAdHref?: T;
   content?: T;
   relatedPosts?: T;
   categories?: T;
@@ -1803,6 +1881,7 @@ export interface PostsSelect<T extends boolean = true> {
         id?: T;
         name?: T;
       };
+  views?: T;
   generateSlug?: T;
   slug?: T;
   updatedAt?: T;
@@ -1929,6 +2008,8 @@ export interface CategoriesSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  roles?: T;
+  googleSub?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -1945,6 +2026,30 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comment-moderation-rules_select".
+ */
+export interface CommentModerationRulesSelect<T extends boolean = true> {
+  ruleType?: T;
+  keyword?: T;
+  blockedUser?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments_select".
+ */
+export interface CommentsSelect<T extends boolean = true> {
+  post?: T;
+  author?: T;
+  body?: T;
+  status?: T;
+  rejectionReason?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2326,8 +2431,53 @@ export interface Header {
  */
 export interface Footer {
   id: number;
-  navItems?:
+  categoriesHeading?: string | null;
+  categoryColumns?:
     | {
+        links?:
+          | {
+              link: {
+                type?: ('reference' | 'custom') | null;
+                newTab?: boolean | null;
+                reference?:
+                  | ({
+                      relationTo: 'pages';
+                      value: number | Page;
+                    } | null)
+                  | ({
+                      relationTo: 'posts';
+                      value: number | Post;
+                    } | null);
+                url?: string | null;
+                label: string;
+              };
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  downloadsTitle?: string | null;
+  appStoreUrl?: string | null;
+  googlePlayUrl?: string | null;
+  appStoreBadge?: (number | null) | Media;
+  googlePlayBadge?: (number | null) | Media;
+  hotlineTitle?: string | null;
+  hotlines?:
+    | {
+        label: string;
+        phone: string;
+        /**
+         * Example: tel:+84938381100
+         */
+        href: string;
+        id?: string | null;
+      }[]
+    | null;
+  contactLinksHeading?: string | null;
+  contactLinks?:
+    | {
+        icon: 'mail' | 'advertising' | 'terms' | 'privacy' | 'cookies';
         link: {
           type?: ('reference' | 'custom') | null;
           newTab?: boolean | null;
@@ -2346,6 +2496,31 @@ export interface Footer {
         id?: string | null;
       }[]
     | null;
+  featureImage?: (number | null) | Media;
+  brandTitle?: string | null;
+  brandTagline?: string | null;
+  contentResponsibility?: string | null;
+  headquartersLabel?: string | null;
+  headquartersAddress?: string | null;
+  phoneLabel?: string | null;
+  centerPhone?: string | null;
+  /**
+   * tel:… — optional if empty, uses center phone
+   */
+  centerPhoneHref?: string | null;
+  emailLabel?: string | null;
+  centerEmail?: string | null;
+  socialHeading?: string | null;
+  socialFacebook?: string | null;
+  socialX?: string | null;
+  socialYoutube?: string | null;
+  socialTiktok?: string | null;
+  socialRss?: string | null;
+  promoTitle?: string | null;
+  promoSubtitle?: string | null;
+  promoHref?: string | null;
+  licenseLine?: string | null;
+  copyrightLine?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -2394,6 +2569,27 @@ export interface GeneralSetting {
     } | null;
     copyright?: string | null;
   };
+  /**
+   * Fallback when a post leaves footer or sidebar ad images empty. Per-post values always win.
+   */
+  postPageAssets?: {
+    /**
+     * Shown at the bottom of the post when the post has no footer image.
+     */
+    footerImage?: (number | null) | Media;
+    /**
+     * Optional click target for the default footer image.
+     */
+    footerImageHref?: string | null;
+    /**
+     * Shown in the sidebar when the post has no sidebar ad image.
+     */
+    sidebarAdImage?: (number | null) | Media;
+    /**
+     * Optional click target for the default sidebar ad.
+     */
+    sidebarAdHref?: string | null;
+  };
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -2427,9 +2623,45 @@ export interface HeaderSelect<T extends boolean = true> {
  * via the `definition` "footer_select".
  */
 export interface FooterSelect<T extends boolean = true> {
-  navItems?:
+  categoriesHeading?: T;
+  categoryColumns?:
     | T
     | {
+        links?:
+          | T
+          | {
+              link?:
+                | T
+                | {
+                    type?: T;
+                    newTab?: T;
+                    reference?: T;
+                    url?: T;
+                    label?: T;
+                  };
+              id?: T;
+            };
+        id?: T;
+      };
+  downloadsTitle?: T;
+  appStoreUrl?: T;
+  googlePlayUrl?: T;
+  appStoreBadge?: T;
+  googlePlayBadge?: T;
+  hotlineTitle?: T;
+  hotlines?:
+    | T
+    | {
+        label?: T;
+        phone?: T;
+        href?: T;
+        id?: T;
+      };
+  contactLinksHeading?: T;
+  contactLinks?:
+    | T
+    | {
+        icon?: T;
         link?:
           | T
           | {
@@ -2441,6 +2673,28 @@ export interface FooterSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  featureImage?: T;
+  brandTitle?: T;
+  brandTagline?: T;
+  contentResponsibility?: T;
+  headquartersLabel?: T;
+  headquartersAddress?: T;
+  phoneLabel?: T;
+  centerPhone?: T;
+  centerPhoneHref?: T;
+  emailLabel?: T;
+  centerEmail?: T;
+  socialHeading?: T;
+  socialFacebook?: T;
+  socialX?: T;
+  socialYoutube?: T;
+  socialTiktok?: T;
+  socialRss?: T;
+  promoTitle?: T;
+  promoSubtitle?: T;
+  promoHref?: T;
+  licenseLine?: T;
+  copyrightLine?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -2475,6 +2729,14 @@ export interface GeneralSettingsSelect<T extends boolean = true> {
     | {
         content?: T;
         copyright?: T;
+      };
+  postPageAssets?:
+    | T
+    | {
+        footerImage?: T;
+        footerImageHref?: T;
+        sidebarAdImage?: T;
+        sidebarAdHref?: T;
       };
   updatedAt?: T;
   createdAt?: T;

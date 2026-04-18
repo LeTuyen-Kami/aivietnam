@@ -228,6 +228,82 @@ export const GeneralSettings: GlobalConfig = {
         },
       ],
     },
+    {
+      name: 'postPageAssets',
+      type: 'group',
+      label: {
+        en: 'Default post page images',
+        vi: 'Ảnh mặc định trang chi tiết bài viết',
+      },
+      admin: {
+        description: {
+          en:
+            'Fallback when a post leaves footer or sidebar ad images empty. Per-post values always win.',
+          vi:
+            'Dùng khi bài viết không chọn ảnh footer hoặc quảng cáo sidebar. Ảnh/link trên từng bài luôn được ưu tiên.',
+        },
+      },
+      fields: [
+        {
+          name: 'footerImage',
+          type: 'upload',
+          relationTo: 'media',
+          label: {
+            en: 'Footer image (default)',
+            vi: 'Ảnh cuối bài (mặc định)',
+          },
+          admin: {
+            description: {
+              en: 'Shown at the bottom of the post when the post has no footer image.',
+              vi: 'Hiển thị cuối bài khi bài viết không chọn ảnh footer riêng.',
+            },
+          },
+        },
+        {
+          name: 'footerImageHref',
+          type: 'text',
+          label: {
+            en: 'Footer image link (default)',
+            vi: 'Link ảnh cuối bài (mặc định)',
+          },
+          admin: {
+            description: {
+              en: 'Optional click target for the default footer image.',
+              vi: 'Link khi nhấn vào ảnh cuối bài (tùy chọn).',
+            },
+          },
+        },
+        {
+          name: 'sidebarAdImage',
+          type: 'upload',
+          relationTo: 'media',
+          label: {
+            en: 'Sidebar ad image (default)',
+            vi: 'Ảnh quảng cáo sidebar (mặc định)',
+          },
+          admin: {
+            description: {
+              en: 'Shown in the sidebar when the post has no sidebar ad image.',
+              vi: 'Hiển thị sidebar khi bài viết không chọn ảnh quảng cáo riêng.',
+            },
+          },
+        },
+        {
+          name: 'sidebarAdHref',
+          type: 'text',
+          label: {
+            en: 'Sidebar ad link (default)',
+            vi: 'Link quảng cáo sidebar (mặc định)',
+          },
+          admin: {
+            description: {
+              en: 'Optional click target for the default sidebar ad.',
+              vi: 'Link khi nhấn vào ảnh quảng cáo sidebar (tùy chọn).',
+            },
+          },
+        },
+      ],
+    },
   ],
   hooks: {
     afterChange: [revalidateGeneralSettings],
