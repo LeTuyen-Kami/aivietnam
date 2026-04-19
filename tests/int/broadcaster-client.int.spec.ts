@@ -9,13 +9,16 @@ const clientPath = path.resolve(
 )
 
 describe('broadcaster client lifecycle contract', () => {
-  it('wires token provider and lifecycle endpoints', async () => {
+  it('wires token provider, env guard messaging, and lifecycle endpoints', async () => {
     const content = await readFile(clientPath, 'utf8')
 
     expect(content).toContain('tokenProvider')
     expect(content).toContain('/api/stream/broadcaster-token')
     expect(content).toMatch(/\/api\/livestreams\/\$\{.*\}\/start/)
     expect(content).toMatch(/\/api\/livestreams\/\$\{.*\}\/end/)
+    expect(content).toContain('streamSetupMessage')
+    expect(content).toContain('getPublicStreamSetupMessage')
+    expect(content).toContain('disabled={!hasStreamingConfig || isStarting || isEnding || isLiveStatus(callState.status)}')
     expect(content).toContain('Start livestream')
     expect(content).toContain('End livestream')
   })

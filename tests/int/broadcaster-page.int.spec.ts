@@ -9,12 +9,15 @@ const pagePath = path.resolve(
 )
 
 describe('broadcaster page guard contract', () => {
-  it('defines server-side slug lookup and access gating', async () => {
+  it('defines server-side slug lookup, access gating, and env preflight wiring', async () => {
     const content = await readFile(pagePath, 'utf8')
 
     expect(content).toContain('/?auth=login_required')
     expect(content).toContain('slug: {')
     expect(content).toContain('equals: decodedSlug')
     expect(content).toContain('Access denied')
+    expect(content).toContain('getPublicStreamEnvStatus')
+    expect(content).toContain('streamApiKey={streamEnv.apiKey}')
+    expect(content).toContain('streamSetupMessage={streamEnv.isConfigured ? null : streamEnv.setupMessage}')
   })
 })
