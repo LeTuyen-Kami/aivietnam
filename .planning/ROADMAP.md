@@ -6,7 +6,7 @@ Tích hợp Stream Video vào codebase Next.js + Payload hiện có: nền tản
 
 ## Phases
 
-- [ ] **Phase 1: Stream foundation** — Env, server SDK, token API, user mapping
+- [x] **Phase 1: Stream foundation** — Env, server SDK, token API, user mapping *(2026-04-19)*
 - [ ] **Phase 2: Payload session model** — Collection, access, generated types
 - [ ] **Phase 3: Admin session management** — Danh sách, trạng thái, liên kết vận hành trong Payload Admin
 - [ ] **Phase 4: Broadcaster (admin-only)** — Trang/site tạo và bắt đầu livestream, guard role
@@ -30,12 +30,12 @@ Tích hợp Stream Video vào codebase Next.js + Payload hiện có: nền tản
 
 **UI hint**: no
 
-**Plans:** TBD (run `/gsd-plan-phase 1`)
+**Plans:** 2 / 2 complete
 
 Plans:
 
-- [ ] 01-01: Cài dependency server/client SDK, env template
-- [ ] 01-02: Service + API token + upsert user Stream
+- [x] 01-01: Cài dependency server/client SDK, env template
+- [x] 01-02: Service + API token + upsert user Stream
 
 ---
 

@@ -15,11 +15,12 @@ Admin có thể **mở và quản lý phiên livestream ổn định**, người
 - ✓ Trang CMS, bài viết, khối nội dung, auth Google/site — existing (Payload + Next)
 - ✓ API route handlers và Local API patterns — existing
 - ✓ Bản đồ codebase trong `.planning/codebase/` — existing
+- ✓ Phase 1 — Stream foundation: `@stream-io/node-sdk` + env, `POST /api/stream/token`, mapping `String(user.id)` (STRM-01–03), 2026-04-19
 
 ### Active
 
-- [ ] Tích hợp Stream Video SDK phía server (`@stream-io/node-sdk`) và client (`@stream-io/video-react-sdk`)
-- [ ] Token JWT user chỉ tạo trên server; không lộ API secret
+- [ ] Stream Video client (`@stream-io/video-react-sdk`) và `NEXT_PUBLIC_STREAM_API_KEY` trên UI (Phase 4–5)
+- [x] Token JWT user chỉ tạo trên server; không lộ API secret *(token route + server-only Stream client)*
 - [ ] Mô hình dữ liệu phiên livestream (Payload) liên kết `callId` / `callType` với nội dung hiển thị
 - [ ] Màn hình quản lý phiên trong Payload Admin (danh sách, trạng thái, liên kết xem/phát)
 - [ ] Luồng tạo phiên trên frontend — **chỉ role admin** (route guard + access control)

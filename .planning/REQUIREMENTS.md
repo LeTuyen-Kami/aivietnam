@@ -7,9 +7,9 @@
 
 ### Stream foundation
 
-- [ ] **STRM-01**: Server có thể khởi tạo Stream server client (API key + secret từ env) và không expose secret ra client
-- [ ] **STRM-02**: API đã xác thực có thể cấp JWT user cho Stream (tokenProvider / one-shot token) với TTL hợp lý
-- [ ] **STRM-03**: User Payload được map ổn định sang Stream user id (documented strategy)
+- [x] **STRM-01**: Server có thể khởi tạo Stream server client (API key + secret từ env) và không expose secret ra client
+- [x] **STRM-02**: API đã xác thực có thể cấp JWT user cho Stream (tokenProvider / one-shot token) với TTL hợp lý
+- [x] **STRM-03**: User Payload được map ổn định sang Stream user id (documented strategy)
 
 ### Data & CMS
 
@@ -49,9 +49,9 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| STRM-01 | Phase 1 | Pending |
-| STRM-02 | Phase 1 | Pending |
-| STRM-03 | Phase 1 | Pending |
+| STRM-01 | Phase 1 | Done |
+| STRM-02 | Phase 1 | Done |
+| STRM-03 | Phase 1 | Done |
 | CMS-01 | Phase 2 | Pending |
 | CMS-02 | Phase 2 | Pending |
 | ADM-01 | Phase 3 | Pending |
