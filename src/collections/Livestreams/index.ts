@@ -4,7 +4,7 @@ import { slugField } from 'payload'
 import { isUsersCollectionAdmin } from '@/access/isAdminUser'
 import { slugifyTitle } from '@/utilities/slugify'
 
-export const Livestreams: CollectionConfig = {
+export const Livestreams: CollectionConfig<'livestreams'> = {
   slug: 'livestreams',
   admin: {
     defaultColumns: ['title', 'slug', 'status', 'updatedAt'],

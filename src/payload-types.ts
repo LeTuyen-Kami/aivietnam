@@ -76,6 +76,7 @@ export interface Config {
     'comment-moderation-rules': CommentModerationRule;
     comments: Comment;
     'comment-likes': CommentLike;
+    livestreams: Livestream;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -102,6 +103,7 @@ export interface Config {
     'comment-moderation-rules': CommentModerationRulesSelect<false> | CommentModerationRulesSelect<true>;
     comments: CommentsSelect<false> | CommentsSelect<true>;
     'comment-likes': CommentLikesSelect<false> | CommentLikesSelect<true>;
+    livestreams: LivestreamsSelect<false> | LivestreamsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -1208,6 +1210,26 @@ export interface CommentLike {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "livestreams".
+ */
+export interface Livestream {
+  id: number;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  status: 'draft' | 'scheduled' | 'live' | 'ended';
+  callId: string;
+  callType: string;
+  description?: string | null;
+  scheduledAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1532,6 +1554,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'comment-likes';
         value: number | CommentLike;
+      } | null)
+    | ({
+        relationTo: 'livestreams';
+        value: number | Livestream;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2145,6 +2171,22 @@ export interface CommentsSelect<T extends boolean = true> {
 export interface CommentLikesSelect<T extends boolean = true> {
   comment?: T;
   user?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "livestreams_select".
+ */
+export interface LivestreamsSelect<T extends boolean = true> {
+  title?: T;
+  generateSlug?: T;
+  slug?: T;
+  status?: T;
+  callId?: T;
+  callType?: T;
+  description?: T;
+  scheduledAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
