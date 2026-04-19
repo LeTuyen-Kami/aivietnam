@@ -13,7 +13,11 @@ export const Livestreams: CollectionConfig = {
   access: {
     create: ({ req: { user } }) => isUsersCollectionAdmin(user),
     delete: ({ req: { user } }) => isUsersCollectionAdmin(user),
-    read: ({ req: { user } }) => isUsersCollectionAdmin(user),
+    read: ({ req: { user } }) => {
+      if (!user) return false
+      if (isUsersCollectionAdmin(user)) return true
+      return { status: { not_equals: 'draft' } }
+    },
     update: ({ req: { user } }) => isUsersCollectionAdmin(user),
   },
   fields: [
