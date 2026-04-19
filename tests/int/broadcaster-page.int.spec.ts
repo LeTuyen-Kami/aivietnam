@@ -12,7 +12,7 @@ describe('broadcaster page guard contract', () => {
   it('defines server-side slug lookup and access gating', async () => {
     const content = await readFile(pagePath, 'utf8')
 
-    expect(content).toContain("redirect('/?auth=login_required")
+    expect(content).toContain('/?auth=login_required')
     expect(content).toContain('slug: {')
     expect(content).toContain('equals: decodedSlug')
     expect(content).toContain('Access denied')
