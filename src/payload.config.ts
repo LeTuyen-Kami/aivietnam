@@ -8,6 +8,7 @@ import { Categories } from './collections/Categories'
 import { CommentModerationRules } from './collections/CommentModerationRules'
 import { CommentLikes } from './collections/CommentLikes'
 import { Comments } from './collections/Comments'
+import { Livestreams } from './collections/Livestreams'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
@@ -79,6 +80,7 @@ export default buildConfig({
     CommentModerationRules,
     Comments,
     CommentLikes,
+    Livestreams,
   ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer, GeneralSettings],
