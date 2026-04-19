@@ -13,8 +13,8 @@
 
 ### Data & CMS
 
-- [ ] **CMS-01**: Collection hoặc cấu trúc Payload lưu phiên livestream (tối thiểu: `callId`, `callType`, tiêu đề, trạng thái, slug/route công khai)
-- [ ] **CMS-02**: Access control: chỉ admin (hoặc role tương đương) tạo/sửa phiên; đọc công khai theo quy tắc đã chốt cho trang xem
+- [x] **CMS-01**: Collection hoặc cấu trúc Payload lưu phiên livestream (tối thiểu: `callId`, `callType`, tiêu đề, trạng thái, slug/route công khai)
+- [x] **CMS-02**: Access control: chỉ admin (hoặc role tương đương) tạo/sửa phiên; đọc theo quy tắc đã chốt (authenticated, không draft cho member; không anonymous)
 
 ### Admin
 
@@ -52,8 +52,8 @@
 | STRM-01 | Phase 1 | Done |
 | STRM-02 | Phase 1 | Done |
 | STRM-03 | Phase 1 | Done |
-| CMS-01 | Phase 2 | Pending |
-| CMS-02 | Phase 2 | Pending |
+| CMS-01 | Phase 2 | Done |
+| CMS-02 | Phase 2 | Done |
 | ADM-01 | Phase 3 | Pending |
 | ADM-02 | Phase 3 | Pending |
 | BRD-01 | Phase 4 | Pending |

@@ -7,7 +7,7 @@ Tích hợp Stream Video vào codebase Next.js + Payload hiện có: nền tản
 ## Phases
 
 - [x] **Phase 1: Stream foundation** — Env, server SDK, token API, user mapping *(2026-04-19)*
-- [ ] **Phase 2: Payload session model** — Collection, access, generated types
+- [x] **Phase 2: Payload session model** — Collection, access, generated types *(2026-04-19)*
 - [ ] **Phase 3: Admin session management** — Danh sách, trạng thái, liên kết vận hành trong Payload Admin
 - [ ] **Phase 4: Broadcaster (admin-only)** — Trang/site tạo và bắt đầu livestream, guard role
 - [ ] **Phase 5: Public viewer** — Trang xem livestream, trạng thái UX đầy đủ
@@ -54,12 +54,12 @@ Plans:
 
 **UI hint**: no
 
-**Plans:** TBD
+**Plans:** 2 / 2 complete
 
 Plans:
 
-- [ ] 02-01: Định nghĩa collection + fields + indexes
-- [ ] 02-02: Access + hooks + `generate:types`
+- [x] 02-01: Định nghĩa collection + fields + indexes
+- [x] 02-02: Access + hooks + `generate:types`
 
 ---
 

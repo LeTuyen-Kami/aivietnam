@@ -16,12 +16,13 @@ Admin có thể **mở và quản lý phiên livestream ổn định**, người
 - ✓ API route handlers và Local API patterns — existing
 - ✓ Bản đồ codebase trong `.planning/codebase/` — existing
 - ✓ Phase 1 — Stream foundation: `@stream-io/node-sdk` + env, `POST /api/stream/token`, mapping `String(user.id)` (STRM-01–03), 2026-04-19
+- ✓ Phase 2 — Payload session model: collection `livestreams` (CMS-01–02), access + migration + `generate:types`, 2026-04-19
 
 ### Active
 
 - [ ] Stream Video client (`@stream-io/video-react-sdk`) và `NEXT_PUBLIC_STREAM_API_KEY` trên UI (Phase 4–5)
 - [x] Token JWT user chỉ tạo trên server; không lộ API secret *(token route + server-only Stream client)*
-- [ ] Mô hình dữ liệu phiên livestream (Payload) liên kết `callId` / `callType` với nội dung hiển thị
+- [x] Mô hình dữ liệu phiên livestream (Payload) — `livestreams` với `callId`, `callType`, slug, trạng thái; đọc không ẩn danh *(Phase 2)*
 - [ ] Màn hình quản lý phiên trong Payload Admin (danh sách, trạng thái, liên kết xem/phát)
 - [ ] Luồng tạo phiên trên frontend — **chỉ role admin** (route guard + access control)
 - [ ] Trang xem livestream công khai (viewer) dùng pattern `livestream` call type + UI viewer
@@ -73,4 +74,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-19 after initialization (gsd-new-project)*
+*Last updated: 2026-04-19 — Phase 2 complete*
