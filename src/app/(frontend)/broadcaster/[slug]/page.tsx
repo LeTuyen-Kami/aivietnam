@@ -5,6 +5,7 @@ import { notFound, redirect } from 'next/navigation'
 
 import { isUsersCollectionAdmin } from '@/access/isAdminUser'
 import type { Livestream } from '@/payload-types'
+import { BroadcasterClient } from './Broadcaster.client'
 
 type Args = {
   params: Promise<{
@@ -13,7 +14,6 @@ type Args = {
 }
 
 export default async function BroadcasterPage({ params }: Args) {
-  const routeIntent = '/broadcaster/[slug]'
   const { slug = '' } = await params
   const decodedSlug = decodeURIComponent(slug)
   const payload = await getPayload({ config: configPromise })
@@ -53,14 +53,13 @@ export default async function BroadcasterPage({ params }: Args) {
 
   return (
     <main className="container py-10">
-      <section className="rounded-lg border border-border bg-card p-6">
-        <h1 className="text-2xl font-semibold">Broadcaster</h1>
-        <p className="mt-1 text-xs text-muted-foreground">Route: {routeIntent}</p>
-        <p className="mt-2 text-muted-foreground">
-          Livestream is ready to start.
-        </p>
-        <p className="mt-4 text-sm text-muted-foreground">Session: {livestream.title}</p>
-      </section>
+      <BroadcasterClient
+        livestream={livestream}
+        streamUser={{
+          id: String(user.id),
+          name: [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || user.email,
+        }}
+      />
     </main>
   )
 }

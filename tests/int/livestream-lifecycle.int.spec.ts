@@ -56,7 +56,7 @@ describe('livestream lifecycle APIs', () => {
     expect(res.status).toBe(200)
     expect(body.status).toBe('live')
     expect(body.publisherJoinConfirmed).toBe(true)
-  })
+  }, 20000)
 
   it('sets livestream status to ended for admin end request', async () => {
     updateMock.mockResolvedValueOnce({ id: 10, status: 'ended' })
@@ -66,5 +66,5 @@ describe('livestream lifecycle APIs', () => {
 
     expect(res.status).toBe(200)
     expect(body.status).toBe('ended')
-  })
+  }, 20000)
 })

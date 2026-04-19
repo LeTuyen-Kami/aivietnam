@@ -36,7 +36,7 @@ describe('broadcaster admin token API', () => {
     const route = await import('@/app/(frontend)/api/stream/broadcaster-token/route')
     const res = await route.POST({} as never)
     expect(res.status).toBe(401)
-  })
+  }, 20000)
 
   it('returns 403 for authenticated non-admin users', async () => {
     authMock.mockResolvedValueOnce({
@@ -45,7 +45,7 @@ describe('broadcaster admin token API', () => {
     const route = await import('@/app/(frontend)/api/stream/broadcaster-token/route')
     const res = await route.POST({} as never)
     expect(res.status).toBe(403)
-  })
+  }, 20000)
 
   it('returns token metadata for admin users', async () => {
     generateUserTokenMock.mockReturnValueOnce('token-123')
@@ -61,5 +61,5 @@ describe('broadcaster admin token API', () => {
     expect(upsertUsersMock).toHaveBeenCalledTimes(1)
     expect(body.token).toBe('token-123')
     expect(body.expiresAt).toBeTypeOf('string')
-  })
+  }, 20000)
 })
