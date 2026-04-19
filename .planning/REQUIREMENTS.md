@@ -18,8 +18,8 @@
 
 ### Admin
 
-- [ ] **ADM-01**: Trong Payload Admin, operator xem được danh sách phiên và trạng thái (live / scheduled / ended hoặc tương đương)
-- [ ] **ADM-02**: Operator có thể mở liên kết tới trang xem / thông tin cần để vận hành (ít nhất copy URL hoặc mở tab)
+- [x] **ADM-01**: Trong Payload Admin, operator xem được danh sách phiên và trạng thái (live / scheduled / ended hoặc tương đương)
+- [x] **ADM-02**: Operator có thể mở liên kết tới trang xem / thông tin cần để vận hành (ít nhất copy URL hoặc mở tab)
 
 ### Frontend — broadcaster (admin-only)
 
@@ -54,8 +54,8 @@
 | STRM-03 | Phase 1 | Done |
 | CMS-01 | Phase 2 | Done |
 | CMS-02 | Phase 2 | Done |
-| ADM-01 | Phase 3 | Pending |
-| ADM-02 | Phase 3 | Pending |
+| ADM-01 | Phase 3 | Complete |
+| ADM-02 | Phase 3 | Complete |
 | BRD-01 | Phase 4 | Pending |
 | BRD-02 | Phase 4 | Pending |
 | VIEW-01 | Phase 5 | Pending |
