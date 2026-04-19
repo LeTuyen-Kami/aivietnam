@@ -78,7 +78,7 @@ Plans:
 
 **UI hint**: yes
 
-**Plans:** TBD
+**Plans:** 0/1 plans executed
 
 Plans:
 
