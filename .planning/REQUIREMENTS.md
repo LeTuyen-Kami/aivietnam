@@ -1,76 +1,71 @@
-# Requirements: Livestream (Mux) milestone
+# Requirements: AI Vietnam — GetStream livestream
 
 **Defined:** 2026-04-19  
-**Core Value:** Stable live viewing plus in-session engagement (comment + hearts) with a clear 50-viewer cap and admin-controlled sessions.
+**Core Value:** Admin mở/quản lý phiên livestream ổn định; người xem xem được luồng qua trang công khai với token an toàn.
 
 ## v1 Requirements
 
-### Integration — Mux & Payload
+### Stream foundation
 
-- [ ] **MUX-01**: Project has `@oversightstudio/mux-video` configured in Payload with required env vars (`MUX_TOKEN_ID`, `MUX_TOKEN_SECRET`, `MUX_WEBHOOK_SIGNING_SECRET`, `NEXT_PUBLIC_SERVER_URL` / `cors_origin`) and webhook route reachable as documented by the plugin.
-- [ ] **MUX-02**: After schema changes, generated types and import map are updated (`generate:types`, `generate:importmap` as needed).
+- [ ] **STRM-01**: Server có thể khởi tạo Stream server client (API key + secret từ env) và không expose secret ra client
+- [ ] **STRM-02**: API đã xác thực có thể cấp JWT user cho Stream (tokenProvider / one-shot token) với TTL hợp lý
+- [ ] **STRM-03**: User Payload được map ổn định sang Stream user id (documented strategy)
 
-### Live session domain
+### Data & CMS
 
-- [ ] **SESS-01**: Admin can create and update a **live session** document (title, scheduling/status fields, and linkage fields for Mux playback/stream IDs as determined in planning).
-- [ ] **SESS-02**: Only users with **admin** (or explicitly configured) role can create/update/delete live session documents via API and admin UI.
-- [ ] **SESS-03**: Public can read **non-sensitive** session fields needed for the watch page (e.g. title, status, playback identifier) per access rules; secrets (e.g. RTMP stream keys) are not exposed to public read.
+- [ ] **CMS-01**: Collection hoặc cấu trúc Payload lưu phiên livestream (tối thiểu: `callId`, `callType`, tiêu đề, trạng thái, slug/route công khai)
+- [ ] **CMS-02**: Access control: chỉ admin (hoặc role tương đương) tạo/sửa phiên; đọc công khai theo quy tắc đã chốt cho trang xem
 
-### Admin experience
+### Admin
 
-- [ ] **ADM-01**: There is an **admin-facing** flow to create/manage a live session (Payload admin and/or a dedicated Next route restricted to admins — implementation choice in PLAN).
-- [ ] **ADM-02**: Admin can distinguish session states relevant to going live and ending (e.g. draft / live / ended — exact enum in PLAN).
+- [ ] **ADM-01**: Trong Payload Admin, operator xem được danh sách phiên và trạng thái (live / scheduled / ended hoặc tương đương)
+- [ ] **ADM-02**: Operator có thể mở liên kết tới trang xem / thông tin cần để vận hành (ít nhất copy URL hoặc mở tab)
 
-### Viewer experience
+### Frontend — broadcaster (admin-only)
 
-- [ ] **VIEW-01**: A **public watch page** loads the session by stable identifier (slug or id) and renders Mux-backed **live-appropriate** playback (implementation must match confirmed Mux Live vs VOD approach).
-- [ ] **VIEW-02**: When **concurrent viewers** reach **50**, additional viewers are **refused or waitlisted** with a clear message (exact UX in PLAN; count definition documented).
+- [ ] **BRD-01**: Route hoặc luồng trên site cho phép **chỉ admin** tạo/bắt đầu phiên livestream (join với quyền publish)
+- [ ] **BRD-02**: Guard rõ ràng (middleware / server check role) — user thường không vào được
 
-### Engagement
+### Frontend — viewer
 
-- [ ] **ENG-01**: Authenticated or anonymous users (per decision in `/gsd-discuss-phase`) can **post comments** tied to a live session; comments appear to other participants within acceptable latency (target: near-realtime).
-- [ ] **ENG-02**: Users can send **heart / reaction** events during the session; other clients see reactions (minimal viable: burst counter or feed — detail in PLAN).
+- [ ] **VIEW-01**: Trang công khai cho phép người xem join call dạng `livestream` và hiển thị UI viewer (ví dụ `LivestreamLayout` hoặc tương đương)
+- [ ] **VIEW-02**: Trạng thái UX khi chưa live / đã kết thúc (không chỉ màn hình lỗi thô)
 
-## v2 Requirements
+## v2 Requirements (deferred)
 
-### Moderation & quality
-
-- **MOD-01**: Slow mode, keyword filter, or admin delete for live comments.  
-- **MOD-02**: Optional replay / on-demand recording surfaced from Mux asset post-session.
-
-### Scale
-
-- **SCA-01**: Raise concurrent viewer cap beyond 50 with infrastructure justification.
+- **REC-01**: Ghi hình / playback VOD sau live
+- **CHAT-01**: Tích hợp Stream Chat bên cạnh video
+- **NONADMIN-01**: User không phải admin được phép tạo phiên (policy + moderation)
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Native mobile apps | Web-first v1 |
-| Paid tickets / DRM | Not requested |
-| Multi-host layouts (Zoom-style) | Complexity |
+| Mobile native app | Web-first |
+| Self-hosted media SFU | Dùng Stream Cloud |
+| Tự host token signing không qua Stream SDK | Dùng SDK chuẩn |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MUX-01 | Phase 1 | Pending |
-| MUX-02 | Phase 1 | Pending |
-| SESS-01 | Phase 2 | Pending |
-| SESS-02 | Phase 2 | Pending |
-| SESS-03 | Phase 2 | Pending |
+| STRM-01 | Phase 1 | Pending |
+| STRM-02 | Phase 1 | Pending |
+| STRM-03 | Phase 1 | Pending |
+| CMS-01 | Phase 2 | Pending |
+| CMS-02 | Phase 2 | Pending |
 | ADM-01 | Phase 3 | Pending |
 | ADM-02 | Phase 3 | Pending |
-| VIEW-01 | Phase 4 | Pending |
-| VIEW-02 | Phase 4 | Pending |
-| ENG-01 | Phase 5 | Pending |
-| ENG-02 | Phase 5 | Pending |
+| BRD-01 | Phase 4 | Pending |
+| BRD-02 | Phase 4 | Pending |
+| VIEW-01 | Phase 5 | Pending |
+| VIEW-02 | Phase 5 | Pending |
 
-**Coverage:**  
+**Coverage:**
+
 - v1 requirements: 11 total  
 - Mapped to phases: 11  
 - Unmapped: 0 ✓
 
 ---
-*Requirements defined: 2026-04-19*  
-*Last updated: 2026-04-19 after GSD new-project*
+*Requirements defined: 2026-04-19*

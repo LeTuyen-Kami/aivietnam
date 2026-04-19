@@ -1,25 +1,28 @@
-# Features Research
+# Features Research — Stream livestream on CMS site
 
-**Domain:** Livestream product surface  
 **Researched:** 2026-04-19
 
-## Table Stakes (v1 expectation)
+## Table stakes (expected)
 
-- **Admin**: Create a named live session; see status (scheduled / live / ended); obtain or link ingest/playback info from Mux.
-- **Viewer**: Open a stable watch URL; see video; know when room is full (50).
-- **Engagement**: Post short comments; send heart/reaction events visible to others in-session.
+- **Server-minted tokens** — Viewer và broadcaster đều cần JWT từ backend
+- **Call types** — `livestream` cho một-nhiều broadcast ([watching a livestream](https://getstream.io/video/docs/react/ui-cookbook/watching-a-livestream))
+- **Join semantics** — Host: `call.join({ create: true })`; viewer: `call.join()` sau khi có quyền
+- **Admin operational visibility** — Danh sách phiên, trạng thái (live/ended), link xem
 
-## Differentiators (optional v1+)
+## Differentiators (optional later)
 
-- Replay / highlight clip after session (Mux asset archival) — defer if not requested.
-- Moderation queue for comments — consider if public abuse risk is high.
+- Recording, RTMP ingress, simulcast
+- Moderation dashboard (Stream Moderation product — separate)
 
-## Anti-Features / Defer
+## Anti-features / defer
 
-- Unlimited concurrent viewers — explicitly out of scope (cap 50).
-- Multi-language live UI — defer unless required.
+- Public “anyone goes live” without review — explicitly out for v1 (admin-only create)
 
-## Dependencies Between Features
+## Complexity notes
 
-- Viewer cap enforcement **depends on** a consistent definition of “viewer” (tab open? playing? heartbeat?).
-- Realtime comments **depends on** transport choice (polling MVP vs WebSocket).
+| Area | Complexity |
+|------|------------|
+| Token API + auth | Medium |
+| Payload collection for sessions | Low–medium |
+| Payload Admin custom UI | Medium |
+| Viewer page + layout | Medium (SDK handles most UI) |

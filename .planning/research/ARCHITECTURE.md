@@ -1,38 +1,26 @@
-# Architecture Research
+# Architecture Research — Stream + Payload
 
-**Domain:** Livestream + Payload + Next.js  
 **Researched:** 2026-04-19
 
 ## Components
 
-1. **Payload CMS**  
-   - Plugin `mux-video`: `mux-video` collection, webhook handler for asset lifecycle.  
-   - **New** `live-sessions` (or similar) collection: title, slug, status, `muxLiveStreamId` / `playbackId` fields (exact shape after Mux Live vs VOD decision), admin-only `create/update`.
+1. **Stream Cloud** — Real-time call state, media routing (managed by Stream)
+2. **Next.js server** — `route.ts` handlers: issue token, optionally create/update call metadata; `overrideAccess` discipline when using Local API with user
+3. **PostgreSQL / Payload** — System of record for “session” entity: title, slug/route, `callId`, status, visibility, scheduled time
+4. **Payload Admin** — CRUD + custom view for operators
+5. **Frontend** — Admin-only “create/go live” flow; public “watch” page with `LivestreamLayout`
 
-2. **Next.js**  
-   - **Admin route**: `/admin/...` is Payload; optional **frontend** route e.g. `/live/admin/[...]` with server check `user.roles` OR rely on Payload admin for session CRUD only — product decision.  
-   - **Public route**: `/live/[slug]` (or `/stream/[id]`) — Server Component loads session + passes playback to client `MuxPlayer`.
+## Data flow
 
-3. **Mux**  
-   - **VOD path** (plugin-native): upload → asset → playback IDs.  
-   - **Live path**: create Live Stream via Mux API → RTMP URL for OBS → **live playback ID** for `MuxPlayer` `playbackId` — likely **custom endpoint** or hook, not only plugin defaults.
+```
+Admin → Frontend (authenticated) → API → Payload (persist session) + Stream (create/join call)
+Viewer → Public page → API (token) → StreamVideoClient → join as viewer
+```
 
-4. **Realtime layer**  
-   - Comments + hearts: small audience (≤50) — WebSocket or managed realtime channel keyed by `sessionId`.  
-   - Avoid duplicating Payload `find` on every keystroke; use append-only messages with optional persistence collection `live-comments`.
+## Suggested build order
 
-## Data Flow
-
-1. Admin creates `live-sessions` doc → backend ensures Mux live stream resource exists → stores IDs on doc.  
-2. Broadcaster pushes RTMP to Mux ingest URL.  
-3. Viewers load page → player subscribes to HLS/live stream → parallel connection to realtime room for comments/hearts.  
-4. Viewer slot: on connect increment; on disconnect/timeout decrement; reject at 50.
-
-## Suggested Build Order
-
-1. Plugin + env + webhook smoke test  
-2. Session collection + access control  
-3. Mux Live integration slice (prove playback in browser)  
-4. Admin UI for session lifecycle  
-5. Public watch page + cap  
-6. Comments + reactions
+1. Env + server SDK + token endpoint (no UI)
+2. Payload collection + types
+3. Admin management surfaces
+4. Broadcaster UI (admin route)
+5. Viewer page + SEO/meta basics
