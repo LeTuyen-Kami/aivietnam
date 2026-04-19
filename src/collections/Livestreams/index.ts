@@ -1,13 +1,22 @@
 import type { CollectionConfig } from 'payload'
+import type { RowField } from 'payload'
 import { slugField } from 'payload'
 
 import { isUsersCollectionAdmin } from '@/access/isAdminUser'
 import { slugifyTitle } from '@/utilities/slugify'
+import { getLivestreamViewerAbsoluteUrl } from '@/utilities/livestreamViewerUrl'
 
 export const Livestreams: CollectionConfig<'livestreams'> = {
   slug: 'livestreams',
+  defaultSort: '-updatedAt',
   admin: {
-    defaultColumns: ['title', 'slug', 'status', 'updatedAt'],
+    defaultColumns: ['title', 'slug', 'status', 'scheduledAt', 'updatedAt'],
+    livePreview: {
+      url: ({ data }) =>
+        getLivestreamViewerAbsoluteUrl(data?.slug as string | undefined) ?? '',
+    },
+    preview: (data) =>
+      getLivestreamViewerAbsoluteUrl(data?.slug as string | undefined) ?? '',
     useAsTitle: 'title',
   },
   access: {
@@ -28,6 +37,20 @@ export const Livestreams: CollectionConfig<'livestreams'> = {
     },
     slugField({
       slugify: ({ valueToSlugify }) => slugifyTitle(valueToSlugify),
+      overrides: (field: RowField) => {
+        const slugText = field.fields[1]
+        if (slugText && 'admin' in slugText && slugText.admin) {
+          const prev = slugText.admin.components
+          slugText.admin = {
+            ...slugText.admin,
+            components: {
+              ...(prev as Record<string, unknown>),
+              Cell: '@/components/Livestreams/LivestreamSlugActionsCell#LivestreamSlugActionsCell',
+            },
+          }
+        }
+        return field
+      },
     }),
     {
       name: 'status',
@@ -39,6 +62,20 @@ export const Livestreams: CollectionConfig<'livestreams'> = {
         { label: 'Live', value: 'live' },
         { label: 'Ended', value: 'ended' },
       ],
+      admin: {
+        components: {
+          Cell: '@/components/Livestreams/LivestreamStatusCell#LivestreamStatusCell',
+        },
+      },
+    },
+    {
+      name: 'viewerOps',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '@/components/Livestreams/LivestreamViewerLinksField#LivestreamViewerLinksField',
+        },
+      },
     },
     {
       name: 'callId',
