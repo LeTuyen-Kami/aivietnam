@@ -54,7 +54,7 @@ Plans:
 
 **UI hint**: no
 
-**Plans:** 2 / 2 complete
+**Plans:** 3 / 3 complete
 
 Plans:
 
@@ -107,7 +107,7 @@ Plans:
 
 - [x] 04-01-PLAN.md — Admin guard/middleware, broadcaster token + start/end orchestration, blocking payload migrate
 - [x] 04-02-PLAN.md — Broadcaster route/UI integration, tokenProvider lifecycle, admin deep-link utility/component
-- [ ] 04-03-PLAN.md — Gap closure for `NEXT_PUBLIC_STREAM_API_KEY` runtime contract, early validation, and regression tests
+- [x] 04-03-PLAN.md — Gap closure for `NEXT_PUBLIC_STREAM_API_KEY` runtime contract, early validation, and regression tests
 
 ---
 

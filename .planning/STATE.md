@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to execute
-last_updated: "2026-04-19T17:07:13.068Z"
+status: Completed Plan 04-03
+last_updated: "2026-04-20T00:17:00.000Z"
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 8
-  completed_plans: 7
-  percent: 88
+  total_plans: 9
+  completed_plans: 8
+  percent: 89
 ---
 
 # State
@@ -20,7 +20,7 @@ progress:
 ## Current focus
 
 - **Phase:** 4
-- **Plan:** 04-02 completed
+- **Plan:** 04-03 completed
 
 ## Project Reference
 
@@ -32,7 +32,8 @@ See: `.planning/PROJECT.md` (updated 2026-04-19)
 
 - Brownfield: `.planning/codebase/` đã có bản đồ stack/architecture.
 - `gsd-sdk` CLI có thể chưa có trong PATH; dùng `node .cursor/get-shit-done/bin/gsd-tools.cjs` cho commit/config nếu cần.
-- Completed plans: `04-01-PLAN.md`, `04-02-PLAN.md`.
+- Completed plans: `04-01-PLAN.md`, `04-02-PLAN.md`, `04-03-PLAN.md`.
 - Decision: Middleware provides UX gate; server route handlers remain authoritative for admin enforcement.
 - Decision: `status=live` is written only after explicit publisher join confirmation check.
 - Decision: Broadcaster UI uses Stream `tokenProvider` with server-controlled start/end APIs.
+- Decision: Broadcaster public env contract is centralized in `publicClientEnv` helper for deterministic setup failures.
