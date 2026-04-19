@@ -23,8 +23,8 @@
 
 ### Frontend — broadcaster (admin-only)
 
-- [ ] **BRD-01**: Route hoặc luồng trên site cho phép **chỉ admin** tạo/bắt đầu phiên livestream (join với quyền publish)
-- [ ] **BRD-02**: Guard rõ ràng (middleware / server check role) — user thường không vào được
+- [x] **BRD-01**: Route hoặc luồng trên site cho phép **chỉ admin** tạo/bắt đầu phiên livestream (join với quyền publish)
+- [x] **BRD-02**: Guard rõ ràng (middleware / server check role) — user thường không vào được
 
 ### Frontend — viewer
 
@@ -56,8 +56,8 @@
 | CMS-02 | Phase 2 | Done |
 | ADM-01 | Phase 3 | Complete |
 | ADM-02 | Phase 3 | Complete |
-| BRD-01 | Phase 4 | Pending |
-| BRD-02 | Phase 4 | Pending |
+| BRD-01 | Phase 4 | Complete |
+| BRD-02 | Phase 4 | Complete |
 | VIEW-01 | Phase 5 | Pending |
 | VIEW-02 | Phase 5 | Pending |
 

@@ -101,12 +101,12 @@ Plans:
 
 **UI hint**: yes
 
-**Plans:** TBD
+**Plans:** 1 / 2 complete
 
 Plans:
 
-- [ ] 04-01: Route guard + server actions/API
-- [ ] 04-02: UI broadcaster (Stream Video React)
+- [x] 04-01-PLAN.md — Admin guard/middleware, broadcaster token + start/end orchestration, blocking payload migrate
+- [ ] 04-02-PLAN.md — Broadcaster route/UI integration, tokenProvider lifecycle, admin deep-link utility/component
 
 ---
 
