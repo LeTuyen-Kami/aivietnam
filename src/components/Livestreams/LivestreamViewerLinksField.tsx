@@ -1,12 +1,12 @@
 'use client'
 
-import { useFormFields } from '@payloadcms/ui'
+import { useField } from '@payloadcms/ui'
 import { useCallback, useState } from 'react'
 
 import { getLivestreamViewerAbsoluteUrl } from '@/utilities/livestreamViewerUrl'
 
 export function LivestreamViewerLinksField() {
-  const slug = useFormFields(([fields]) => fields.slug?.value as string | undefined)
+  const { value: slug } = useField<string>({ path: 'slug' })
   const absoluteUrl = getLivestreamViewerAbsoluteUrl(slug)
   const [copied, setCopied] = useState(false)
 
