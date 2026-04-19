@@ -75,6 +75,7 @@ export interface Config {
     users: User;
     'comment-moderation-rules': CommentModerationRule;
     comments: Comment;
+    'comment-likes': CommentLike;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -100,6 +101,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     'comment-moderation-rules': CommentModerationRulesSelect<false> | CommentModerationRulesSelect<true>;
     comments: CommentsSelect<false> | CommentsSelect<true>;
+    'comment-likes': CommentLikesSelect<false> | CommentLikesSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -209,6 +211,10 @@ export interface Page {
             newTab?: boolean | null;
             reference?:
               | ({
+                  relationTo: 'categories';
+                  value: number | Category;
+                } | null)
+              | ({
                   relationTo: 'pages';
                   value: number | Page;
                 } | null)
@@ -237,6 +243,7 @@ export interface Page {
     | FormBlock
     | FeaturedPostsSideMediaBlock
     | PortalSplitLayoutBlock
+    | HumanitiesCornerBlock
     | MediaHubTriptychBlock
     | NewsletterSignupBlock
   )[];
@@ -257,6 +264,30 @@ export interface Page {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: number;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  parent?: (number | null) | Category;
+  breadcrumbs?:
+    | {
+        doc?: (number | null) | Category;
+        url?: string | null;
+        label?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -449,30 +480,6 @@ export interface FolderInterface {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "categories".
- */
-export interface Category {
-  id: number;
-  title: string;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
-  slug: string;
-  parent?: (number | null) | Category;
-  breadcrumbs?:
-    | {
-        doc?: (number | null) | Category;
-        url?: string | null;
-        label?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
@@ -529,6 +536,10 @@ export interface CallToActionBlock {
           newTab?: boolean | null;
           reference?:
             | ({
+                relationTo: 'categories';
+                value: number | Category;
+              } | null)
+            | ({
                 relationTo: 'pages';
                 value: number | Page;
               } | null)
@@ -578,6 +589,10 @@ export interface ContentBlock {
           type?: ('reference' | 'custom') | null;
           newTab?: boolean | null;
           reference?:
+            | ({
+                relationTo: 'categories';
+                value: number | Category;
+              } | null)
             | ({
                 relationTo: 'pages';
                 value: number | Page;
@@ -1001,6 +1016,38 @@ export interface PortalSplitLayoutBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HumanitiesCornerBlock".
+ */
+export interface HumanitiesCornerBlock {
+  /**
+   * Image for the left column (vertical banner).
+   */
+  bannerImage: number | Media;
+  /**
+   * Optional heading above the list (centered), e.g. section name.
+   */
+  listTitle?: string | null;
+  items?:
+    | {
+        itemType?: ('post' | 'manual') | null;
+        /**
+         * Title and URL are taken from the post.
+         */
+        post?: (number | null) | Post;
+        title?: string | null;
+        /**
+         * Internal path (e.g. /posts/my-slug) or full URL.
+         */
+        href?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'humanitiesCorner';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "MediaHubTriptychBlock".
  */
 export interface MediaHubTriptychBlock {
@@ -1134,6 +1181,10 @@ export interface Comment {
   author: number | User;
   body: string;
   /**
+   * Cập nhật tự động khi thành viên thích bình luận.
+   */
+  likeCount?: number | null;
+  /**
    * Thành viên: tự động approved nếu qua blacklist, rejected nếu khớp từ khóa cấm. Pending chỉ dùng khi admin đặt tay.
    */
   status: 'pending' | 'approved' | 'rejected';
@@ -1141,6 +1192,17 @@ export interface Comment {
    * Điền tự động khi nội dung khớp blacklist.
    */
   rejectionReason?: 'blocked_keyword' | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comment-likes".
+ */
+export interface CommentLike {
+  id: number;
+  comment: number | Comment;
+  user: number | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -1468,6 +1530,10 @@ export interface PayloadLockedDocument {
         value: number | Comment;
       } | null)
     | ({
+        relationTo: 'comment-likes';
+        value: number | CommentLike;
+      } | null)
+    | ({
         relationTo: 'redirects';
         value: number | Redirect;
       } | null)
@@ -1582,6 +1648,7 @@ export interface PagesSelect<T extends boolean = true> {
         formBlock?: T | FormBlockSelect<T>;
         featuredPostsSideMedia?: T | FeaturedPostsSideMediaBlockSelect<T>;
         portalSplitLayout?: T | PortalSplitLayoutBlockSelect<T>;
+        humanitiesCorner?: T | HumanitiesCornerBlockSelect<T>;
         mediaHubTriptych?: T | MediaHubTriptychBlockSelect<T>;
         newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
       };
@@ -1764,6 +1831,25 @@ export interface PortalSplitLayoutBlockSelect<T extends boolean = true> {
         featuredPost?: T;
         subPosts?: T;
         footerPosts?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HumanitiesCornerBlock_select".
+ */
+export interface HumanitiesCornerBlockSelect<T extends boolean = true> {
+  bannerImage?: T;
+  listTitle?: T;
+  items?:
+    | T
+    | {
+        itemType?: T;
+        post?: T;
+        title?: T;
+        href?: T;
         id?: T;
       };
   id?: T;
@@ -2046,8 +2132,19 @@ export interface CommentsSelect<T extends boolean = true> {
   post?: T;
   author?: T;
   body?: T;
+  likeCount?: T;
   status?: T;
   rejectionReason?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comment-likes_select".
+ */
+export interface CommentLikesSelect<T extends boolean = true> {
+  comment?: T;
+  user?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2409,6 +2506,10 @@ export interface Header {
           newTab?: boolean | null;
           reference?:
             | ({
+                relationTo: 'categories';
+                value: number | Category;
+              } | null)
+            | ({
                 relationTo: 'pages';
                 value: number | Page;
               } | null)
@@ -2440,6 +2541,10 @@ export interface Footer {
                 type?: ('reference' | 'custom') | null;
                 newTab?: boolean | null;
                 reference?:
+                  | ({
+                      relationTo: 'categories';
+                      value: number | Category;
+                    } | null)
                   | ({
                       relationTo: 'pages';
                       value: number | Page;
@@ -2482,6 +2587,10 @@ export interface Footer {
           type?: ('reference' | 'custom') | null;
           newTab?: boolean | null;
           reference?:
+            | ({
+                relationTo: 'categories';
+                value: number | Category;
+              } | null)
             | ({
                 relationTo: 'pages';
                 value: number | Page;

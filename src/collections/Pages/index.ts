@@ -11,9 +11,12 @@ import { MediaBlock } from '../../blocks/MediaBlock/config'
 import { FeaturedPostsSideMedia } from '../../blocks/FeaturedPostsSideMedia/config'
 import { MediaHubTriptych } from '../../blocks/MediaHubTriptych/config'
 import { NewsletterSignup } from '../../blocks/NewsletterSignup/config'
+import { HumanitiesCorner } from '../../blocks/HumanitiesCorner/config'
 import { PortalSplitLayout } from '../../blocks/PortalSplitLayout/config'
 import { hero } from '@/heros/config'
 import { slugField } from 'payload'
+
+import { slugifyTitle } from '../../utilities/slugify'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { revalidateDelete, revalidatePage } from './hooks/revalidatePage'
@@ -86,6 +89,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 FormBlock,
                 FeaturedPostsSideMedia,
                 PortalSplitLayout,
+                HumanitiesCorner,
                 MediaHubTriptych,
                 NewsletterSignup,
               ],
@@ -133,7 +137,9 @@ export const Pages: CollectionConfig<'pages'> = {
         position: 'sidebar',
       },
     },
-    slugField(),
+    slugField({
+      slugify: ({ valueToSlugify }) => slugifyTitle(valueToSlugify),
+    }),
   ],
   hooks: {
     afterChange: [revalidatePage],

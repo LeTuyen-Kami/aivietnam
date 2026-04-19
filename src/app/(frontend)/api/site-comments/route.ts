@@ -9,7 +9,7 @@ import { isUsersCollectionAdmin } from '@/access/isAdminUser'
 import { getSiteMemberUser } from '@/access/siteMemberUser'
 import type { Where } from 'payload'
 
-function serializeComment(c: Comment) {
+function serializeComment(c: Comment, likedByMe: boolean) {
   const author =
     typeof c.author === 'object' && c.author !== null
       ? { id: (c.author as User).id, name: (c.author as User).name ?? null }
@@ -20,6 +20,8 @@ function serializeComment(c: Comment) {
     status: c.status,
     createdAt: c.createdAt,
     author,
+    likeCount: c.likeCount ?? 0,
+    likedByMe,
   }
 }
 
@@ -35,9 +37,15 @@ export async function GET(req: NextRequest) {
 
   const pageParam = req.nextUrl.searchParams.get('page')
   const limitParam = req.nextUrl.searchParams.get('limit')
+  const sortParam = req.nextUrl.searchParams.get('sort')
   const page = Math.max(1, pageParam ? Number(pageParam) || 1 : 1)
   const limitRaw = limitParam ? Number(limitParam) : DEFAULT_PAGE_SIZE
   const limit = Math.min(MAX_PAGE_SIZE, Math.max(1, Number.isFinite(limitRaw) ? limitRaw : DEFAULT_PAGE_SIZE))
+
+  const sort =
+    sortParam === 'popular'
+      ? ('-likeCount,-createdAt' as const)
+      : ('-createdAt' as const)
 
   const payload = await getPayload({ config })
   const requestHeaders = await headers()
@@ -62,7 +70,7 @@ export async function GET(req: NextRequest) {
       collection: 'comments',
       where: listWhere,
       depth: 1,
-      sort: '-createdAt',
+      sort,
       limit,
       page,
       overrideAccess: true,
@@ -80,8 +88,30 @@ export async function GET(req: NextRequest) {
 
   const { docs, totalDocs, totalPages, hasNextPage, hasPrevPage } = pageResult
 
+  const member = getSiteMemberUser(user)
+  const ids = docs.map((c) => c.id)
+  let likedIds = new Set<number>()
+  if (member && ids.length > 0) {
+    const likes = await payload.find({
+      collection: 'comment-likes',
+      where: {
+        and: [{ comment: { in: ids } }, { user: { equals: member.id } }],
+      },
+      limit: Math.max(ids.length, limit),
+      depth: 0,
+      overrideAccess: true,
+    })
+    likedIds = new Set(
+      likes.docs.map((row) => {
+        const cid = row.comment
+        return typeof cid === 'object' && cid !== null ? (cid as { id: number }).id : (cid as number)
+      }),
+    )
+  }
+
   return NextResponse.json({
-    docs: docs.map((c) => serializeComment(c as Comment)),
+    sort: sortParam === 'popular' ? 'popular' : 'newest',
+    docs: docs.map((c) => serializeComment(c as Comment, likedIds.has(c.id))),
     totalDocs,
     page,
     limit,
@@ -144,7 +174,9 @@ export async function POST(req: NextRequest) {
       depth: 1,
     })
 
-    return NextResponse.json({ doc: serializeComment(doc as Comment) })
+    return NextResponse.json({
+      doc: serializeComment(doc as Comment, false),
+    })
   } catch (e) {
     if (e instanceof APIError) {
       return NextResponse.json({ error: e.message }, { status: e.status })

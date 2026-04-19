@@ -5,6 +5,7 @@ import { authenticatedSiteMember } from '../../access/authenticatedSiteMember'
 import { isUsersCollectionAdmin } from '../../access/isAdminUser'
 import { getSiteMemberUser } from '../../access/siteMemberUser'
 import { applyCommentModeration } from './hooks/applyCommentModeration'
+import { deleteRelatedCommentLikes } from './hooks/deleteRelatedCommentLikes'
 import { forceCommentAuthor } from './hooks/forceCommentAuthor'
 
 export const Comments: CollectionConfig = {
@@ -71,6 +72,16 @@ export const Comments: CollectionConfig = {
       maxLength: 4000,
     },
     {
+      name: 'likeCount',
+      type: 'number',
+      defaultValue: 0,
+      admin: {
+        readOnly: true,
+        description: 'Cập nhật tự động khi thành viên thích bình luận.',
+      },
+      index: true,
+    },
+    {
       name: 'status',
       type: 'select',
       required: true,
@@ -101,6 +112,7 @@ export const Comments: CollectionConfig = {
   ],
   hooks: {
     beforeChange: [forceCommentAuthor, applyCommentModeration],
+    beforeDelete: [deleteRelatedCommentLikes],
   },
   timestamps: true,
 }

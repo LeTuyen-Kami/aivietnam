@@ -4,6 +4,8 @@ import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
 import { slugField } from 'payload'
 
+import { slugifyTitle } from '../utilities/slugify'
+
 export const Categories: CollectionConfig = {
   slug: 'categories',
   access: {
@@ -23,6 +25,7 @@ export const Categories: CollectionConfig = {
     },
     slugField({
       position: undefined,
+      slugify: ({ valueToSlugify }) => slugifyTitle(valueToSlugify),
     }),
   ],
 }

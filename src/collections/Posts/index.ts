@@ -36,6 +36,8 @@ import {
 } from '@payloadcms/plugin-seo/fields'
 import { slugField } from 'payload'
 
+import { slugifyTitle } from '../../utilities/slugify'
+
 export const Posts: CollectionConfig<'posts'> = {
   slug: 'posts',
   access: {
@@ -310,7 +312,9 @@ export const Posts: CollectionConfig<'posts'> = {
         readOnly: true,
       },
     },
-    slugField(),
+    slugField({
+      slugify: ({ valueToSlugify }) => slugifyTitle(valueToSlugify),
+    }),
   ],
   hooks: {
     afterChange: [revalidatePost],

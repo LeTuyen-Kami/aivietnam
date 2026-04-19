@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url'
 
 import { Categories } from './collections/Categories'
 import { CommentModerationRules } from './collections/CommentModerationRules'
+import { CommentLikes } from './collections/CommentLikes'
 import { Comments } from './collections/Comments'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
@@ -69,7 +70,16 @@ export default buildConfig({
       connectionString: process.env.DATABASE_URL || '',
     },
   }),
-  collections: [Pages, Posts, Media, Categories, Users, CommentModerationRules, Comments],
+  collections: [
+    Pages,
+    Posts,
+    Media,
+    Categories,
+    Users,
+    CommentModerationRules,
+    Comments,
+    CommentLikes,
+  ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer, GeneralSettings],
   plugins,

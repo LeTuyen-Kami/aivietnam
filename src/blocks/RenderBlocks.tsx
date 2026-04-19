@@ -8,6 +8,7 @@ import { ContentBlock } from '@/blocks/Content/Component'
 import { FeaturedPostsSideMediaBlockComponentAsync } from '@/blocks/FeaturedPostsSideMedia/Component'
 import { MediaHubTriptychBlockComponent } from '@/blocks/MediaHubTriptych/Component'
 import { NewsletterSignupBlock } from '@/blocks/NewsletterSignup/Component'
+import { HumanitiesCornerBlockComponent } from '@/blocks/HumanitiesCorner/Component'
 import { PortalSplitLayoutBlockAsync } from '@/blocks/PortalSplitLayout/Component'
 import { FormBlock } from '@/blocks/Form/Component'
 import { EnhancedMediaBlock } from '@/blocks/EnhancedMediaBlock/Component'
@@ -20,6 +21,7 @@ const blockComponents = {
   formBlock: FormBlock,
   featuredPostsSideMedia: FeaturedPostsSideMediaBlockComponentAsync,
   portalSplitLayout: PortalSplitLayoutBlockAsync,
+  humanitiesCorner: HumanitiesCornerBlockComponent,
   mediaHubTriptych: MediaHubTriptychBlockComponent,
   newsletterSignup: NewsletterSignupBlock,
   mediaBlock: MediaBlock,

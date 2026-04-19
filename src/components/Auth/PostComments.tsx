@@ -5,6 +5,8 @@ import React, { useEffect, useRef, useState } from 'react'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 
+import { Heart } from 'lucide-react'
+
 import { useAuth } from '@/providers/Auth'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -20,6 +22,8 @@ type CommentDoc = {
   status: string
   createdAt: string
   author: { id: number; name: string | null } | null
+  likeCount: number
+  likedByMe: boolean
 }
 
 type CommentsPage = {
@@ -32,13 +36,20 @@ type CommentsPage = {
 
 const PAGE_SIZE = 5
 
+export type CommentSort = 'newest' | 'popular'
+
 const commentsQueryKey = (postId: number) => ['site-comments', postId] as const
 
-async function fetchCommentsPage(postId: number, page: number): Promise<CommentsPage> {
+async function fetchCommentsPage(
+  postId: number,
+  page: number,
+  sort: CommentSort,
+): Promise<CommentsPage> {
   const params = new URLSearchParams({
     postId: String(postId),
     page: String(page),
     limit: String(PAGE_SIZE),
+    sort: sort === 'popular' ? 'popular' : 'newest',
   })
   const res = await fetch(`/api/site-comments?${params}`, { credentials: 'include' })
   if (!res.ok) {
@@ -52,7 +63,14 @@ async function fetchCommentsPage(postId: number, page: number): Promise<Comments
     hasPrevPage?: boolean
   }
   return {
-    docs: data.docs ?? [],
+    docs: (data.docs ?? []).map((row) => {
+      const d = row as CommentDoc
+      return {
+        ...d,
+        likeCount: typeof d.likeCount === 'number' ? d.likeCount : 0,
+        likedByMe: Boolean(d.likedByMe),
+      }
+    }),
     approvedCount: typeof data.approvedCount === 'number' ? data.approvedCount : 0,
     totalPages: Math.max(1, data.totalPages ?? 1),
     hasNextPage: Boolean(data.hasNextPage),
@@ -100,16 +118,19 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
   const [body, setBody] = useState('')
   const [message, setMessage] = useState<string | null>(null)
   const [page, setPage] = useState(1)
+  const [sort, setSort] = useState<CommentSort>('newest')
   const [highlightId, setHighlightId] = useState<number | null>(null)
 
   const { data, isPending, isFetching, isPlaceholderData, isError, error } = useQuery({
-    queryKey: [...commentsQueryKey(postId), page],
-    queryFn: () => fetchCommentsPage(postId, page),
+    queryKey: [...commentsQueryKey(postId), sort, page],
+    queryFn: () => fetchCommentsPage(postId, page, sort),
     placeholderData: keepPreviousData,
   })
 
   useEffect(() => {
     listIntroDoneRef.current = false
+    setSort('newest')
+    setPage(1)
   }, [postId])
 
   useEffect(() => {
@@ -145,8 +166,48 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
       if (payload.doc?.id != null) {
         setHighlightId(payload.doc.id)
       }
+      setSort('newest')
       setPage(1)
       void queryClient.invalidateQueries({ queryKey: commentsQueryKey(postId) })
+    },
+  })
+
+  const likeMutation = useMutation({
+    mutationFn: async (commentId: number) => {
+      const res = await fetch('/api/site-comments/like', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ commentId }),
+      })
+      const payload = (await res.json().catch(() => ({}))) as {
+        error?: string
+        liked?: boolean
+        likeCount?: number
+      }
+      if (!res.ok) {
+        throw new Error(payload.error ?? 'Không cập nhật được thích')
+      }
+      return {
+        liked: Boolean(payload.liked),
+        likeCount: typeof payload.likeCount === 'number' ? payload.likeCount : 0,
+      }
+    },
+    onSuccess: (result, commentId) => {
+      queryClient.setQueryData(
+        [...commentsQueryKey(postId), sort, page],
+        (old: CommentsPage | undefined) => {
+          if (!old) return old
+          return {
+            ...old,
+            docs: old.docs.map((row) =>
+              row.id === commentId
+                ? { ...row, likeCount: result.likeCount, likedByMe: result.liked }
+                : row,
+            ),
+          }
+        },
+      )
     },
   })
 
@@ -240,6 +301,44 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
       ) : null}
       {message ? <p className="mt-2 text-sm text-muted-foreground">{message}</p> : null}
 
+      {!isPending && !isError && approvedCount > 0 ? (
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <span className="text-xs text-muted-foreground">Sắp xếp:</span>
+          <Button
+            className={pressable}
+            size="sm"
+            type="button"
+            variant={sort === 'newest' ? 'default' : 'outline'}
+            onClick={() => {
+              setSort('newest')
+              setPage(1)
+            }}
+          >
+            Mới nhất
+          </Button>
+          <Button
+            className={pressable}
+            size="sm"
+            type="button"
+            variant={sort === 'popular' ? 'default' : 'outline'}
+            onClick={() => {
+              setSort('popular')
+              setPage(1)
+            }}
+          >
+            Quan tâm nhất
+          </Button>
+        </div>
+      ) : null}
+
+      {likeMutation.isError ? (
+        <p className="mt-2 text-sm text-destructive">
+          {likeMutation.error instanceof Error
+            ? likeMutation.error.message
+            : 'Không cập nhật được thích'}
+        </p>
+      ) : null}
+
       <div className="relative mt-6 min-h-12">
         <AnimatePresence mode="wait">
           {isPending ? (
@@ -290,7 +389,7 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
             </motion.p>
           ) : showCommentList ? (
             <motion.div
-              key="list"
+              key={`list-${sort}`}
               className="space-y-4"
               initial={reduceMotion || listIntroDoneRef.current ? false : { opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -315,7 +414,42 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
                     delay: index * 0.05,
                   }}
                 >
-                  <CommentBody c={c} />
+                  <div className="flex gap-3">
+                    <div className="min-w-0 flex-1">
+                      <CommentBody c={c} />
+                    </div>
+                    <div className="shrink-0 pt-0.5">
+                      <button
+                        type="button"
+                        className={cn(
+                          pressable,
+                          'inline-flex flex-col items-center gap-0.5 rounded-md px-1.5 py-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground',
+                          c.likedByMe && 'text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300',
+                        )}
+                        aria-label={c.likedByMe ? 'Bỏ thích bình luận' : 'Thích bình luận'}
+                        aria-pressed={c.likedByMe}
+                        disabled={likeMutation.isPending}
+                        onClick={() => {
+                          if (!user) {
+                            openAuthModal()
+                            return
+                          }
+                          likeMutation.mutate(c.id)
+                        }}
+                      >
+                        <Heart
+                          className={cn(
+                            'h-4 w-4 shrink-0',
+                            c.likedByMe && 'fill-current',
+                            likeMutation.isPending && 'opacity-60',
+                          )}
+                        />
+                        <span className="tabular-nums text-[11px] font-medium leading-none">
+                          {c.likeCount}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
                 </motion.article>
               ))}
             </motion.div>
