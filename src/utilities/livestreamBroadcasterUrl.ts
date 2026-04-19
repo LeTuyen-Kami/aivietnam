@@ -5,9 +5,11 @@ export function getLivestreamBroadcasterPath(slug: string | null | undefined): s
   return `/broadcaster/${encodeURIComponent(String(slug).trim())}`
 }
 
-export function getLivestreamBroadcasterAbsoluteUrl(slug: string | null | undefined): string | null {
+export function getLivestreamBroadcasterUrl(slug: string | null | undefined): string | null {
   const path = getLivestreamBroadcasterPath(slug)
   if (path == null) return null
   const base = getServerSideURL().replace(/\/$/, '')
   return `${base}${path}`
 }
+
+export const getLivestreamBroadcasterAbsoluteUrl = getLivestreamBroadcasterUrl

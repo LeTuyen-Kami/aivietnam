@@ -7,7 +7,6 @@ import {
   StreamVideo,
   StreamVideoClient,
   type Call,
-  type User,
 } from '@stream-io/video-react-sdk'
 import '@stream-io/video-react-sdk/dist/css/styles.css'
 
@@ -15,7 +14,10 @@ import type { Livestream } from '@/payload-types'
 
 type BroadcasterClientProps = {
   livestream: Pick<Livestream, 'id' | 'title' | 'callId' | 'callType' | 'status'>
-  streamUser: User
+  streamUser: {
+    id: string
+    name?: string
+  }
 }
 
 type StartResponse = {
@@ -70,7 +72,14 @@ export function BroadcasterClient({ livestream, streamUser }: BroadcasterClientP
 
     const setup = async () => {
       try {
-        const nextClient = new StreamVideoClient({ apiKey, user: streamUser, tokenProvider })
+        const nextClient = new StreamVideoClient({
+          apiKey,
+          user: {
+            ...streamUser,
+            type: 'authenticated',
+          },
+          tokenProvider,
+        })
         const nextCall = nextClient.call(callState.callType, callState.callId)
         await nextCall.join({ create: false })
 

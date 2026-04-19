@@ -57,7 +57,7 @@ export default async function BroadcasterPage({ params }: Args) {
         livestream={livestream}
         streamUser={{
           id: String(user.id),
-          name: [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || user.email,
+          name: user.email,
         }}
       />
     </main>

@@ -3,11 +3,11 @@
 import { useField } from '@payloadcms/ui'
 import { useCallback, useState } from 'react'
 
-import { getLivestreamBroadcasterAbsoluteUrl } from '@/utilities/livestreamBroadcasterUrl'
+import { getLivestreamBroadcasterUrl } from '@/utilities/livestreamBroadcasterUrl'
 
 export function LivestreamBroadcasterLinksField() {
   const { value: slug } = useField<string>({ path: 'slug' })
-  const absoluteUrl = getLivestreamBroadcasterAbsoluteUrl(slug)
+  const absoluteUrl = getLivestreamBroadcasterUrl(slug)
   const [copied, setCopied] = useState(false)
 
   const onCopy = useCallback(async () => {
@@ -48,7 +48,7 @@ export function LivestreamBroadcasterLinksField() {
               }}
               type="button"
             >
-              {copied ? 'Copied' : 'Copy URL'}
+              {copied ? 'Copied broadcaster URL' : 'Copy broadcaster URL'}
             </button>
           </div>
         </>
