@@ -5,80 +5,81 @@
 ## Languages
 
 **Primary:**
-- TypeScript 5.7.3 — Application code under `src/`, configs typed via `tsconfig.json`
+- TypeScript 5.7.3 — Application code in `src/`, tests, scripts; `tsconfig.json` targets ES2022, strict mode, `moduleResolution: bundler`.
 
 **Secondary:**
-- JavaScript — `next.config.js`, `redirects.js`, `next-sitemap.config.cjs`, PostCSS config
-- SCSS/CSS — Global styles in `src/app/(frontend)/globals.css` (Tailwind v4 pipeline)
+- JavaScript — Config and tooling: `next.config.js`, `redirects.js`, `postcss.config.js`, `next-sitemap.config.cjs`, ESLint flat config `eslint.config.mjs`.
 
 ## Runtime
 
 **Environment:**
-- Node.js — `^18.20.2 || >=20.9.0` per `package.json` `engines`
-- Next.js runs the app; `NODE_OPTIONS=--no-deprecation` set in npm scripts
+- Node.js — `package.json` `engines`: `^18.20.2 || >=20.9.0`.
 
 **Package Manager:**
-- pnpm — `^9 || ^10` per `package.json` `engines`
-- Lockfile: `pnpm-lock.yaml` present
-- **Note:** Some scripts invoke `bun run` for one-off tooling (`scripts/seed.ts`, `scripts/seed-footer.ts`, etc. in `package.json`); primary install and test commands use pnpm
+- pnpm — `engines` require `^9 || ^10`; lockfile `pnpm-lock.yaml` at repo root.
+- Bun — Used for some maintenance scripts only (`seed`, `seed:footer`, `seed:media`, `migrate:admin-roles` in `package.json` via `bun run`); not declared in `engines`.
 
 ## Frameworks
 
 **Core:**
-- Next.js 15.4.11 — App Router under `src/app/`; `next.config.js` wraps config with `withPayload` from `@payloadcms/next/withPayload`
-- React 19.2.1 — UI and Payload admin
-- Payload CMS 3.79.1 — Headless CMS, config in `src/payload.config.ts`
+- Next.js 15.4.11 — App Router (`src/app/`), API routes, `next dev --turbopack` (`package.json` `dev`).
+- React 19.2.1 — UI with Server Components by default; client components where `'use client'` is used.
+- Payload CMS 3.79.1 — Headless CMS and admin UI; config `src/payload.config.ts`; Next integration via `@payloadcms/next` and `withPayload` in `next.config.js`.
 
 **Testing:**
-- Vitest 4.0.18 — Integration tests in `tests/int/**/*.int.spec.ts`, config `vitest.config.mts`, setup `vitest.setup.ts`
-- Playwright 1.58.2 — E2E in `tests/e2e/`, config `playwright.config.ts` (uses `dotenv/config`, `pnpm dev` as web server)
-- Testing Library React 16.3.0 — Component testing support via Vitest/jsdom
+- Vitest 4.0.18 — Integration-style tests in `tests/int/`, config `vitest.config.mts`, `jsdom`, setup `vitest.setup.ts`.
+- Playwright 1.58.2 — E2E in `tests/e2e/`, config `playwright.config.ts` (Chromium project, optional `pnpm dev` webServer).
+- Testing Library — `@testing-library/react` for component tests with Vitest.
 
 **Build/Dev:**
-- TypeScript 5.7.3 — `tsconfig.json` (`strict`, `moduleResolution: bundler`, path aliases `@/*`, `@payload-config`)
-- Tailwind CSS 4.2.2 — `@tailwindcss/postcss` in `postcss.config.js`
-- tsx 4.21.0 — TypeScript execution for scripts and Playwright `NODE_OPTIONS`
-- next-sitemap 4.2.3 — Post-build sitemap (`postbuild` in `package.json`), config `next-sitemap.config.cjs`
+- TypeScript 5.7.3 — `noEmit` typecheck; Next handles compilation.
+- ESLint 9.x — `eslint.config.mjs`, extends `next/core-web-vitals` and `next/typescript`.
+- Prettier 3.x — `/.prettierrc.json` (single quotes, trailing commas, print width 100, no semicolons).
+- Tailwind CSS 4.2.x — `@tailwindcss/postcss`, `tailwind.config.mjs`, global styles `src/app/(frontend)/globals.css`.
+- PostCSS — `postcss.config.js` with Tailwind/Autoprefixer.
+- next-sitemap 4.x — Post-build sitemap (`postbuild` in `package.json`), `next-sitemap.config.cjs`.
+- tsx — Script execution and Playwright loader (`NODE_OPTIONS` in test scripts).
 
 ## Key Dependencies
 
 **Critical:**
-- `payload` 3.79.1 — CMS core; collections, globals, jobs config in `src/payload.config.ts`
-- `@payloadcms/db-postgres` 3.79.1 — PostgreSQL adapter (`postgresAdapter` in `src/payload.config.ts`)
-- `@payloadcms/next` 3.79.1 — Next.js integration and route handlers
-- `next` 15.4.11 — Framework and routing
-- `react` / `react-dom` 19.2.1 — UI layer
-- `sharp` 0.34.2 — Image processing (passed to Payload `buildConfig` in `src/payload.config.ts`)
-
-**Payload plugins & UI (representative):**
-- `@payloadcms/richtext-lexical`, `@payloadcms/plugin-seo`, `@payloadcms/plugin-redirects`, `@payloadcms/plugin-search`, `@payloadcms/plugin-form-builder`, `@payloadcms/plugin-nested-docs`, `@payloadcms/plugin-mcp`, `@payloadcms/live-preview-react` — Registered in `src/plugins/index.ts`
-- `@tanstack/react-query` ^5.x — Client data fetching where used in frontend components
+- `payload` / `@payloadcms/next` — CMS core, admin, REST/GraphQL routes under `src/app/(payload)/`.
+- `@payloadcms/db-postgres` — PostgreSQL adapter; pool uses `DATABASE_URL` in `src/payload.config.ts`.
+- `@payloadcms/richtext-lexical` / `lexicalEditor` — Rich text across collections and plugins.
+- `sharp` — Image processing for uploads and sizes (`src/payload.config.ts`, `src/collections/Media.ts`).
+- `next` / `react` / `react-dom` — Frontend and SSR.
 
 **Infrastructure:**
-- `pg` ^8.20.0 (devDependency) — PostgreSQL client; used with Payload Postgres adapter
-- `dotenv` 16.4.7 — Loaded by Playwright config and typical local tooling
+- `pg` (devDependency) — PostgreSQL client used with the stack (adapter layer).
+- `@tanstack/react-query` — Client-side data fetching where used in React components.
+- `google-auth-library` — Google OAuth token exchange for frontend auth routes (`src/app/(frontend)/api/auth/google/`).
+- `graphql` — Pulled in for Payload’s GraphQL API (`src/app/(payload)/api/graphql/route.ts`).
+
+**Payload plugins (from `src/plugins/index.ts`):**
+- `@payloadcms/plugin-redirects`, `@payloadcms/plugin-nested-docs`, `@payloadcms/plugin-seo`, `@payloadcms/plugin-form-builder`, `@payloadcms/plugin-search`, `@payloadcms/plugin-mcp`.
+
+**UI primitives:**
+- Radix UI packages, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react`, `motion` — Component styling and animation; project aliases align with shadcn-style setup (`components.json`).
 
 ## Configuration
 
 **Environment:**
-- Local and deployment settings via environment variables (see `.env.example` for names; do not commit secrets)
-- Declared typings for common vars in `src/environment.d.ts`
+- Variables documented in `.env.example` (do not commit secrets): `DATABASE_URL`, `PAYLOAD_SECRET`, `NEXT_PUBLIC_SERVER_URL`, `CRON_SECRET`, `PREVIEW_SECRET`, optional `IPGEOLOCATION_API_KEY`, optional Google OAuth trio.
+- Type augmentation for selected vars in `src/environment.d.ts`.
 
 **Build:**
-- `next.config.js` — `withPayload`, image `remotePatterns`, `redirects` from `redirects.js`, webpack `extensionAlias`
-- `tsconfig.json` — Compiler and path aliases
-- `eslint.config.mjs` — Flat config, extends `next/core-web-vitals`, `next/typescript`
-- `.prettierrc.json` — Formatting
+- `next.config.js` — `withPayload`, image `remotePatterns` from server URL, `redirects.js`.
+- `tsconfig.json` — Path aliases `@/*` → `src/*`, `@payload-config` → `src/payload.config.ts`.
+- `next-sitemap.config.cjs` — Site URL from env for sitemaps/robots.
 
 ## Platform Requirements
 
 **Development:**
-- Node.js matching `engines`; pnpm for install and scripts
-- PostgreSQL reachable via `DATABASE_URL` (Payload Postgres adapter; `.env.example` shows Mongo example string but `src/payload.config.ts` uses `postgresAdapter`)
+- Node.js matching `engines`; pnpm for installs per `package.json`.
+- PostgreSQL reachable via `DATABASE_URL` (MongoDB string in `.env.example` is template legacy; active adapter is Postgres in `src/payload.config.ts`).
 
 **Production:**
-- Node-compatible host (commonly Vercel for Next.js; `VERCEL_PROJECT_PRODUCTION_URL` referenced in `src/utilities/getURL.ts` and `next.config.js` for URL resolution)
-- Build: `pnpm build` (`cross-env NODE_OPTIONS=--no-deprecation next build`); `postbuild` runs `next-sitemap`
+- Typical target: Node hosting compatible with Next.js 15 (e.g. Vercel — `VERCEL_PROJECT_PRODUCTION_URL` and cron/job patterns referenced in `next.config.js`, `src/utilities/getURL.ts`, `src/payload.config.ts`).
 
 ---
 

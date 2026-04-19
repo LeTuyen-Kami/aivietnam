@@ -5,162 +5,124 @@
 ## Test Framework
 
 **Runner:**
-
-- Vitest `4.0.18` for integration-style tests.
-- Config: `vitest.config.mts` (project root).
+- Vitest `4.0.18` for integration-style API tests — config: `vitest.config.mts`.
+- `@playwright/test` `1.58.2` for E2E — config: `playwright.config.ts`.
 
 **Assertion library:**
-
 - Vitest built-in `expect` (`tests/int/api.int.spec.ts`).
+- Playwright `expect` from `@playwright/test` (`tests/e2e/*.e2e.spec.ts`).
 
-**Related tooling:**
+**Environment:**
+- Vitest: `environment: 'jsdom'` in `vitest.config.mts` (default for the runner even though the included test uses Node/Payload).
+- Setup: `vitest.setup.ts` loads `dotenv/config` only.
 
-- `@vitejs/plugin-react` and `vite-tsconfig-paths` in `vitest.config.mts` so `@/` and TS paths resolve like the app.
-- `jsdom` `28.0.0` as the Vitest test `environment` (`vitest.config.mts`).
-
-**Run commands:**
-
+**Run commands (`package.json`):**
 ```bash
-pnpm run test:int    # Vitest: tests/int/**/*.int.spec.ts
-pnpm run test:e2e    # Playwright: tests/e2e/
-pnpm run test        # Runs test:int then test:e2e (see package.json)
+pnpm run test              # runs test:int then test:e2e
+pnpm run test:int          # vitest run --config ./vitest.config.mts
+pnpm run test:e2e          # playwright test --config=playwright.config.ts
 ```
-
-Use `pnpm` as declared in `package.json` `engines`; the repo root scripts invoke `pnpm` for test and dev server commands.
 
 ## Test File Organization
 
 **Location:**
-
-- Integration tests: `tests/int/` only files matching `**/*.int.spec.ts` (see `include` in `vitest.config.mts`).
-- End-to-end tests: `tests/e2e/` (`playwright.config.ts` sets `testDir: './tests/e2e'`).
+- Integration: `tests/int/` — pattern `*.int.spec.ts` (glob in `vitest.config.mts`: `tests/int/**/*.int.spec.ts`).
+- E2E: `tests/e2e/` — `*.e2e.spec.ts`.
+- Shared helpers: `tests/helpers/` (`login.ts`, `seedUser.ts`).
+- No co-located `*.test.ts` files under `src/` in this repository.
 
 **Naming:**
-
-- Integration: `*.int.spec.ts` (for example `tests/int/api.int.spec.ts`).
-- E2E: `*.e2e.spec.ts` (for example `tests/e2e/frontend.e2e.spec.ts`, `tests/e2e/admin.e2e.spec.ts`).
+- `api.int.spec.ts` — API / Payload integration.
+- `frontend.e2e.spec.ts`, `admin.e2e.spec.ts` — Playwright flows.
 
 **Structure:**
-
 ```
 tests/
 ├── int/
 │   └── api.int.spec.ts
 ├── e2e/
-│   ├── admin.e2e.spec.ts
-│   └── frontend.e2e.spec.ts
+│   ├── frontend.e2e.spec.ts
+│   └── admin.e2e.spec.ts
 └── helpers/
     ├── login.ts
     └── seedUser.ts
 ```
 
-**Not detected:**
-
-- Co-located unit tests such as `src/**/*.test.ts` beside source files; Vitest `include` is limited to `tests/int/**/*.int.spec.ts`.
-
 ## Test Structure
 
 **Vitest (integration):**
-
 ```typescript
 import { describe, it, beforeAll, expect } from 'vitest'
+import { getPayload, Payload } from 'payload'
+import config from '@/payload.config'
+
+let payload: Payload
 
 describe('API', () => {
   beforeAll(async () => {
-    // async setup (e.g. getPayload)
+    const payloadConfig = await config
+    payload = await getPayload({ config: payloadConfig })
   })
 
   it('fetches users', async () => {
-    // await API / payload
+    const users = await payload.find({ collection: 'users' })
     expect(users).toBeDefined()
   })
 })
 ```
+(Source: `tests/int/api.int.spec.ts`.)
 
-Reference: `tests/int/api.int.spec.ts` loads `@/payload.config`, calls `getPayload` in `beforeAll`, and uses `payload.find` in the example test.
-
-**Setup file:**
-
-- `vitest.setup.ts` runs before tests; currently imports `dotenv/config` only (comment placeholder for additional setup).
-
-**Playwright (E2E):**
-
-- `test.describe` groups tests; `test.beforeAll` / `test.afterAll` for browser context and data seeding (`tests/e2e/admin.e2e.spec.ts` uses `seedTestUser`, `cleanupTestUser`, and `login` from `tests/helpers/`).
-- `playwright.config.ts` starts the app via `webServer.command: 'pnpm dev'`, `reuseExistingServer: true`, and waits for `http://localhost:3000`.
+**Playwright:**
+- `test.describe` groups suites; `test.beforeAll` / `test.afterAll` for browser context and data seeding (`tests/e2e/admin.e2e.spec.ts`).
+- Admin tests: `seedTestUser()` before all, `cleanupTestUser()` after all, `login()` helper from `tests/helpers/login.ts`.
 
 ## Mocking
 
-**Vitest:**
+**Current state:**
+- No `vi.mock` or module mocks in the checked test files — integration and E2E hit real Payload + DB (subject to `DATABASE_URL` from env) and a dev server.
 
-- No pervasive `vi.mock` usage in the single integration spec; tests hit a real Payload instance via `getPayload` (`tests/int/api.int.spec.ts`).
-
-**Playwright:**
-
-- Browser automation against a running server; helpers encapsulate login and DB seeding (`tests/helpers/login.ts`, `tests/helpers/seedUser.ts`) instead of mocking HTTP.
-
-**What to mock:**
-
-- Not a focus in current tests; integration/e2e favor real Payload + real browser.
-
-**What not to mock (current practice):**
-
-- Payload data access in `api.int.spec.ts` (real `find` on `users`).
+**Guidance for new tests:**
+- Prefer Vitest `vi` for unit tests if added under `src/` or `tests/unit/`.
+- Keep integration tests in `tests/int/` with real `getPayload` unless CI requires a mock DB.
 
 ## Fixtures and Factories
 
-**Test data:**
+**Test users:**
+- `tests/helpers/seedUser.ts` defines `testUser`, `seedTestUser()`, `cleanupTestUser()` using Local API (`getPayload`, `payload.config.js` import path for the helper).
 
-- Constants exported from helpers (for example `testUser` in `tests/helpers/seedUser.ts`).
-- `seedTestUser` deletes by email then creates a user with roles; `cleanupTestUser` deletes by email.
-
-**Location:**
-
-- Shared E2E helpers under `tests/helpers/`.
+**Auth:**
+- `tests/helpers/login.ts` — fills `#field-email` / `#field-password` and waits for admin URL.
 
 ## Coverage
 
 **Requirements:**
-
-- No coverage thresholds or `coverage` block detected in `vitest.config.mts`.
+- No `test:coverage` script and no coverage thresholds in `package.json` or Vitest config.
 
 **View coverage (if added later):**
-
-- Vitest supports `--coverage` when `@vitest/coverage-v8` or similar is installed; not present in `package.json` at analysis time. Run patterns would be project-specific after adding a coverage provider.
+```bash
+pnpm exec vitest run --coverage --config ./vitest.config.mts
+```
+(Not configured in-repo; requires `@vitest/coverage-v8` or similar to be added.)
 
 ## Test Types
 
-**Unit tests:**
+**Integration (Vitest):**
+- Boots Payload with `src/payload.config` and runs queries (e.g. `find` on `users`). Requires database env (see `vitest.setup.ts` + dotenv).
 
-- No dedicated unit test suite in `src/` observed; smallest automated tests are the Vitest integration file under `tests/int/`.
+**E2E (Playwright):**
+- `playwright.config.ts`: `testDir: './tests/e2e'`, single project `chromium`, `webServer` runs `pnpm dev` with `reuseExistingServer: true`, `url: 'http://localhost:3000'`.
+- Tests use absolute URLs to `http://localhost:3000` (see `tests/e2e/frontend.e2e.spec.ts`; `baseURL` in config is commented).
 
-**Integration tests:**
-
-- `tests/int/api.int.spec.ts`: initializes Payload from `src/payload.config.ts` and exercises the Local API (`payload.find` on `users`).
-
-**E2E tests:**
-
-- Playwright `1.58.2`, Chromium project only (`playwright.config.ts` `projects`).
-- `tests/e2e/frontend.e2e.spec.ts`: loads the homepage and asserts title/heading.
-- `tests/e2e/admin.e2e.spec.ts`: admin navigation after login; depends on seeded user.
+**Unit:**
+- Not present; `@testing-library/react` is in `devDependencies` but no RTL tests were found under the current layout.
 
 ## Common Patterns
 
-**Async testing:**
+**Async:**
+- `async` `it` / `test` callbacks with `await` on Payload and Playwright APIs.
 
-```typescript
-it('fetches users', async () => {
-  const users = await payload.find({ collection: 'users' })
-  expect(users).toBeDefined()
-})
-```
-
-**Environment:**
-
-- Playwright loads `dotenv/config` in `playwright.config.ts`; Vitest loads dotenv via `vitest.setup.ts`.
-
-**CI:**
-
-- No `.github/workflows` test pipeline detected in the workspace snapshot; local runs use `pnpm run test`.
+**Playwright + Payload:**
+- Seed data with Local API in `beforeAll`, then drive UI with `page` and assertions on locators.
 
 ---
 

@@ -4,167 +4,171 @@
 
 ## Pattern Overview
 
-**Overall:** Monolithic full-stack app — Next.js App Router (React Server Components by default) with Payload CMS 3 embedded in the same process, PostgreSQL as the system of record, and custom Next.js Route Handlers for site-specific APIs.
+**Overall:** Monolithic full-stack application — Next.js App Router (React Server Components) co-located with Payload CMS 3, sharing one deployment and PostgreSQL-backed content.
 
 **Key Characteristics:**
-- **Single deployable**: Public site, admin UI, REST/GraphQL APIs, and background job hooks share one Next.js app (`next.config.js` uses `withPayload` from `@payloadcms/next/withPayload`).
-- **Content-driven pages**: CMS `pages` collection drives dynamic routes; layout is a blocks array rendered by a central mapper (`RenderBlocks`).
-- **Server-first data access**: Server Components and Route Handlers call `getPayload({ config })` from `payload` with `config` imported from `@payload-config` (`src/payload.config.ts`).
-- **Caching at the Next boundary**: Globals use `unstable_cache` with tags (`getCachedGlobal` in `src/utilities/getGlobals.ts`).
+- Single Next.js process serves the public site, custom App Router API routes, and Payload’s admin UI and REST/GraphQL APIs under route groups.
+- Content model lives in Payload (`collections`, `globals`, `plugins`); the frontend reads via Payload Local API (`getPayload`) from Server Components and route handlers.
+- Presentation is block-based: CMS `layout` blocks map to React components through a central renderer (`RenderBlocks`).
+- No separate BFF: Next.js route handlers and RSCs call Payload directly; caching uses Next.js `unstable_cache` with collection/slug tags where implemented.
 
 ## Layers
 
-**Presentation (Next.js App Router + React UI):**
-- Purpose: HTTP entry for the public site and Payload admin shell; compose CMS data into HTML.
-- Location: `src/app/(frontend)/`, `src/app/(payload)/`, `src/components/`, `src/blocks/`, `src/heros/`, `src/Header/`, `src/Footer/`
-- Contains: Route segments (`page.tsx`, `layout.tsx`), client islands (`*.client.tsx` where used), block and hero components, shared UI.
-- Depends on: Payload Local API (`getPayload`), generated types (`src/payload-types.ts`), utilities (`src/utilities/`), providers (`src/providers/`).
-- Used by: End users (frontend), editors (admin under `(payload)`).
+**Routing & HTTP (Next.js App Router):**
+- Purpose: URL mapping, HTML streaming, metadata, draft mode, and custom HTTP APIs for the site.
+- Location: `src/app/(frontend)/`, `src/app/(payload)/`
+- Contains: `page.tsx` / `layout.tsx` for pages; `route.ts` for REST endpoints, previews, sitemaps, seed.
+- Depends on: Payload config (`@payload-config`), `payload` Local API, shared UI (`@/components`, `@/blocks`, `@/heros`), utilities.
+- Used by: Browsers, crawlers, admin users (preview/exit-preview), cron/integrations hitting job or custom routes.
 
-**CMS configuration (Payload schema & behavior):**
-- Purpose: Define collections, globals, fields, access, hooks, plugins, and editor behavior.
-- Location: `src/payload.config.ts`, `src/collections/`, `src/Header/config.ts`, `src/Footer/config.ts`, `src/GeneralSettings/config.ts`, `src/fields/`, `src/access/`, `src/plugins/`, collection-adjacent `hooks/` under each collection
-- Contains: `CollectionConfig` / global configs, field factories, access functions, `beforeChange`/`afterChange`/`afterRead` hooks, plugin registration.
-- Depends on: `payload`, database via adapter config, shared hooks in `src/hooks/` (e.g. `revalidateRedirects.ts`).
-- Used by: Payload runtime, admin UI, REST/GraphQL handlers, any code calling Local API.
+**CMS & data (Payload):**
+- Purpose: Schema (collections/globals), access control, hooks, plugins, search indexing, and generated types.
+- Location: `src/payload.config.ts`, `src/collections/`, `src/Header/`, `src/Footer/`, `src/GeneralSettings/`, `src/plugins/`, `src/access/`, `src/hooks/` (shared), collection-local `hooks/` under each collection.
+- Contains: Collection configs, field definitions, `beforeChange`/`afterChange`/`afterRead` hooks, revalidation hooks, plugin wiring.
+- Depends on: PostgreSQL (via `@payloadcms/db-postgres`), env-backed secrets, Sharp for image pipeline.
+- Used by: Admin UI, REST/GraphQL handlers generated under `src/app/(payload)/api/`, and all server code using `getPayload`.
 
-**Data & persistence:**
-- Purpose: Store documents and media metadata; enforce constraints at DB level through Payload.
-- Location: Configured in `src/payload.config.ts` (`postgresAdapter`); types in `src/payload-types.ts` (generated).
-- Contains: PostgreSQL via `@payloadcms/db-postgres`; no separate ORM layer outside Payload.
-- Depends on: `DATABASE_URL` (existence only; do not commit values).
-- Used by: All Payload operations (find, create, update, globals, uploads).
+**Presentation (blocks, heroes, components):**
+- Purpose: Map CMS JSON to React; shared chrome (header/footer), rich text, media, auth UI.
+- Location: `src/blocks/` (per-block folders + `RenderBlocks.tsx`), `src/heros/` + `RenderHero`, `src/components/`, `src/Header/Component`, `src/Footer/Component`.
+- Contains: Server/client components as needed; block registry in `RenderBlocks` maps `blockType` strings to components.
+- Depends on: `payload-types` shapes, utilities (`@/utilities/*`), providers for client state.
+- Used by: App Router pages (e.g. `src/app/(frontend)/[slug]/page.tsx`, `src/app/(frontend)/posts/[slug]/page.tsx`).
 
-**HTTP APIs (two channels):**
-- Purpose: (1) Payload REST + GraphQL for CMS operations; (2) custom JSON endpoints for the public site (comments, auth callbacks, analytics helpers).
-- Location: `src/app/(payload)/api/[...slug]/route.ts`, `src/app/(payload)/api/graphql/route.ts`, `src/app/(frontend)/api/**/route.ts`
-- Contains: Generated REST handlers from `@payloadcms/next/routes`; hand-written Route Handlers using `getPayload`, `NextRequest`/`NextResponse`, and sometimes `createLocalReq` (e.g. `src/app/(frontend)/api/site-comments/route.ts`).
-- Depends on: `payload`, `@payload-config`, access helpers under `src/access/`.
-- Used by: Admin panel, live preview, frontend `fetch` calls, OAuth callbacks.
+**Client state & theming:**
+- Purpose: Theme, header theme, TanStack Query, and auth/session context for interactive UI.
+- Location: `src/providers/` (`Theme`, `HeaderTheme`, `Query`, `Auth`).
+- Contains: React context providers wrapping the tree from `src/app/(frontend)/layout.tsx`.
+- Depends on: Client-only APIs where applicable (`'use client'` modules).
+- Used by: Interactive components (e.g. under `src/components/Auth/`).
 
 **Cross-cutting utilities:**
-- Purpose: URL helpers, metadata, caching wrappers, UI classnames, seed data.
-- Location: `src/utilities/`, `src/endpoints/seed/`, `scripts/` (operational seeds/migrations)
-- Contains: Pure or server-only helpers; seed JSON and seeding logic consumed by endpoints or scripts.
-- Depends on: Next (`draftMode`, `unstable_cache`), Payload types.
-- Used by: Pages, API routes, hooks.
+- Purpose: URL helpers, caching wrappers for globals/documents, metadata, redirects resolution, UI classnames.
+- Location: `src/utilities/`
+- Contains: `getCachedDocument` / `getCachedGlobal`, `generateMeta`, `getRedirects`, `mergeOpenGraph`, etc.
+- Depends on: `payload`, `next/cache`, config.
+- Used by: Layouts, pages, SEO-related code.
+
+**Search (plugin integration):**
+- Purpose: Search plugin field overrides and sync hooks feeding Payload search.
+- Location: `src/search/` (`fieldOverrides.ts`, `beforeSync.ts`, `Component.tsx`)
+- Depends on: `searchPlugin` in `src/plugins/index.ts`
+- Used by: Search-related UI and indexing behavior.
+
+**Bootstrap & seed data:**
+- Purpose: One-off or dev seed payloads and static fallbacks.
+- Location: `src/endpoints/seed/` (referenced from routes and pages, e.g. `home-static`)
 
 ## Data Flow
 
-**Public page (CMS `pages` document):**
+**Public CMS page (`/[slug]`):**
 
-1. Request hits a Next route (e.g. `src/app/(frontend)/[slug]/page.tsx` or root `src/app/(frontend)/page.tsx` re-exporting the same template).
-2. Server Component resolves slug, calls a cached or direct `payload.find` / `findByID`-style query (see `queryPageBySlug` pattern in `[slug]/page.tsx`).
-3. Optional: `draftMode()` enables preview; `LivePreviewListener` client component may render (`src/components/LivePreviewListener`).
-4. `RenderHero` dispatches by `hero.type` (`src/heros/RenderHero.tsx`); `RenderBlocks` maps `layout[]` `blockType` to React components (`src/blocks/RenderBlocks.tsx`).
-5. Response is RSC-rendered HTML; client components hydrate where marked with `'use client'`.
+1. Request hits `src/app/(frontend)/[slug]/page.tsx` (or catch-all static generation in production).
+2. Server code resolves `draftMode`, obtains `getPayload({ config })`, and loads the `pages` document by slug (with access and draft semantics as coded).
+3. Metadata is built via `generateMeta` (`src/utilities/generateMeta.ts`).
+4. `RenderHero` and `RenderBlocks` turn `hero` and `layout` arrays into React trees; nested relationships use Payload `depth` as passed in queries.
+5. Optional client wrapper (`page.client.tsx`) and `LivePreviewListener` hydrate for preview UX.
+6. HTML streams to the client inside `RootLayout` (`src/app/(frontend)/layout.tsx`), which also loads globals for chrome (header/footer from `getCachedGlobal`).
 
-**Post detail (`posts` collection):**
+**Post detail (`/posts/[slug]`):**
 
-1. `src/app/(frontend)/posts/[slug]/page.tsx` loads post by slug via Payload, renders post-specific layout (hero, content, related UI such as comments).
-2. Comments list / create may use REST under `src/app/(frontend)/api/site-comments/` and client components (e.g. `src/components/Auth/PostComments.tsx`).
+1. `src/app/(frontend)/posts/[slug]/page.tsx` loads from `posts` collection via Local API patterns consistent with the rest of the app.
+2. Same block/hero patterns where applicable; post-specific components (e.g. views, comments) compose under the page.
 
-**Globals (header, footer, settings):**
+**Authenticated / custom site APIs (`src/app/(frontend)/api/**`):**
 
-1. Root layout `src/app/(frontend)/layout.tsx` calls `getCachedGlobal('general-settings', 1)` for favicon and related data.
-2. `Header` / `Footer` components load their global documents (pattern: globals configured in `src/payload.config.ts` as `Header`, `Footer`, `GeneralSettings`).
+1. `route.ts` handlers run on the Edge/Node runtime as configured per file.
+2. Handlers use `getPayload`, cookies/headers, and return `Response.json` or redirects (e.g. Google OAuth under `api/auth/google/`, comments under `api/site-comments/`).
 
-**Payload admin & CMS API:**
+**Payload admin & REST/GraphQL:**
 
-1. Editors use routes under `src/app/(payload)/admin/` with layout `src/app/(payload)/layout.tsx` (generated wrapper around `RootLayout` from `@payloadcms/next/layouts`).
-2. REST requests go to `src/app/(payload)/api/[...slug]/route.ts` exports (`REST_GET`, `REST_POST`, etc.).
-3. GraphQL hits `src/app/(payload)/api/graphql/route.ts`.
+1. Admin UI: `src/app/(payload)/admin/[[...segments]]/page.tsx` loads Payload’s admin bundle; `importMap.js` is generated for component resolution.
+2. REST: `src/app/(payload)/api/[...slug]/route.ts` re-exports Payload REST handlers (`REST_GET`, etc.) bound to `config`.
+3. GraphQL: `src/app/(payload)/api/graphql/route.ts` and optional playground route.
 
 **State Management:**
-- **Server**: Request-scoped React tree; no global Redux store. Theme and auth use React context in `src/providers/` (`ThemeProvider`, `AuthProvider`, `QueryProvider` for TanStack Query).
-- **CMS**: Authoritative state in PostgreSQL; preview uses Next `draftMode`.
-- **Caching**: `unstable_cache` on globals (`src/utilities/getGlobals.ts`); collection hooks trigger revalidation (e.g. `src/collections/Pages/hooks/revalidatePage.ts`, `src/collections/Posts/hooks/revalidatePost.ts`).
+
+- Server: Request-scoped; no global mutable server state. Document/global reads may use `unstable_cache` with tags (see `src/utilities/getDocument.ts`, `src/utilities/getGlobals.ts`).
+- Client: React context via `src/providers/index.tsx` (theme, query client, auth).
+- Persistence: PostgreSQL as the system of record; JWT/session behavior follows Payload + custom routes as implemented.
 
 ## Key Abstractions
 
-**`getPayload` + `@payload-config`:**
-- Purpose: Obtain a Payload instance for Local API calls in RSC, Route Handlers, and hooks.
-- Examples: `src/app/(frontend)/[slug]/page.tsx`, `src/utilities/getGlobals.ts`, `src/app/(frontend)/api/site-comments/route.ts`
-- Pattern: `const payload = await getPayload({ config: configPromise })` with `configPromise` imported as `config`/`configPromise` from `@payload-config`.
-
 **Block registry (`RenderBlocks`):**
-- Purpose: Map CMS `layout` block `blockType` strings to React components.
-- Examples: `src/blocks/RenderBlocks.tsx` — object `blockComponents` keyed by slug (`archive`, `content`, `cta`, …).
-- Pattern: Adding a block requires a `blocks` field entry in the collection, a component under `src/blocks/<Name>/Component.tsx`, and a new key in `blockComponents`.
+- Purpose: Single map from CMS `blockType` to React component for page `layout` arrays.
+- Examples: `src/blocks/RenderBlocks.tsx`, block folders under `src/blocks/*/Component.tsx`
+- Pattern: Discriminated union by `blockType`; unknown types fall through safely.
 
 **Hero registry (`RenderHero`):**
-- Purpose: Map `hero.type` to hero components (`highImpact`, `lowImpact`, `mediumImpact`).
-- Examples: `src/heros/RenderHero.tsx`, implementations under `src/heros/HighImpact`, `LowImpact`, `MediumImpact`, `PostHero`.
+- Purpose: Same idea for page/post hero variants.
+- Examples: `src/heros/RenderHero.tsx`, `src/heros/*`
 
-**Globals cache (`getCachedGlobal`):**
-- Purpose: Typed, tag-based cached reads of Payload globals for use in layouts.
-- Examples: `src/utilities/getGlobals.ts`, usage in `src/app/(frontend)/layout.tsx`
-- Pattern: `getCachedGlobal('header', depth)( )` — note invocation returns a cached async function.
+**Cached document/global accessors:**
+- Purpose: Stable cache keys and tags for ISR-style revalidation tied to slugs/collections.
+- Examples: `src/utilities/getDocument.ts` (`getCachedDocument`), `src/utilities/getGlobals.ts` (`getCachedGlobal`)
 
-**Access control modules:**
-- Purpose: Centralize role and membership checks for collections and custom APIs.
-- Examples: `src/access/isAdminUser.ts`, `src/access/siteMemberUser.ts`, re-export patterns in `src/collections/Users/index.ts`
-- Pattern: Boolean or query constraints per Payload `Access` API; custom APIs also call helpers to align with the same rules.
+**Access helpers:**
+- Purpose: Reusable collection- and field-level access predicates.
+- Examples: `src/access/authenticated.ts`, `src/access/adminOnly.ts`, `src/access/authenticatedOrPublished.ts`
 
-**Plugins stack:**
-- Purpose: SEO, redirects, search index, nested docs, form builder, MCP — configured once in `src/plugins/index.ts` and merged in `buildConfig`.
-- Examples: `src/plugins/index.ts`, referenced from `src/payload.config.ts`
+**Payload config as hub:**
+- Purpose: Single `buildConfig` export wiring DB, collections, globals, i18n, jobs, admin UI, and plugins.
+- Examples: `src/payload.config.ts`
 
 ## Entry Points
 
-**Next.js application (development / production):**
-- Location: `package.json` scripts — `next dev --turbopack`, `next build`, `next start`
-- Triggers: Process start, Vercel or Node host
-- Responsibilities: Compile routes, run Server Components, serve static assets from `public/`
+**Next.js application:**
+- Location: `next.config.js` (wrapped with `withPayload` from `@payloadcms/next/withPayload`)
+- Triggers: `pnpm dev`, `pnpm build`, `pnpm start` (see `package.json`)
+- Responsibilities: Build, image config, redirects from `redirects.js`, Payload bundling integration.
 
-**Public site routes:**
-- Location: `src/app/(frontend)/layout.tsx` (root HTML shell), `src/app/(frontend)/page.tsx` (re-exports `[slug]` page for home), `src/app/(frontend)/[slug]/page.tsx`, `src/app/(frontend)/posts/**`, `src/app/(frontend)/categories/**`, `src/app/(frontend)/search/page.tsx`
-- Triggers: HTTP GET to matching paths
-- Responsibilities: SSR/SSG pages, metadata generation (`generateMetadata`), static params where implemented
+**Public site shell:**
+- Location: `src/app/(frontend)/layout.tsx`
+- Triggers: All `(frontend)` routes
+- Responsibilities: Fonts, theme init, `Providers`, `Header`/`Footer`, `AdminBar`, favicon from `general-settings` global.
 
-**Payload admin:**
-- Location: `src/app/(payload)/admin/[[...segments]]/`, `src/app/(payload)/layout.tsx`
-- Triggers: Navigating to `/admin`
-- Responsibilities: CMS UI, authentication against `users` collection
+**Dynamic CMS pages:**
+- Location: `src/app/(frontend)/[slug]/page.tsx`, `src/app/(frontend)/posts/[slug]/page.tsx`, `src/app/(frontend)/categories/[slug]/page.tsx`, etc.
+- Triggers: HTTP GET for matching paths
+- Responsibilities: Load Payload documents, render heroes/blocks, set metadata.
 
-**Payload REST / GraphQL:**
-- Location: `src/app/(payload)/api/[...slug]/route.ts`, `src/app/(payload)/api/graphql/route.ts`
-- Triggers: HTTP clients (including admin and headless consumers)
-- Responsibilities: CRUD and GraphQL per Payload rules
+**Payload REST API:**
+- Location: `src/app/(payload)/api/[...slug]/route.ts`
+- Triggers: HTTP verbs to `/api/*` as routed by Payload
+- Responsibilities: CRUD and auth for collections/globals per Payload rules.
 
-**Custom site APIs:**
-- Location: `src/app/(frontend)/api/auth/google/route.ts`, `callback/route.ts`, `src/app/(frontend)/api/site-comments/route.ts`, `like/route.ts`, `src/app/(frontend)/api/posts/[id]/increment-views/route.ts`, `src/app/(frontend)/api/geo-ip/route.ts`
-- Triggers: `fetch` from client components or external OAuth redirects
-- Responsibilities: JSON responses, OAuth exchange, comment CRUD, view counts, geo helpers
+**Custom frontend API routes:**
+- Location: `src/app/(frontend)/api/*/route.ts` (posts, auth, geo-ip, site-comments, etc.)
+- Triggers: Fetch/XHR from client components or external callers
+- Responsibilities: Domain-specific operations without exposing full admin API.
 
-**Operational scripts (DB/content maintenance):**
-- Location: `scripts/*.ts` (invoked via `bun run` per `package.json`, e.g. `seed`, `migrate:admin-roles`)
-- Triggers: Maintainer CLI
-- Responsibilities: Seeding, one-off migrations, media fixes
+**Payload config module:**
+- Location: `src/payload.config.ts`
+- Triggers: Import from `@payload-config` anywhere on the server
+- Responsibilities: Entire CMS configuration.
 
 ## Error Handling
 
-**Strategy:** Layered — Payload throws `APIError` for API semantics; Route Handlers map to `NextResponse.json` with HTTP status; UI surfaces errors via component state or thrown boundaries where applicable.
+**Strategy:** Failures in Server Components surface as Next.js error boundaries / default error UI; route handlers return HTTP status codes and JSON bodies; Payload throws `APIError` for API-layer validation and auth failures.
 
 **Patterns:**
-- Custom APIs: validate query/body early, return `NextResponse.json({ error: '...' }, { status: 4xx })` (see `src/app/(frontend)/api/site-comments/route.ts`).
-- Payload operations: rely on `APIError` and access control denials from Local API.
-- Page not found / redirects: `PayloadRedirects` component for redirect plugin integration (`src/components/PayloadRedirects`).
+- Route handlers: explicit `Response.json(..., { status })` for client-consumable errors.
+- Local API: callers are responsible for try/catch where needed; collection hooks should pass `req` for transactional nested operations (project convention per `AGENTS.md`).
+- Build-time: `generateStaticParams` may return `[]` in development to avoid repeated DB work (see `src/app/(frontend)/[slug]/page.tsx`).
 
 ## Cross-Cutting Concerns
 
-**Logging:** No dedicated logger module detected in `src/`; use `console` in scripts and typical Next server logging. Prefer structured logging only if introduced project-wide.
+**Logging:** No dedicated logging SDK detected in reviewed paths; server code may use `console` or rely on platform logs.
 
-**Validation:** Payload field validation and hooks on collections; Route Handlers perform explicit param parsing and guards before `getPayload` calls.
+**Validation:** Payload field validation and hooks on write paths; API routes validate inputs before calling `payload.create`/`update` as implemented per route.
 
-**Authentication:**
-- **CMS users**: Payload `users` collection with auth; admin session via Payload.
-- **Site auth**: Google OAuth routes under `src/app/(frontend)/api/auth/google/`; client `AuthProvider` (`src/providers/Auth`) for session UX.
-- **Access**: Reuse `src/access/*` in both Payload config and custom routes; when passing `user` to Local API, follow project rule: set `overrideAccess: false` unless intentionally elevating (see `AGENTS.md` / security rules).
+**Authentication:** Payload `users` collection with roles; site-specific auth flows under `src/app/(frontend)/api/auth/`; access predicates in `src/access/`. Local API usage must respect `overrideAccess` when enforcing user permissions (see project rules in `AGENTS.md`).
 
-**Internationalization:** Payload `i18n` with `en` and `vi` in `src/payload.config.ts`; root layout sets `lang="vi"`.
+**Internationalization:** Payload `i18n` with `en` and `vi` in `src/payload.config.ts`; public layout sets `lang="vi"` on `<html>`.
 
-**Jobs / cron:** `jobs` config in `src/payload.config.ts` — `access.run` allows authenticated user or `Authorization: Bearer` with `CRON_SECRET`.
+**Preview & drafts:** `draftMode` from `next/headers` in layouts/pages; live preview listener components for editor workflows.
+
+**Search & SEO:** `seoPlugin`, `searchPlugin`, redirects and nested docs configured in `src/plugins/index.ts`; metadata merged in layouts via `mergeOpenGraph`.
 
 ---
 
