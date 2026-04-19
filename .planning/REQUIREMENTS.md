@@ -28,7 +28,7 @@
 
 ### Frontend — viewer
 
-- [ ] **VIEW-01**: Trang công khai cho phép người xem join call dạng `livestream` và hiển thị UI viewer (ví dụ `LivestreamLayout` hoặc tương đương)
+- [x] **VIEW-01**: Trang công khai cho phép người xem join call dạng `livestream` và hiển thị UI viewer (ví dụ `LivestreamLayout` hoặc tương đương)
 - [ ] **VIEW-02**: Trạng thái UX khi chưa live / đã kết thúc (không chỉ màn hình lỗi thô)
 
 ## v2 Requirements (deferred)
@@ -58,7 +58,7 @@
 | ADM-02 | Phase 3 | Complete |
 | BRD-01 | Phase 4 | Complete |
 | BRD-02 | Phase 4 | Complete |
-| VIEW-01 | Phase 5 | Pending |
+| VIEW-01 | Phase 5 | Complete |
 | VIEW-02 | Phase 5 | Pending |
 
 **Coverage:**

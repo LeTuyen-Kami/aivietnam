@@ -126,12 +126,12 @@ Plans:
 
 **UI hint**: yes
 
-**Plans:** TBD
+**Plans:** 1 / 2 complete
 
 Plans:
 
-- [ ] 05-01: Dynamic route `/live/[slug]` (hoặc path đã chốn)
-- [ ] 05-02: `LivestreamLayout` + loading/ended states
+- [x] 05-01-PLAN.md — Server auth/data gate for `/live/[slug]` + secure slug status contract *(completed 2026-04-20)*
+- [ ] 05-02-PLAN.md — Viewer lifecycle with live-only join, polling transitions, and state UX
 
 ---
 

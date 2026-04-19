@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to plan
-last_updated: "2026-04-19T17:36:08.713Z"
+status: In progress
+last_updated: "2026-04-19T18:04:38Z"
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 8
-  completed_plans: 8
-  percent: 100
+  total_plans: 10
+  completed_plans: 9
+  percent: 90
 ---
 
 # State
@@ -20,7 +20,7 @@ progress:
 ## Current focus
 
 - **Phase:** 5
-- **Plan:** Not started
+- **Plan:** 02
 
 ## Project Reference
 
@@ -37,3 +37,5 @@ See: `.planning/PROJECT.md` (updated 2026-04-19)
 - Decision: `status=live` is written only after explicit publisher join confirmation check.
 - Decision: Broadcaster UI uses Stream `tokenProvider` with server-controlled start/end APIs.
 - Decision: Broadcaster public env contract is centralized in `publicClientEnv` helper for deterministic setup failures.
+- Decision: Viewer route enforces login-required redirect and secure slug reads with `overrideAccess: false`.
+- Decision: Viewer status polling uses authenticated slug endpoint with no-store response behavior.
