@@ -3,7 +3,7 @@ status: partial
 phase: 04-broadcaster-admin-only
 source: [04-VERIFICATION.md]
 started: 2026-04-19T16:37:47Z
-updated: 2026-04-19T16:37:47Z
+updated: 2026-04-19T16:45:00Z
 ---
 
 ## Current Test
@@ -28,9 +28,17 @@ result: [pending]
 
 total: 3
 passed: 0
-issues: 0
-pending: 3
+issues: 1
+pending: 2
 skipped: 0
 blocked: 0
 
 ## Gaps
+
+### 1. Missing Stream API key blocks broadcaster UI
+status: failed
+severity: high
+source_test: Refresh tokenProvider rejoin while live
+details: `NEXT_PUBLIC_STREAM_API_KEY` is required to run the broadcaster UI in frontend runtime.
+expected: Broadcaster UI should be runnable with required environment contract documented and enforced early.
+next_action: Add explicit env validation and setup documentation for broadcaster flow.
