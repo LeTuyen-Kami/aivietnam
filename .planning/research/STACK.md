@@ -36,7 +36,7 @@ pnpm add @stream-io/video-react-sdk @stream-io/node-sdk
 
 | Choice | Alternative | Note |
 |--------|-------------|------|
-| Stream Video | Mux Live, Cloudflare Stream | Stream chosen explicitly; fits real-time WebRTC livestream + UI kit |
+| Stream Video | Cloudflare Stream, other managed live | Stream chosen explicitly; fits real-time WebRTC livestream + UI kit |
 
 ## What NOT to Use
 
