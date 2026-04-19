@@ -5,9 +5,9 @@ import { NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(_req: Request, { params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params
-  const decodedSlug = decodeURIComponent(slug ?? '')
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const decodedSlug = decodeURIComponent(id ?? '')
 
   if (!decodedSlug) {
     return NextResponse.json({ error: 'Invalid slug' }, { status: 400 })
