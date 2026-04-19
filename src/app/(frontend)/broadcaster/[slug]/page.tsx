@@ -4,6 +4,7 @@ import { headers } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
 
 import { isUsersCollectionAdmin } from '@/access/isAdminUser'
+import { getPublicStreamEnvStatus } from '@/lib/stream/publicClientEnv'
 import type { Livestream } from '@/payload-types'
 import { BroadcasterClient } from './Broadcaster.client'
 
@@ -50,11 +51,14 @@ export default async function BroadcasterPage({ params }: Args) {
 
   const livestream = result.docs[0] as Livestream | undefined
   if (!livestream) notFound()
+  const streamEnv = getPublicStreamEnvStatus()
 
   return (
     <main className="container py-10">
       <BroadcasterClient
         livestream={livestream}
+        streamApiKey={streamEnv.apiKey}
+        streamSetupMessage={streamEnv.isConfigured ? null : streamEnv.setupMessage}
         streamUser={{
           id: String(user.id),
           name: user.email,

@@ -10,10 +10,13 @@ import {
 } from '@stream-io/video-react-sdk'
 import '@stream-io/video-react-sdk/dist/css/styles.css'
 
+import { getPublicStreamSetupMessage } from '@/lib/stream/publicClientEnv'
 import type { Livestream } from '@/payload-types'
 
 type BroadcasterClientProps = {
   livestream: Pick<Livestream, 'id' | 'title' | 'callId' | 'callType' | 'status'>
+  streamApiKey: string
+  streamSetupMessage: string | null
   streamUser: {
     id: string
     name?: string
@@ -30,8 +33,13 @@ function isLiveStatus(status: Livestream['status']): boolean {
   return status === 'live'
 }
 
-export function BroadcasterClient({ livestream, streamUser }: BroadcasterClientProps) {
-  const apiKey = process.env.NEXT_PUBLIC_STREAM_API_KEY ?? ''
+export function BroadcasterClient({
+  livestream,
+  streamApiKey,
+  streamSetupMessage,
+  streamUser,
+}: BroadcasterClientProps) {
+  const apiKey = streamApiKey.trim()
   const [error, setError] = useState<string | null>(null)
   const [isStarting, setIsStarting] = useState(false)
   const [isEnding, setIsEnding] = useState(false)
@@ -174,7 +182,7 @@ export function BroadcasterClient({ livestream, streamUser }: BroadcasterClientP
 
       {!hasStreamingConfig ? (
         <p className="text-sm text-destructive">
-          NEXT_PUBLIC_STREAM_API_KEY is required to run broadcaster UI.
+          {streamSetupMessage ?? getPublicStreamSetupMessage()}
         </p>
       ) : null}
 
