@@ -37,6 +37,7 @@ import { FolderField as FolderField_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@pa
 import { LivestreamSlugActionsCell as LivestreamSlugActionsCell_48903523f1d539d5543bfea1339922c7 } from '@/components/Livestreams/LivestreamSlugActionsCell'
 import { LivestreamStatusCell as LivestreamStatusCell_8d76490c7fb6f36b217c856b9f715b42 } from '@/components/Livestreams/LivestreamStatusCell'
 import { LivestreamViewerLinksField as LivestreamViewerLinksField_5c4a3bc24cd697410f859c516abcd40e } from '@/components/Livestreams/LivestreamViewerLinksField'
+import { LivestreamBroadcasterLinksField as LivestreamBroadcasterLinksField_c14e9032d8a68680d68c9c705007f894 } from '@/components/Livestreams/LivestreamBroadcasterLinksField'
 import { LinkToDoc as LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { ReindexButton as ReindexButton_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { FolderTypeField as FolderTypeField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
@@ -88,6 +89,7 @@ export const importMap = {
   "@/components/Livestreams/LivestreamSlugActionsCell#LivestreamSlugActionsCell": LivestreamSlugActionsCell_48903523f1d539d5543bfea1339922c7,
   "@/components/Livestreams/LivestreamStatusCell#LivestreamStatusCell": LivestreamStatusCell_8d76490c7fb6f36b217c856b9f715b42,
   "@/components/Livestreams/LivestreamViewerLinksField#LivestreamViewerLinksField": LivestreamViewerLinksField_5c4a3bc24cd697410f859c516abcd40e,
+  "@/components/Livestreams/LivestreamBroadcasterLinksField#LivestreamBroadcasterLinksField": LivestreamBroadcasterLinksField_c14e9032d8a68680d68c9c705007f894,
   "@payloadcms/plugin-search/client#LinkToDoc": LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634,
   "@payloadcms/plugin-search/client#ReindexButton": ReindexButton_aead06e4cbf6b2620c5c51c9ab283634,
   "@payloadcms/next/client#FolderTypeField": FolderTypeField_2b8867833a34864a02ddf429b0728a40,

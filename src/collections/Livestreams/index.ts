@@ -78,6 +78,16 @@ export const Livestreams: CollectionConfig<'livestreams'> = {
       },
     },
     {
+      name: 'broadcasterOps',
+      type: 'ui',
+      admin: {
+        components: {
+          Field:
+            '@/components/Livestreams/LivestreamBroadcasterLinksField#LivestreamBroadcasterLinksField',
+        },
+      },
+    },
+    {
       name: 'callId',
       type: 'text',
       required: true,
