@@ -10,7 +10,7 @@ Tích hợp Stream Video vào codebase Next.js + Payload hiện có: nền tản
 - [x] **Phase 2: Payload session model** — Collection, access, generated types *(2026-04-19)*
 - [x] **Phase 3: Admin session management** — Danh sách, trạng thái, liên kết vận hành trong Payload Admin (completed 2026-04-19)
 - [x] **Phase 4: Broadcaster (admin-only)** — Trang/site tạo và bắt đầu livestream, guard role *(completed 2026-04-19)*
-- [ ] **Phase 5: Public viewer** — Trang xem livestream, trạng thái UX đầy đủ
+- [x] **Phase 5: Public viewer** — Trang xem livestream, trạng thái UX đầy đủ *(completed 2026-04-20)*
 
 ## Phase Details
 
@@ -126,12 +126,12 @@ Plans:
 
 **UI hint**: yes
 
-**Plans:** 1 / 2 complete
+**Plans:** 2 / 2 complete
 
 Plans:
 
 - [x] 05-01-PLAN.md — Server auth/data gate for `/live/[slug]` + secure slug status contract *(completed 2026-04-20)*
-- [ ] 05-02-PLAN.md — Viewer lifecycle with live-only join, polling transitions, and state UX
+- [x] 05-02-PLAN.md — Viewer lifecycle with live-only join, polling transitions, and state UX *(completed 2026-04-20)*
 
 ---
 

@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: In progress
-last_updated: "2026-04-19T18:04:38Z"
+last_updated: "2026-04-19T18:16:38Z"
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 10
-  completed_plans: 9
-  percent: 90
+  completed_plans: 10
+  percent: 100
 ---
 
 # State
@@ -39,3 +39,4 @@ See: `.planning/PROJECT.md` (updated 2026-04-19)
 - Decision: Broadcaster public env contract is centralized in `publicClientEnv` helper for deterministic setup failures.
 - Decision: Viewer route enforces login-required redirect and secure slug reads with `overrideAccess: false`.
 - Decision: Viewer status polling uses authenticated slug endpoint with no-store response behavior.
+- Decision: Viewer client now gates join to live status, auto-polls transitions, and routes token 401 through login-required return flow.
