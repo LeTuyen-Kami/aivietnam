@@ -13,6 +13,14 @@ declare global {
       STREAM_TOKEN_VALIDITY_SECONDS?: string
       /** Public Stream API key for browser SDK (Phases 4–5); not a secret per Stream. */
       NEXT_PUBLIC_STREAM_API_KEY?: string
+      /** Stream Chat public API key (can match NEXT_PUBLIC_STREAM_API_KEY). */
+      STREAM_CHAT_API_KEY?: string
+      /** Stream Chat server secret. */
+      STREAM_CHAT_API_SECRET?: string
+      /** Enable Stream Chat-backed livestream comments. */
+      STREAM_CHAT_ENABLED?: string
+      /** Optional webhook signing secret (falls back to STREAM_CHAT_API_SECRET). */
+      STREAM_CHAT_WEBHOOK_SECRET?: string
     }
   }
 }

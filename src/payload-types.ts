@@ -77,8 +77,8 @@ export interface Config {
     comments: Comment;
     'comment-likes': CommentLike;
     livestreams: Livestream;
-    'livestream-comments': LivestreamComment;
-    'livestream-comment-likes': LivestreamCommentLike;
+    'livestream-chat-messages': LivestreamChatMessage;
+    'livestream-chat-event-receipts': LivestreamChatEventReceipt;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -106,8 +106,8 @@ export interface Config {
     comments: CommentsSelect<false> | CommentsSelect<true>;
     'comment-likes': CommentLikesSelect<false> | CommentLikesSelect<true>;
     livestreams: LivestreamsSelect<false> | LivestreamsSelect<true>;
-    'livestream-comments': LivestreamCommentsSelect<false> | LivestreamCommentsSelect<true>;
-    'livestream-comment-likes': LivestreamCommentLikesSelect<false> | LivestreamCommentLikesSelect<true>;
+    'livestream-chat-messages': LivestreamChatMessagesSelect<false> | LivestreamChatMessagesSelect<true>;
+    'livestream-chat-event-receipts': LivestreamChatEventReceiptsSelect<false> | LivestreamChatEventReceiptsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -1185,6 +1185,10 @@ export interface Comment {
   id: number;
   post: number | Post;
   author: number | User;
+  /**
+   * Cho phep tra loi 1 cap (comment -> reply).
+   */
+  parentComment?: (number | null) | Comment;
   body: string;
   /**
    * Cập nhật tự động khi thành viên thích bình luận.
@@ -1209,6 +1213,7 @@ export interface CommentLike {
   id: number;
   comment: number | Comment;
   user: number | User;
+  reaction: 'like' | 'love' | 'haha' | 'wow' | 'sad' | 'angry';
   updatedAt: string;
   createdAt: string;
 }
@@ -1227,6 +1232,7 @@ export interface Livestream {
   status: 'draft' | 'scheduled' | 'live' | 'ended';
   callId: string;
   callType: string;
+  chatChannelCid?: string | null;
   description?: string | null;
   scheduledAt?: string | null;
   updatedAt: string;
@@ -1234,26 +1240,53 @@ export interface Livestream {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "livestream-comments".
+ * via the `definition` "livestream-chat-messages".
  */
-export interface LivestreamComment {
+export interface LivestreamChatMessage {
   id: number;
-  livestream: number | Livestream;
-  author: number | User;
-  body: string;
-  likeCount?: number | null;
-  status: 'pending' | 'approved' | 'rejected';
+  streamMessageId: string;
+  channelCid: string;
+  channelType: string;
+  channelId: string;
+  livestream?: (number | null) | Livestream;
+  authorStreamUserId: string;
+  authorName?: string | null;
+  text?: string | null;
+  reactionLikeCount?: number | null;
+  createdAtStream: string;
+  updatedAtStream: string;
+  deletedAt?: string | null;
+  rawPayload?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "livestream-comment-likes".
+ * via the `definition` "livestream-chat-event-receipts".
  */
-export interface LivestreamCommentLike {
+export interface LivestreamChatEventReceipt {
   id: number;
-  comment: number | LivestreamComment;
-  user: number | User;
+  eventId: string;
+  eventType: string;
+  channelCid?: string | null;
+  processedAt: string;
+  rawPayload?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1589,12 +1622,12 @@ export interface PayloadLockedDocument {
         value: number | Livestream;
       } | null)
     | ({
-        relationTo: 'livestream-comments';
-        value: number | LivestreamComment;
+        relationTo: 'livestream-chat-messages';
+        value: number | LivestreamChatMessage;
       } | null)
     | ({
-        relationTo: 'livestream-comment-likes';
-        value: number | LivestreamCommentLike;
+        relationTo: 'livestream-chat-event-receipts';
+        value: number | LivestreamChatEventReceipt;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2194,6 +2227,7 @@ export interface CommentModerationRulesSelect<T extends boolean = true> {
 export interface CommentsSelect<T extends boolean = true> {
   post?: T;
   author?: T;
+  parentComment?: T;
   body?: T;
   likeCount?: T;
   status?: T;
@@ -2208,6 +2242,7 @@ export interface CommentsSelect<T extends boolean = true> {
 export interface CommentLikesSelect<T extends boolean = true> {
   comment?: T;
   user?: T;
+  reaction?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2222,6 +2257,7 @@ export interface LivestreamsSelect<T extends boolean = true> {
   status?: T;
   callId?: T;
   callType?: T;
+  chatChannelCid?: T;
   description?: T;
   scheduledAt?: T;
   updatedAt?: T;
@@ -2229,24 +2265,35 @@ export interface LivestreamsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "livestream-comments_select".
+ * via the `definition` "livestream-chat-messages_select".
  */
-export interface LivestreamCommentsSelect<T extends boolean = true> {
+export interface LivestreamChatMessagesSelect<T extends boolean = true> {
+  streamMessageId?: T;
+  channelCid?: T;
+  channelType?: T;
+  channelId?: T;
   livestream?: T;
-  author?: T;
-  body?: T;
-  likeCount?: T;
-  status?: T;
+  authorStreamUserId?: T;
+  authorName?: T;
+  text?: T;
+  reactionLikeCount?: T;
+  createdAtStream?: T;
+  updatedAtStream?: T;
+  deletedAt?: T;
+  rawPayload?: T;
   updatedAt?: T;
   createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "livestream-comment-likes_select".
+ * via the `definition` "livestream-chat-event-receipts_select".
  */
-export interface LivestreamCommentLikesSelect<T extends boolean = true> {
-  comment?: T;
-  user?: T;
+export interface LivestreamChatEventReceiptsSelect<T extends boolean = true> {
+  eventId?: T;
+  eventType?: T;
+  channelCid?: T;
+  processedAt?: T;
+  rawPayload?: T;
   updatedAt?: T;
   createdAt?: T;
 }

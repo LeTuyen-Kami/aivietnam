@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { isUsersCollectionAdmin } from '@/access/isAdminUser'
+import { ensureLivestreamChatChannel, isStreamChatEnabled } from '@/lib/stream/chatServer'
 import { getStreamServerClient } from '@/lib/stream/server'
 import { streamUserIdFromPayloadUser } from '@/lib/stream/user'
 
@@ -81,6 +82,16 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'Publisher join not confirmed' }, { status: 409 })
   }
 
+  let chatChannelCid: string | null = null
+  if (isStreamChatEnabled() && livestream.slug) {
+    const ensuredChat = await ensureLivestreamChatChannel({
+      slug: livestream.slug,
+      createdById: streamUserId,
+      name: livestream.title ?? livestream.slug,
+    })
+    chatChannelCid = ensuredChat.channelCid
+  }
+
   const liveDoc = await payload.update({
     collection: 'livestreams',
     id: livestreamId,
@@ -88,6 +99,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       callId,
       callType,
       status: 'live',
+      chatChannelCid: chatChannelCid ?? undefined,
     },
     user,
     overrideAccess: false,
@@ -108,6 +120,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     callType,
     callId,
     callCid,
+    chatChannelCid,
     token,
     expiresAt: new Date(Date.now() + sec * 1000).toISOString(),
     status: 'live',

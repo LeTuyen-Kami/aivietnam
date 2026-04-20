@@ -43,8 +43,8 @@
   --breakpoint-lg: 64rem;
   --breakpoint-xl: 80rem;
   --breakpoint-2xl: 86rem;
+  --font-serif: 'Merriweather', sans-serif;
   --font-mono: var(--font-geist-mono);
-  --font-sans: var(--font-geist-sans);
 }
 
 @layer utilities {

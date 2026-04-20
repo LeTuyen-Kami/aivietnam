@@ -21,7 +21,7 @@ export const preventDuplicateCommentLike: CollectionBeforeValidateHook = async (
   })
 
   if (existing.docs.length > 0) {
-    throw new APIError('Bạn đã thích bình luận này rồi', 400)
+    throw new APIError('Bạn đã thả cảm xúc cho bình luận này rồi', 400)
   }
 
   return data

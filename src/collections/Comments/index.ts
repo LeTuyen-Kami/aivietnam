@@ -66,6 +66,16 @@ export const Comments: CollectionConfig = {
       maxDepth: 1,
     },
     {
+      name: 'parentComment',
+      type: 'relationship',
+      relationTo: 'comments',
+      required: false,
+      index: true,
+      admin: {
+        description: 'Cho phep tra loi 1 cap (comment -> reply).',
+      },
+    },
+    {
       name: 'body',
       type: 'textarea',
       required: true,

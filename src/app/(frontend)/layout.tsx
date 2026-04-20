@@ -3,7 +3,6 @@ import type { GeneralSetting, Media } from '@/payload-types'
 
 import { cn } from '@/utilities/ui'
 import { GeistMono } from 'geist/font/mono'
-import { GeistSans } from 'geist/font/sans'
 import React from 'react'
 
 import { AdminBar } from '@/components/AdminBar'
@@ -27,9 +26,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const faviconType = faviconMedia?.mimeType || 'image/x-icon'
 
   return (
-    <html className={cn(GeistSans.variable, GeistMono.variable)} lang="vi" suppressHydrationWarning>
+    <html className={cn(GeistMono.variable)} lang="vi" suppressHydrationWarning>
       <head>
         <InitTheme />
+        <link href="https://fonts.googleapis.com" rel="preconnect" />
+        <link crossOrigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&display=swap"
+          rel="stylesheet"
+        />
         <link href={faviconHref} rel="icon" type={faviconType} />
         <link href={faviconHref} rel="shortcut icon" type={faviconType} />
         <link href={faviconHref} rel="apple-touch-icon" />

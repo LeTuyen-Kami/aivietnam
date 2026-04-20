@@ -12,6 +12,7 @@ import '@stream-io/video-react-sdk/dist/css/styles.css'
 import { AlertCircle, Radio, Square, Video } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm'
 import { LiveViewerEngagement } from '@/app/(frontend)/live/[slug]/LiveViewerEngagement.client'
 import { getPublicStreamSetupMessage } from '@/lib/stream/publicClientEnv'
 import type { Livestream } from '@/payload-types'
@@ -77,6 +78,7 @@ export function BroadcasterClient({
   const [error, setError] = useState<string | null>(null)
   const [isStarting, setIsStarting] = useState(false)
   const [isEnding, setIsEnding] = useState(false)
+  const [isEndConfirmOpen, setIsEndConfirmOpen] = useState(false)
   const [callState, setCallState] = useState<{
     callId: string
     callType: string
@@ -156,7 +158,15 @@ export function BroadcasterClient({
         void activeClient.disconnectUser().catch(() => null)
       }
     }
-  }, [apiKey, callState.callId, callState.callType, callState.status, hasStreamingConfig, streamUser, tokenProvider])
+  }, [
+    apiKey,
+    callState.callId,
+    callState.callType,
+    callState.status,
+    hasStreamingConfig,
+    streamUser,
+    tokenProvider,
+  ])
 
   const startLivestream = useCallback(async () => {
     setError(null)
@@ -183,11 +193,6 @@ export function BroadcasterClient({
   }, [livestream.id])
 
   const endLivestream = useCallback(async () => {
-    const approved = window.confirm(
-      'Kết thúc livestream? Người xem sẽ thấy phiên đã kết thúc và không còn luồng trực tiếp.',
-    )
-    if (!approved) return
-
     setError(null)
     setIsEnding(true)
     try {
@@ -209,6 +214,22 @@ export function BroadcasterClient({
       setIsEnding(false)
     }
   }, [call, livestream.id])
+
+  useEffect(() => {
+    const shouldWarnBeforeUnload = isLiveStatus(callState.status) || isStarting || isEnding
+    if (!shouldWarnBeforeUnload) return
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+      // Keep native browser confirmation (navigator controlled message).
+      event.returnValue = ''
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+  }, [callState.status, isStarting, isEnding])
 
   const live = isLiveStatus(callState.status)
   const commentSlug = livestream.slug?.trim() ?? ''
@@ -265,10 +286,10 @@ export function BroadcasterClient({
               {isStarting ? 'Đang bắt đầu…' : 'Bắt đầu live'}
             </Button>
             <Button
-              className="gap-2"
+              className="gap-2 text-white"
               disabled={!live || isEnding}
               onClick={() => {
-                void endLivestream()
+                setIsEndConfirmOpen(true)
               }}
               size="default"
               type="button"
@@ -327,8 +348,8 @@ export function BroadcasterClient({
                   <div className="max-w-md space-y-1">
                     <p className="text-sm font-medium text-foreground">Sẵn sàng phát sóng</p>
                     <p className="text-pretty text-sm text-muted-foreground">
-                      Phiên đã có trong hệ thống nhưng chưa live. Nhấn <strong>Bắt đầu live</strong> để mở
-                      camera/mic và phát cho người xem.
+                      Phiên đã có trong hệ thống nhưng chưa live. Nhấn <strong>Bắt đầu live</strong>{' '}
+                      để mở camera/mic và phát cho người xem.
                     </p>
                   </div>
                 </div>
@@ -338,13 +359,24 @@ export function BroadcasterClient({
 
           <div className="min-w-0 xl:col-span-4">
             <div className="xl:sticky xl:top-24">
-              {commentSlug ? (
-                <LiveViewerEngagement isLive={live} slug={commentSlug} />
-              ) : null}
+              {commentSlug ? <LiveViewerEngagement isLive={live} slug={commentSlug} /> : null}
             </div>
           </div>
         </div>
       </div>
+      <ConfirmModal
+        open={isEndConfirmOpen}
+        onOpenChange={setIsEndConfirmOpen}
+        title="Kết thúc livestream?"
+        description="Người xem sẽ thấy phiên đã kết thúc và không còn luồng trực tiếp."
+        confirmLabel="Kết thúc"
+        confirmVariant="destructive"
+        pending={isEnding}
+        onConfirm={async () => {
+          await endLivestream()
+          setIsEndConfirmOpen(false)
+        }}
+      />
     </section>
   )
 }

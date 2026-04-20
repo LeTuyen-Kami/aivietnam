@@ -45,7 +45,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data, generalSetting
   return (
     <>
       {bannerMedia?.url && (
-        <div className="relative z-20 w-full" {...themeProps}>
+        <div className="relative z-10 w-full" {...themeProps}>
           {data?.bannerLink ? (
             <Link
               href={data.bannerLink}
@@ -75,7 +75,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data, generalSetting
       )}
 
       {/* Top-level sticky block (banner is a sibling so this still spans the whole scroll) */}
-      <header className="sticky top-0 z-[100] w-full shadow-sm" {...themeProps}>
+      <header className="sticky top-0 z-[1] w-full shadow-sm" {...themeProps}>
         <div className="flex w-full items-center border-b border-border/60 bg-background px-4 py-2 supports-backdrop-filter:bg-background/90 supports-backdrop-filter:backdrop-blur-md">
           <div className="w-1/3 min-w-0 pr-2">
             <HeaderWeatherBar />
@@ -113,10 +113,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data, generalSetting
               />
             ) : user ? (
               <div className="flex max-w-[min(100%,11rem)] flex-col items-end gap-0.5 text-right sm:max-w-52">
-                <span
-                  className="truncate text-sm font-medium text-foreground"
-                  title={user.email}
-                >
+                <span className="truncate text-sm font-medium text-foreground" title={user.email}>
                   {user.name?.trim() || user.email}
                 </span>
                 <button

@@ -5,11 +5,11 @@ import { describe, expect, it } from 'vitest'
 
 const commentsRoutePath = path.resolve(
   process.cwd(),
-  'src/app/(frontend)/api/livestream-comments/route.ts',
+  'src/app/(frontend)/api/stream/chat-token/route.ts',
 )
 const likeRoutePath = path.resolve(
   process.cwd(),
-  'src/app/(frontend)/api/livestream-comments/like/route.ts',
+  'src/app/(frontend)/api/stream/chat-webhook/route.ts',
 )
 const viewerClientPath = path.resolve(process.cwd(), 'src/app/(frontend)/live/[slug]/Viewer.client.tsx')
 const engagementPath = path.resolve(
@@ -18,34 +18,34 @@ const engagementPath = path.resolve(
 )
 
 describe('livestream comments and hearts contract', () => {
-  it('exposes slug-scoped list/create route with auth and access-safe livestream lookup', async () => {
+  it('exposes auth-gated chat token route and access-safe livestream lookup', async () => {
     const content = await readFile(commentsRoutePath, 'utf8')
 
-    expect(content).toContain('export async function GET')
     expect(content).toContain('export async function POST')
     expect(content).toContain("collection: 'livestreams'")
     expect(content).toContain('slug')
+    expect(content).toContain('Stream chat is disabled')
     expect(content).toContain('overrideAccess: false')
     expect(content).toContain('Unauthorized')
   })
 
-  it('provides like-toggle contract with deterministic liked and likeCount response', async () => {
+  it('verifies webhook signature and persists idempotent receipts', async () => {
     const content = await readFile(likeRoutePath, 'utf8')
 
-    expect(content).toContain("collection: 'livestream-comment-likes'")
-    expect(content).toContain('liked:')
-    expect(content).toContain('likeCount:')
-    expect(content).toContain('overrideAccess: false')
+    expect(content).toContain('verifyStreamChatWebhookSignature')
+    expect(content).toContain("collection: 'livestream-chat-event-receipts'")
+    expect(content).toContain("collection: 'livestream-chat-messages'")
+    expect(content).toContain('duplicate: true')
   })
 
-  it('wires viewer engagement component without modifying stream join contract', async () => {
+  it('wires viewer engagement to Stream Chat without modifying stream video join contract', async () => {
     const viewerContent = await readFile(viewerClientPath, 'utf8')
     const engagementContent = await readFile(engagementPath, 'utf8')
 
     expect(viewerContent).toContain('LiveViewerEngagement')
     expect(viewerContent).toContain('join({ create: false })')
-    expect(engagementContent).toContain('/api/livestream-comments')
-    expect(engagementContent).toContain('/api/livestream-comments/like')
-    expect(engagementContent).toContain('refetchInterval: 3000')
+    expect(engagementContent).toContain('/api/stream/chat-token')
+    expect(engagementContent).toContain('channel.sendMessage')
+    expect(engagementContent).toContain('channel.sendReaction')
   })
 })

@@ -1,8 +1,8 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useEffect, useMemo, useState } from 'react'
 import { Heart, MessageCircle } from 'lucide-react'
+import { StreamChat, type Channel, type Event, type LocalMessage, type UserResponse } from 'stream-chat'
 
 import { useAuth } from '@/providers/Auth'
 import { Button } from '@/components/ui/button'
@@ -10,21 +10,26 @@ import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/utilities/ui'
 
 type LivestreamComment = {
-  id: number
+  id: string
   body: string
-  status: string
   createdAt: string
-  author: { id: number; name: string | null } | null
+  author: { id: string; name: string | null } | null
   likeCount: number
   likedByMe: boolean
 }
 
-type LivestreamCommentsResponse = {
-  docs: LivestreamComment[]
-}
-
-function commentsKey(slug: string) {
-  return ['livestream-comments', slug] as const
+type ChatTokenPayload = {
+  token: string
+  apiKey?: string
+  user: {
+    id: string
+    name?: string
+  }
+  channel: {
+    channelType: string
+    channelId: string
+    channelCid: string
+  }
 }
 
 function authorInitial(name: string | null | undefined): string {
@@ -32,20 +37,28 @@ function authorInitial(name: string | null | undefined): string {
   return t.slice(0, 1).toUpperCase()
 }
 
-async function fetchLivestreamComments(slug: string): Promise<LivestreamCommentsResponse> {
-  const params = new URLSearchParams({ slug, limit: '30' })
-  const res = await fetch(`/api/livestream-comments?${params.toString()}`, {
-    credentials: 'include',
-    cache: 'no-store',
-  })
+function mapMessageToComment(message: LocalMessage): LivestreamComment {
+  const ownReactions = Array.isArray(message.own_reactions) ? message.own_reactions : []
+  const likedByMe = ownReactions.some((reaction) => reaction.type === 'like')
 
-  if (!res.ok) {
-    if (res.status === 401) return { docs: [] }
-    throw new Error('Không tải được bình luận livestream')
+  return {
+    id: message.id,
+    body: message.text ?? '',
+    createdAt:
+      typeof message.created_at === 'string'
+        ? message.created_at
+        : message.created_at
+          ? message.created_at.toISOString()
+          : new Date().toISOString(),
+    author: message.user
+      ? {
+          id: message.user.id,
+          name: message.user.name ?? null,
+        }
+      : null,
+    likeCount: message.reaction_counts?.like ?? 0,
+    likedByMe,
   }
-
-  const data = (await res.json()) as { docs?: LivestreamComment[] }
-  return { docs: data.docs ?? [] }
 }
 
 export function LiveViewerEngagement({
@@ -56,75 +69,148 @@ export function LiveViewerEngagement({
   isLive: boolean
 }) {
   const { user, loading, openAuthModal } = useAuth()
-  const queryClient = useQueryClient()
   const [body, setBody] = useState('')
+  const [channel, setChannel] = useState<Channel | null>(null)
+  const [comments, setComments] = useState<LivestreamComment[]>([])
+  const [queryError, setQueryError] = useState<string | null>(null)
+  const [createError, setCreateError] = useState<string | null>(null)
+  const [isLoadingComments, setIsLoadingComments] = useState(false)
+  const [isSending, setIsSending] = useState(false)
+  const [isTogglingLike, setIsTogglingLike] = useState(false)
+  const [chatClient, setChatClient] = useState<StreamChat | null>(null)
 
-  const query = useQuery({
-    queryKey: commentsKey(slug),
-    queryFn: () => fetchLivestreamComments(slug),
-    enabled: Boolean(slug),
-    refetchInterval: 3000,
-    refetchIntervalInBackground: true,
-  })
+  useEffect(() => {
+    if (!slug || loading || !user) return
 
-  const docs = query.data?.docs ?? []
-  const reversedDocs = useMemo(() => [...docs].reverse(), [docs])
+    let active = true
+    let activeChannel: Channel | null = null
+    let unsubscribe: (() => void) | null = null
 
-  const createMutation = useMutation({
-    mutationFn: async (text: string) => {
-      const res = await fetch('/api/livestream-comments', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug, body: text }),
-      })
-      const payload = (await res.json().catch(() => ({}))) as {
-        error?: string
-      }
-      if (!res.ok) {
-        throw new Error(payload.error ?? 'Không gửi được bình luận')
-      }
-    },
-    onSuccess: async () => {
-      setBody('')
-      await queryClient.invalidateQueries({ queryKey: commentsKey(slug) })
-    },
-  })
-
-  const likeMutation = useMutation({
-    mutationFn: async (commentId: number) => {
-      const res = await fetch('/api/livestream-comments/like', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ commentId }),
-      })
-      const payload = (await res.json().catch(() => ({}))) as {
-        error?: string
-        liked?: boolean
-        likeCount?: number
-      }
-      if (!res.ok) {
-        throw new Error(payload.error ?? 'Không cập nhật được tim')
-      }
-      return {
-        liked: Boolean(payload.liked),
-        likeCount: typeof payload.likeCount === 'number' ? payload.likeCount : 0,
-      }
-    },
-    onSuccess: (result, commentId) => {
-      queryClient.setQueryData(commentsKey(slug), (prev: LivestreamCommentsResponse | undefined) => {
-        if (!prev) return prev
-        return {
-          docs: prev.docs.map((comment) =>
-            comment.id === commentId
-              ? { ...comment, likedByMe: result.liked, likeCount: result.likeCount }
-              : comment,
-          ),
+    const setup = async () => {
+      setIsLoadingComments(true)
+      setQueryError(null)
+      try {
+        const tokenRes = await fetch('/api/stream/chat-token', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slug }),
+        })
+        if (tokenRes.status === 401) {
+          openAuthModal()
+          return
         }
-      })
-    },
-  })
+
+        const tokenPayload = (await tokenRes.json().catch(() => ({}))) as {
+          error?: string
+        } & ChatTokenPayload
+        if (!tokenRes.ok || !tokenPayload.token || !tokenPayload.apiKey) {
+          throw new Error(tokenPayload.error ?? 'Không kết nối được chat livestream')
+        }
+
+        const chatClient = StreamChat.getInstance(tokenPayload.apiKey)
+        const tokenProvider = async () => {
+          const refreshRes = await fetch('/api/stream/chat-token', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ slug }),
+          })
+          const refreshPayload = (await refreshRes.json().catch(() => ({}))) as {
+            token?: string
+            error?: string
+          }
+          if (!refreshRes.ok || !refreshPayload.token) {
+            throw new Error(refreshPayload.error ?? 'Không làm mới được token chat')
+          }
+          return refreshPayload.token
+        }
+
+        await chatClient.connectUser(tokenPayload.user as UserResponse, tokenProvider)
+        const nextChannel = chatClient.channel(
+          tokenPayload.channel.channelType,
+          tokenPayload.channel.channelId,
+        )
+        await nextChannel.watch()
+
+        if (!active) return
+        setChatClient(chatClient)
+        activeChannel = nextChannel
+        setChannel(nextChannel)
+        setComments(nextChannel.state.messages.map(mapMessageToComment))
+
+        const subscription = nextChannel.on((event: Event) => {
+          if (
+            event.type === 'message.new' ||
+            event.type === 'message.updated' ||
+            event.type === 'message.deleted' ||
+            event.type === 'reaction.new' ||
+            event.type === 'reaction.deleted' ||
+            event.type === 'reaction.updated'
+          ) {
+            setComments(nextChannel.state.messages.map(mapMessageToComment))
+          }
+        })
+        unsubscribe = () => subscription.unsubscribe()
+      } catch (error) {
+        if (!active) return
+        setQueryError(error instanceof Error ? error.message : 'Không tải được bình luận livestream')
+      } finally {
+        if (active) setIsLoadingComments(false)
+      }
+    }
+
+    void setup()
+
+    return () => {
+      active = false
+      setChannel(null)
+      if (unsubscribe) unsubscribe()
+      if (activeChannel) {
+        void activeChannel.stopWatching().catch(() => null)
+      }
+    }
+  }, [loading, openAuthModal, slug, user])
+
+  useEffect(() => {
+    return () => {
+      if (chatClient) {
+        void chatClient.disconnectUser().catch(() => null)
+      }
+    }
+  }, [chatClient])
+
+  const reversedDocs = useMemo(() => [...comments].reverse(), [comments])
+
+  const sendMessage = async (text: string) => {
+    if (!channel) throw new Error('Chat chưa sẵn sàng')
+    setCreateError(null)
+    setIsSending(true)
+    try {
+      await channel.sendMessage({ text })
+      setBody('')
+    } catch (error) {
+      setCreateError(error instanceof Error ? error.message : 'Lỗi gửi bình luận')
+    } finally {
+      setIsSending(false)
+    }
+  }
+
+  const toggleLike = async (comment: LivestreamComment) => {
+    if (!channel) return
+    setIsTogglingLike(true)
+    try {
+      if (comment.likedByMe) {
+        await channel.deleteReaction(comment.id, 'like')
+      } else {
+        await channel.sendReaction(comment.id, { type: 'like' })
+      }
+    } catch (error) {
+      setCreateError(error instanceof Error ? error.message : 'Không cập nhật được tim')
+    } finally {
+      setIsTogglingLike(false)
+    }
+  }
 
   const canSend = Boolean(user) && isLive
 
@@ -144,7 +230,7 @@ export function LiveViewerEngagement({
             <div>
               <h2 className="text-sm font-semibold tracking-tight">Trò chuyện</h2>
               <p className="text-xs text-muted-foreground">
-                {docs.length} bình luận{isLive ? '' : ' · chỉ gửi khi đang live'}
+                {comments.length} bình luận{isLive ? '' : ' · chỉ gửi khi đang live'}
               </p>
             </div>
           </div>
@@ -162,7 +248,7 @@ export function LiveViewerEngagement({
             }
             const nextBody = body.trim()
             if (!nextBody || !isLive) return
-            createMutation.mutate(nextBody)
+            void sendMessage(nextBody)
           }}
         >
           <Textarea
@@ -186,28 +272,20 @@ export function LiveViewerEngagement({
           />
           <Button
             className="w-full sm:w-auto"
-            disabled={createMutation.isPending || !body.trim() || !canSend}
+            disabled={isSending || !body.trim() || !canSend || !channel}
             size="sm"
             type="submit"
           >
-            {createMutation.isPending ? 'Đang gửi…' : 'Gửi'}
+            {isSending ? 'Đang gửi…' : 'Gửi'}
           </Button>
         </form>
 
-        {createMutation.isError ? (
-          <p className="text-xs text-destructive">
-            {createMutation.error instanceof Error ? createMutation.error.message : 'Lỗi gửi bình luận'}
-          </p>
-        ) : null}
+        {createError ? <p className="text-xs text-destructive">{createError}</p> : null}
 
-        {query.isError ? (
-          <p className="text-xs text-destructive">
-            {query.error instanceof Error ? query.error.message : 'Không tải được bình luận livestream'}
-          </p>
-        ) : null}
+        {queryError ? <p className="text-xs text-destructive">{queryError}</p> : null}
 
         <div className="max-h-[min(22rem,55vh)] space-y-2 overflow-y-auto pr-1 [-webkit-overflow-scrolling:touch]">
-          {query.isPending ? (
+          {isLoadingComments ? (
             <p className="py-6 text-center text-xs text-muted-foreground">Đang tải bình luận…</p>
           ) : reversedDocs.length === 0 ? (
             <p className="py-6 text-center text-xs text-muted-foreground">Chưa có bình luận. Hãy mở đầu cuộc trò chuyện.</p>
@@ -247,14 +325,14 @@ export function LiveViewerEngagement({
                         'hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400',
                         comment.likedByMe && 'text-rose-600 dark:text-rose-400',
                       )}
-                      disabled={likeMutation.isPending}
+                      disabled={isTogglingLike || !channel}
                       type="button"
                       onClick={() => {
                         if (!user) {
                           openAuthModal()
                           return
                         }
-                        likeMutation.mutate(comment.id)
+                        void toggleLike(comment)
                       }}
                     >
                       <Heart className={cn('h-4 w-4', comment.likedByMe && 'fill-current')} />

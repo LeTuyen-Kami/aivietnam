@@ -90,6 +90,7 @@ export async function POST(req: NextRequest) {
       data: {
         comment: commentId,
         user: member.id,
+        reaction: 'like',
       },
       draft: false,
       req: payloadReq,

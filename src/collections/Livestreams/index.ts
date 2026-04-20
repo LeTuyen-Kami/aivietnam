@@ -99,6 +99,14 @@ export const Livestreams: CollectionConfig<'livestreams'> = {
       required: true,
     },
     {
+      name: 'chatChannelCid',
+      type: 'text',
+      admin: {
+        readOnly: true,
+      },
+      index: true,
+    },
+    {
       name: 'description',
       type: 'textarea',
     },

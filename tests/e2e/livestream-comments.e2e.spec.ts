@@ -1,25 +1,21 @@
 import { expect, test } from '@playwright/test'
 
 test.describe('livestream comments api', () => {
-  test('requires auth for livestream comments endpoints', async ({ page }) => {
-    const listResponse = await page.request.get(
-      'http://localhost:3000/api/livestream-comments?slug=demo-slug',
-    )
-    expect(listResponse.status()).toBe(401)
-
-    const createResponse = await page.request.post('http://localhost:3000/api/livestream-comments', {
+  test('requires auth for stream chat token endpoint', async ({ page }) => {
+    const tokenResponse = await page.request.post('http://localhost:3000/api/stream/chat-token', {
       data: {
         slug: 'demo-slug',
-        body: 'hello from test',
       },
     })
-    expect(createResponse.status()).toBe(401)
+    expect(tokenResponse.status()).toBe(401)
+  })
 
-    const likeResponse = await page.request.post('http://localhost:3000/api/livestream-comments/like', {
+  test('rejects unsigned webhook events', async ({ page }) => {
+    const webhookResponse = await page.request.post('http://localhost:3000/api/stream/chat-webhook', {
       data: {
-        commentId: 1,
+        type: 'message.new',
       },
     })
-    expect(likeResponse.status()).toBe(401)
+    expect(webhookResponse.status()).toBe(401)
   })
 })

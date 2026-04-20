@@ -167,79 +167,81 @@ export const NewsletterSignupBlock: React.FC<NewsletterSignupBlockType> = (props
   const termsWord = 'điều khoản'
 
   return (
-    <div
-      className={cn(
-        'rounded-sm border border-neutral-200 px-8 py-10 md:px-10 bg-[#FDFBF7]',
-        className,
-      )}
-    >
-      {hasSubmitted && form.confirmationType === 'message' && form.confirmationMessage ? (
-        <RichText
-          className="font-serif text-neutral-800 [&_a]:underline"
-          data={form.confirmationMessage}
-          enableGutter={false}
-        />
-      ) : hasSubmitted ? (
-        <p className="font-serif text-lg text-neutral-800">Cảm ơn bạn đã đăng ký!</p>
-      ) : (
-        <form className="space-y-5" onSubmit={onSubmit} noValidate>
-          <div className="flex items-center gap-2 font-serif text-[15px] text-neutral-500">
-            <Mail aria-hidden className="h-5 w-5 shrink-0 text-amber-500" strokeWidth={2} />
-            <span>{eyebrow}</span>
-          </div>
+    <div className="container">
+      <div
+        className={cn(
+          'rounded-sm border border-neutral-200 px-8 py-10 md:px-10 bg-[#FDFBF7]',
+          className,
+        )}
+      >
+        {hasSubmitted && form.confirmationType === 'message' && form.confirmationMessage ? (
+          <RichText
+            className="font-serif text-neutral-800 [&_a]:underline"
+            data={form.confirmationMessage}
+            enableGutter={false}
+          />
+        ) : hasSubmitted ? (
+          <p className="font-serif text-lg text-neutral-800">Cảm ơn bạn đã đăng ký!</p>
+        ) : (
+          <form className="space-y-5" onSubmit={onSubmit} noValidate>
+            <div className="flex items-center gap-2 font-serif text-[15px] text-neutral-500">
+              <Mail aria-hidden className="h-5 w-5 shrink-0 text-amber-500" strokeWidth={2} />
+              <span>{eyebrow}</span>
+            </div>
 
-          <h2 className="font-serif text-2xl font-bold leading-tight text-neutral-900 md:text-[1.65rem]">
-            {headline}
-          </h2>
+            <h2 className="font-serif text-2xl font-bold leading-tight text-neutral-900 md:text-[1.65rem]">
+              {headline}
+            </h2>
 
-          {description ? (
-            <p className="font-serif text-sm leading-relaxed text-neutral-700 md:text-[15px]">
-              {description}
-            </p>
-          ) : null}
+            {description ? (
+              <p className="font-serif text-sm leading-relaxed text-neutral-700 md:text-[15px]">
+                {description}
+              </p>
+            ) : null}
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
-            <label className="sr-only" htmlFor="newsletter-email">
-              Email
-            </label>
-            <input
-              autoComplete="email"
-              className="min-h-11 flex-1 rounded-md border border-neutral-300 bg-white px-3 py-2 font-sans text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-200"
-              disabled={isLoading}
-              id="newsletter-email"
-              name="email"
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder={emailPlaceholder ?? 'Email'}
-              type="email"
-              value={email}
-            />
-            <button
-              className="min-h-11 shrink-0 rounded-md bg-[#D93025] px-6 font-sans text-sm font-bold uppercase tracking-wide text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-              disabled={isLoading}
-              type="submit"
-            >
-              {isLoading ? '…' : submitLabel}
-            </button>
-          </div>
-
-          {error ? (
-            <p className="text-sm text-red-600" role="alert">
-              {error.status ? `${error.status}: ` : ''}
-              {error.message}
-            </p>
-          ) : null}
-
-          {disclaimer ? (
-            <p className="font-serif text-[11px] leading-snug md:text-xs">
-              <DisclaimerWithTermsLink
-                termsUrl={termsUrl}
-                termsWord={termsWord}
-                text={disclaimer}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+              <label className="sr-only" htmlFor="newsletter-email">
+                Email
+              </label>
+              <input
+                autoComplete="email"
+                className="min-h-11 flex-1 rounded-md border border-neutral-300 bg-white px-3 py-2 font-sans text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-200"
+                disabled={isLoading}
+                id="newsletter-email"
+                name="email"
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={emailPlaceholder ?? 'Email'}
+                type="email"
+                value={email}
               />
-            </p>
-          ) : null}
-        </form>
-      )}
+              <button
+                className="min-h-11 shrink-0 rounded-md bg-[#D93025] px-6 font-sans text-sm font-bold uppercase tracking-wide text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                disabled={isLoading}
+                type="submit"
+              >
+                {isLoading ? '…' : submitLabel}
+              </button>
+            </div>
+
+            {error ? (
+              <p className="text-sm text-red-600" role="alert">
+                {error.status ? `${error.status}: ` : ''}
+                {error.message}
+              </p>
+            ) : null}
+
+            {disclaimer ? (
+              <p className="font-serif text-[11px] leading-snug md:text-xs">
+                <DisclaimerWithTermsLink
+                  termsUrl={termsUrl}
+                  termsWord={termsWord}
+                  text={disclaimer}
+                />
+              </p>
+            ) : null}
+          </form>
+        )}
+      </div>
     </div>
   )
 }

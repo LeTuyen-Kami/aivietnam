@@ -43,6 +43,20 @@ export const CommentLikes: CollectionConfig = {
       required: true,
       index: true,
     },
+    {
+      name: 'reaction',
+      type: 'select',
+      required: true,
+      defaultValue: 'like',
+      options: [
+        { label: 'Like', value: 'like' },
+        { label: 'Love', value: 'love' },
+        { label: 'Haha', value: 'haha' },
+        { label: 'Wow', value: 'wow' },
+        { label: 'Sad', value: 'sad' },
+        { label: 'Angry', value: 'angry' },
+      ],
+    },
   ],
   hooks: {
     beforeValidate: [preventDuplicateCommentLike],
