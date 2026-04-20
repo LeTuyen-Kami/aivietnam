@@ -7,7 +7,12 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const decodedSlug = decodeURIComponent(id ?? '')
+  let decodedSlug = ''
+  try {
+    decodedSlug = decodeURIComponent(id ?? '')
+  } catch {
+    return NextResponse.json({ error: 'Invalid slug' }, { status: 400 })
+  }
 
   if (!decodedSlug) {
     return NextResponse.json({ error: 'Invalid slug' }, { status: 400 })

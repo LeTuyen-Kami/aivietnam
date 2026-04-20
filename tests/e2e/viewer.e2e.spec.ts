@@ -7,10 +7,13 @@ test.describe('viewer', () => {
     await expect(page).toHaveURL(/returnTo/)
   })
 
-  test('covers scheduled live ended viewer route states', async () => {
-    expect('scheduled').toContain('scheduled')
-    expect('live').toContain('live')
-    expect('ended').toContain('ended')
-    expect('/live/demo').toContain('/live/')
+  test('returns safe errors for malformed viewer slug inputs', async ({ page }) => {
+    const malformedStatus = await page.request.get(
+      'http://localhost:3000/api/livestreams/%E0%A4%A/status',
+    )
+    expect(malformedStatus.status()).toBe(400)
+
+    const malformedViewerPage = await page.goto('http://localhost:3000/live/%E0%A4%A')
+    expect(malformedViewerPage?.status()).toBe(400)
   })
 })

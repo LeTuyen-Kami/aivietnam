@@ -26,11 +26,11 @@ export default async function BroadcasterPage({ params }: Args) {
 
   if (!isUsersCollectionAdmin(user)) {
     return (
-      <main className="container py-16">
-        <section className="mx-auto max-w-2xl rounded-lg border border-border bg-card p-6">
-          <h1 className="text-2xl font-semibold">Access denied</h1>
-          <p className="mt-3 text-muted-foreground">
-            Only admins can broadcast livestreams.
+      <main className="container py-12 sm:py-16">
+        <section className="mx-auto max-w-lg rounded-2xl border border-border/80 bg-card p-8 shadow-lg ring-1 ring-black/5 dark:ring-white/10">
+          <h1 className="text-2xl font-semibold tracking-tight">Không có quyền</h1>
+          <p className="mt-3 text-pretty text-muted-foreground">
+            Chỉ tài khoản quản trị mới có thể mở trang phát sóng livestream.
           </p>
         </section>
       </main>
@@ -54,7 +54,7 @@ export default async function BroadcasterPage({ params }: Args) {
   const streamEnv = getPublicStreamEnvStatus()
 
   return (
-    <main className="container py-10">
+    <main className="container max-w-6xl py-8 sm:py-12">
       <BroadcasterClient
         livestream={livestream}
         streamApiKey={streamEnv.apiKey}

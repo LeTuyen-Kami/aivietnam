@@ -33,7 +33,12 @@ function resolveViewerEmail(user: unknown): string | null {
 
 export default async function ViewerPage({ params }: Args) {
   const { slug = '' } = await params
-  const decodedSlug = decodeURIComponent(slug)
+  let decodedSlug = ''
+  try {
+    decodedSlug = decodeURIComponent(slug)
+  } catch {
+    notFound()
+  }
 
   if (!decodedSlug) notFound()
 
@@ -65,7 +70,7 @@ export default async function ViewerPage({ params }: Args) {
   const streamEnv = getPublicStreamEnvStatus()
 
   return (
-    <main className="container py-10">
+    <main className="container py-8 sm:py-12">
       <ViewerClient
         livestream={livestream}
         streamApiKey={streamEnv.apiKey}

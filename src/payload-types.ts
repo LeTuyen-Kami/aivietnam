@@ -77,6 +77,8 @@ export interface Config {
     comments: Comment;
     'comment-likes': CommentLike;
     livestreams: Livestream;
+    'livestream-comments': LivestreamComment;
+    'livestream-comment-likes': LivestreamCommentLike;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -104,6 +106,8 @@ export interface Config {
     comments: CommentsSelect<false> | CommentsSelect<true>;
     'comment-likes': CommentLikesSelect<false> | CommentLikesSelect<true>;
     livestreams: LivestreamsSelect<false> | LivestreamsSelect<true>;
+    'livestream-comments': LivestreamCommentsSelect<false> | LivestreamCommentsSelect<true>;
+    'livestream-comment-likes': LivestreamCommentLikesSelect<false> | LivestreamCommentLikesSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -1230,6 +1234,31 @@ export interface Livestream {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "livestream-comments".
+ */
+export interface LivestreamComment {
+  id: number;
+  livestream: number | Livestream;
+  author: number | User;
+  body: string;
+  likeCount?: number | null;
+  status: 'pending' | 'approved' | 'rejected';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "livestream-comment-likes".
+ */
+export interface LivestreamCommentLike {
+  id: number;
+  comment: number | LivestreamComment;
+  user: number | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1558,6 +1587,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'livestreams';
         value: number | Livestream;
+      } | null)
+    | ({
+        relationTo: 'livestream-comments';
+        value: number | LivestreamComment;
+      } | null)
+    | ({
+        relationTo: 'livestream-comment-likes';
+        value: number | LivestreamCommentLike;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2187,6 +2224,29 @@ export interface LivestreamsSelect<T extends boolean = true> {
   callType?: T;
   description?: T;
   scheduledAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "livestream-comments_select".
+ */
+export interface LivestreamCommentsSelect<T extends boolean = true> {
+  livestream?: T;
+  author?: T;
+  body?: T;
+  likeCount?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "livestream-comment-likes_select".
+ */
+export interface LivestreamCommentLikesSelect<T extends boolean = true> {
+  comment?: T;
+  user?: T;
   updatedAt?: T;
   createdAt?: T;
 }
