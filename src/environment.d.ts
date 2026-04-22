@@ -5,6 +5,7 @@ declare global {
       DATABASE_URL: string
       NEXT_PUBLIC_SERVER_URL: string
       VERCEL_PROJECT_PRODUCTION_URL: string
+      BLOB_READ_WRITE_TOKEN?: string
       /** GetStream server API key (keep server-only). */
       STREAM_API_KEY?: string
       /** GetStream server secret (keep server-only). */

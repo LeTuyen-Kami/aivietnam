@@ -1,4 +1,5 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import sharp from 'sharp'
 import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
@@ -88,7 +89,17 @@ export default buildConfig({
   ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer, GeneralSettings],
-  plugins,
+  plugins: [
+    ...plugins,
+    vercelBlobStorage({
+      collections: {
+        [Media.slug]: true,
+      },
+      enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
+      clientUploads: true,
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    }),
+  ],
   secret: process.env.PAYLOAD_SECRET,
   sharp,
   typescript: {
