@@ -102,7 +102,7 @@ export const plugins: Plugin[] = [
       },
       pages: {
         description: 'Site pages and landing content',
-        enabled: { find: true, create: false, update: true, delete: false },
+        enabled: { find: true, create: true, update: true, delete: false },
       },
       media: {
         description: 'Uploaded images and files',
@@ -117,8 +117,13 @@ export const plugins: Plugin[] = [
         enabled: { find: true, create: true, update: true, delete: true },
       },
       'form-submissions': {
-        description: 'Form submission records (newsletter/API; website posts via /api/form-submissions)',
+        description:
+          'Form submission records (newsletter/API; website posts via /api/form-submissions)',
         enabled: { find: true, create: true, update: false, delete: false },
+      },
+      listings: {
+        description: 'Listings and ads',
+        enabled: { find: true, create: true, update: true, delete: true },
       },
     },
     globals: {

@@ -12,13 +12,16 @@ import { imageHero1 } from './image-hero-1'
 import { SEED_CATEGORY_DEFS, seedBulkPosts } from './bulk-posts'
 import { buildFooterData } from './footer'
 import { buildGeneralSettingsData } from './general-settings'
+import { seedListingCategories, seedListings } from './listings'
 
 /** Thứ tự xóa phải tôn trọng FK Postgres (ví dụ posts → categories). Không dùng Promise.all song song. */
 const COLLECTIONS_CLEAR_ORDER: CollectionSlug[] = [
   'search',
   'form-submissions',
   'posts',
+  'listings',
   'pages',
+  'listing-categories',
   'categories',
   'media',
   'forms',
@@ -168,6 +171,10 @@ export const seed = async ({
     categoryDocs.push(doc)
   }
 
+  payload.logger.info(`— Seeding listing categories…`)
+
+  const listingCategoryDocs = await seedListingCategories({ payload, req })
+
   payload.logger.info(`— Seeding posts (50: 5 categories × 10)…`)
 
   await seedBulkPosts({
@@ -176,6 +183,16 @@ export const seed = async ({
     demoAuthor,
     images: [image1Doc, image2Doc, image3Doc],
     categoryDocs,
+  })
+
+  payload.logger.info(`— Seeding listings (8)…`)
+
+  await seedListings({
+    payload,
+    req,
+    author: demoAuthor,
+    categoryDocs: listingCategoryDocs,
+    mediaDocs: [image1Doc, image2Doc, image3Doc, imageHomeDoc],
   })
 
   payload.logger.info(`— Seeding contact form...`)

@@ -12,6 +12,8 @@ import { Comments } from './collections/Comments'
 import { Livestreams } from './collections/Livestreams'
 import { LivestreamChatMessages } from './collections/LivestreamChatMessages'
 import { LivestreamChatEventReceipts } from './collections/LivestreamChatEventReceipts'
+import { ListingCategories } from './collections/ListingCategories'
+import { Listings } from './collections/Listings'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
@@ -73,12 +75,17 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
     },
+    // This project points at a shared remote Postgres instance.
+    // Disable dev-time schema push so all shape changes go through explicit migrations.
+    push: false,
   }),
   collections: [
     Pages,
     Posts,
     Media,
     Categories,
+    ListingCategories,
+    Listings,
     Users,
     CommentModerationRules,
     Comments,
@@ -96,7 +103,6 @@ export default buildConfig({
         [Media.slug]: true,
       },
       enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
-      clientUploads: true,
       token: process.env.BLOB_READ_WRITE_TOKEN,
     }),
   ],

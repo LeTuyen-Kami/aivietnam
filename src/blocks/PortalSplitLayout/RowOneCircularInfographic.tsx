@@ -245,7 +245,7 @@ function RowOneCircularInfographic({
     <div
       ref={containerRef}
       className={cn(
-        'relative mx-auto my-4 aspect-square w-full max-w-[min(100%,28rem)]',
+        'relative mx-auto my-4 aspect-square w-full max-w-[min(100%,28rem)] z-0',
         'rounded-4xl border border-stone-200/70 bg-[#f7f4ed]',
         'shadow-[0_1px_0_0_rgba(255,255,255,0.65)_inset,0_24px_48px_-28px_rgba(15,23,42,0.18)]',
         'dark:border-white/10 dark:bg-slate-950/50 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.05)_inset,0_20px_40px_-24px_rgba(0,0,0,0.55)]',
@@ -266,7 +266,7 @@ function RowOneCircularInfographic({
       />
 
       {hasGraphic && (
-        <div className="absolute left-1/2 top-1/2 z-20 w-[min(40%,8.5rem)] -translate-x-1/2 -translate-y-1/2">
+        <div className="absolute left-1/2 top-1/2 z-2 w-[min(40%,8.5rem)] -translate-x-1/2 -translate-y-1/2">
           <div
             className={cn(
               'rounded-full p-[3px]',
@@ -317,10 +317,10 @@ function RowOneCircularInfographic({
             ref={(node) => {
               blockRefs.current[i] = node
             }}
-            className="absolute left-1/2 top-1/2 z-30 origin-center will-change-transform"
+            className="absolute left-1/2 top-1/2 z-3 origin-center will-change-transform"
             style={{
               transform: `translate(-50%, -50%) rotate(${α}deg) translateY(calc(-1 * var(--orbit-r, clamp(4.25rem, 22vmin, 7.25rem)))) rotate(${-α}deg)`,
-              zIndex: 30 + i,
+              zIndex: 1 + i,
             }}
           >
             <div

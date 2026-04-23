@@ -72,6 +72,8 @@ export interface Config {
     posts: Post;
     media: Media;
     categories: Category;
+    'listing-categories': ListingCategory;
+    listings: Listing;
     users: User;
     'comment-moderation-rules': CommentModerationRule;
     comments: Comment;
@@ -101,6 +103,8 @@ export interface Config {
     posts: PostsSelect<false> | PostsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    'listing-categories': ListingCategoriesSelect<false> | ListingCategoriesSelect<true>;
+    listings: ListingsSelect<false> | ListingsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'comment-moderation-rules': CommentModerationRulesSelect<false> | CommentModerationRulesSelect<true>;
     comments: CommentsSelect<false> | CommentsSelect<true>;
@@ -242,16 +246,22 @@ export interface Page {
   };
   layout: (
     | CallToActionBlock
+    | AIEcosystemMapBlock
     | ContentBlock
     | MediaBlock
     | EnhancedMediaBlock
     | ArchiveBlock
     | FormBlock
     | FeaturedPostsSideMediaBlock
+    | HeroCarouselBlock
     | PortalSplitLayoutBlock
     | HumanitiesCornerBlock
     | MediaHubTriptychBlock
     | NewsletterSignupBlock
+    | YouTubeEmbedBlock
+    | ListingsCategoriesGridBlock
+    | ListingsCategoryItemBlock
+    | MarketplaceStatsBlock
   )[];
   meta?: {
     title?: string | null;
@@ -566,6 +576,152 @@ export interface CallToActionBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'cta';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AIEcosystemMapBlock".
+ */
+export interface AIEcosystemMapBlock {
+  heading: string;
+  centerImage: number | Media;
+  /**
+   * Optional link for the center image.
+   */
+  centerImageHref?: string | null;
+  centerTopLeftLabel: string;
+  centerTopMiddleLabel: string;
+  centerTopRightLabel: string;
+  centerMiddleLeftLabel: string;
+  centerMiddleRightLabel: string;
+  centerRightUpperLabel: string;
+  centerBottomLeftLabel: string;
+  centerBottomMiddleLabel: string;
+  centerBottomRightLabel: string;
+  centerBottomFarLeftLabel: string;
+  centerBottomFarRightLabel: string;
+  forumCard: {
+    title: string;
+    image: number | Media;
+    /**
+     * Internal path (e.g. /posts/my-slug) or full URL.
+     */
+    href?: string | null;
+  };
+  studyGroupCard: {
+    title: string;
+    image: number | Media;
+    /**
+     * Internal path (e.g. /posts/my-slug) or full URL.
+     */
+    href?: string | null;
+  };
+  policyCard: {
+    title: string;
+    image: number | Media;
+    /**
+     * Internal path (e.g. /posts/my-slug) or full URL.
+     */
+    href?: string | null;
+  };
+  openSourceCard: {
+    title: string;
+    image: number | Media;
+    /**
+     * Internal path (e.g. /posts/my-slug) or full URL.
+     */
+    href?: string | null;
+  };
+  datasetCard: {
+    title: string;
+    image: number | Media;
+    /**
+     * Internal path (e.g. /posts/my-slug) or full URL.
+     */
+    href?: string | null;
+  };
+  libraryCard: {
+    title: string;
+    image: number | Media;
+    /**
+     * Internal path (e.g. /posts/my-slug) or full URL.
+     */
+    href?: string | null;
+  };
+  toolsCard: {
+    title: string;
+    image: number | Media;
+    /**
+     * Internal path (e.g. /posts/my-slug) or full URL.
+     */
+    href?: string | null;
+  };
+  allianceCard: {
+    title: string;
+    image: number | Media;
+    /**
+     * Internal path (e.g. /posts/my-slug) or full URL.
+     */
+    href?: string | null;
+  };
+  mindsetCard: {
+    title: string;
+    image: number | Media;
+    /**
+     * Internal path (e.g. /posts/my-slug) or full URL.
+     */
+    href?: string | null;
+  };
+  jobsCard: {
+    title: string;
+    image: number | Media;
+    /**
+     * Internal path (e.g. /posts/my-slug) or full URL.
+     */
+    href?: string | null;
+  };
+  reportsCard: {
+    title: string;
+    image: number | Media;
+    /**
+     * Internal path (e.g. /posts/my-slug) or full URL.
+     */
+    href?: string | null;
+  };
+  eventsCard: {
+    title: string;
+    image: number | Media;
+    /**
+     * Internal path (e.g. /posts/my-slug) or full URL.
+     */
+    href?: string | null;
+  };
+  startupCard: {
+    title: string;
+    image: number | Media;
+    /**
+     * Internal path (e.g. /posts/my-slug) or full URL.
+     */
+    href?: string | null;
+  };
+  cooperationCard: {
+    title: string;
+    image: number | Media;
+    /**
+     * Internal path (e.g. /posts/my-slug) or full URL.
+     */
+    href?: string | null;
+  };
+  communityProjectsCard: {
+    title: string;
+    image: number | Media;
+    /**
+     * Internal path (e.g. /posts/my-slug) or full URL.
+     */
+    href?: string | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'aiEcosystemMap';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -934,6 +1090,59 @@ export interface FeaturedPostsSideMediaBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HeroCarouselBlock".
+ */
+export interface HeroCarouselBlock {
+  /**
+   * Autoplay delay in milliseconds. Set 0 to disable autoplay.
+   */
+  autoplayDelay?: number | null;
+  slides: {
+    type: 'image' | 'ctaHero';
+    media: number | Media;
+    /**
+     * Optional link for image slides.
+     */
+    href?: string | null;
+    eyebrow?: string | null;
+    title?: string | null;
+    description?: string | null;
+    links?:
+      | {
+          link: {
+            type?: ('reference' | 'custom') | null;
+            newTab?: boolean | null;
+            reference?:
+              | ({
+                  relationTo: 'categories';
+                  value: number | Category;
+                } | null)
+              | ({
+                  relationTo: 'pages';
+                  value: number | Page;
+                } | null)
+              | ({
+                  relationTo: 'posts';
+                  value: number | Post;
+                } | null);
+            url?: string | null;
+            label: string;
+            /**
+             * Choose how the link should be rendered.
+             */
+            appearance?: ('default' | 'outline') | null;
+          };
+          id?: string | null;
+        }[]
+      | null;
+    id?: string | null;
+  }[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'heroCarousel';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "PortalSplitLayoutBlock".
  */
 export interface PortalSplitLayoutBlock {
@@ -1159,6 +1368,156 @@ export interface NewsletterSignupBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'newsletterSignup';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "YouTubeEmbedBlock".
+ */
+export interface YouTubeEmbedBlock {
+  title?: string | null;
+  videoTitle: string;
+  youtubeUrl: string;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'youtubeEmbed';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ListingsCategoriesGridBlock".
+ */
+export interface ListingsCategoriesGridBlock {
+  title?: string | null;
+  source: 'all' | 'manual';
+  categories?: (number | ListingCategory)[] | null;
+  /**
+   * Only used when source is "All categories".
+   */
+  limit?: number | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'listingsCategoriesGrid';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "listing-categories".
+ */
+export interface ListingCategory {
+  id: number;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Ảnh thumbnail đại diện cho danh mục listings.
+   */
+  thumbnail?: (number | null) | Media;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ListingsCategoryItemBlock".
+ */
+export interface ListingsCategoryItemBlock {
+  category: number | ListingCategory;
+  /**
+   * Optional custom title. Leave empty to use category title.
+   */
+  title?: string | null;
+  limit?: number | null;
+  viewMoreLabel?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'listingsCategoryItem';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketplaceStatsBlock".
+ */
+export interface MarketplaceStatsBlock {
+  title: string;
+  subtitle?: string | null;
+  items?:
+    | {
+        icon: 'users' | 'sale' | 'rent';
+        value: string;
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  buttonLabel?: string | null;
+  buttonUrl?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketplaceStats';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "listings".
+ */
+export interface Listing {
+  id: number;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Chọn một hoặc nhiều danh mục cho tin đăng này.
+   */
+  categories?: (number | ListingCategory)[] | null;
+  listingType: 'job-seeking' | 'job-offer' | 'service' | 'other';
+  /**
+   * Ví dụ: Thỏa thuận, 15 triệu/tháng, 500.000 VNĐ/buổi.
+   */
+  priceLabel: string;
+  /**
+   * Mô tả ngắn hiển thị ở phần mở đầu.
+   */
+  summary?: string | null;
+  /**
+   * Nội dung mô tả chính của tin đăng.
+   */
+  description: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  contactPhone: string;
+  city: string;
+  district?: string | null;
+  address?: string | null;
+  packageName?: string | null;
+  contactName: string;
+  supportPhone?: string | null;
+  statusLabel?: ('available' | 'hidden' | 'closed') | null;
+  zaloUrl?: string | null;
+  avatar?: (number | null) | Media;
+  /**
+   * Ảnh đại diện của tin khi hiển thị trong danh sách cập nhật.
+   */
+  thumbnail?: (number | null) | Media;
+  /**
+   * Bộ sưu tập ảnh của tin đăng.
+   */
+  gallery?: (number | Media)[] | null;
+  createdBy: number | User;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * Từ khóa cấm hoặc user bị chặn bình luận.
@@ -1400,6 +1759,10 @@ export interface PayloadMcpApiKey {
      */
     find?: boolean | null;
     /**
+     * Allow clients to create pages.
+     */
+    create?: boolean | null;
+    /**
      * Allow clients to update pages.
      */
     update?: boolean | null;
@@ -1443,6 +1806,24 @@ export interface PayloadMcpApiKey {
      * Allow clients to create form-submissions.
      */
     create?: boolean | null;
+  };
+  listings?: {
+    /**
+     * Allow clients to find listings.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create listings.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update listings.
+     */
+    update?: boolean | null;
+    /**
+     * Allow clients to delete listings.
+     */
+    delete?: boolean | null;
   };
   header?: {
     /**
@@ -1602,6 +1983,14 @@ export interface PayloadLockedDocument {
         value: number | Category;
       } | null)
     | ({
+        relationTo: 'listing-categories';
+        value: number | ListingCategory;
+      } | null)
+    | ({
+        relationTo: 'listings';
+        value: number | Listing;
+      } | null)
+    | ({
         relationTo: 'users';
         value: number | User;
       } | null)
@@ -1737,16 +2126,22 @@ export interface PagesSelect<T extends boolean = true> {
     | T
     | {
         cta?: T | CallToActionBlockSelect<T>;
+        aiEcosystemMap?: T | AIEcosystemMapBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
         enhancedMediaBlock?: T | EnhancedMediaBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
         featuredPostsSideMedia?: T | FeaturedPostsSideMediaBlockSelect<T>;
+        heroCarousel?: T | HeroCarouselBlockSelect<T>;
         portalSplitLayout?: T | PortalSplitLayoutBlockSelect<T>;
         humanitiesCorner?: T | HumanitiesCornerBlockSelect<T>;
         mediaHubTriptych?: T | MediaHubTriptychBlockSelect<T>;
         newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
+        youtubeEmbed?: T | YouTubeEmbedBlockSelect<T>;
+        listingsCategoriesGrid?: T | ListingsCategoriesGridBlockSelect<T>;
+        listingsCategoryItem?: T | ListingsCategoryItemBlockSelect<T>;
+        marketplaceStats?: T | MarketplaceStatsBlockSelect<T>;
       };
   meta?:
     | T
@@ -1782,6 +2177,133 @@ export interface CallToActionBlockSelect<T extends boolean = true> {
               appearance?: T;
             };
         id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AIEcosystemMapBlock_select".
+ */
+export interface AIEcosystemMapBlockSelect<T extends boolean = true> {
+  heading?: T;
+  centerImage?: T;
+  centerImageHref?: T;
+  centerTopLeftLabel?: T;
+  centerTopMiddleLabel?: T;
+  centerTopRightLabel?: T;
+  centerMiddleLeftLabel?: T;
+  centerMiddleRightLabel?: T;
+  centerRightUpperLabel?: T;
+  centerBottomLeftLabel?: T;
+  centerBottomMiddleLabel?: T;
+  centerBottomRightLabel?: T;
+  centerBottomFarLeftLabel?: T;
+  centerBottomFarRightLabel?: T;
+  forumCard?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        href?: T;
+      };
+  studyGroupCard?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        href?: T;
+      };
+  policyCard?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        href?: T;
+      };
+  openSourceCard?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        href?: T;
+      };
+  datasetCard?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        href?: T;
+      };
+  libraryCard?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        href?: T;
+      };
+  toolsCard?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        href?: T;
+      };
+  allianceCard?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        href?: T;
+      };
+  mindsetCard?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        href?: T;
+      };
+  jobsCard?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        href?: T;
+      };
+  reportsCard?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        href?: T;
+      };
+  eventsCard?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        href?: T;
+      };
+  startupCard?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        href?: T;
+      };
+  cooperationCard?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        href?: T;
+      };
+  communityProjectsCard?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        href?: T;
       };
   id?: T;
   blockName?: T;
@@ -1878,6 +2400,41 @@ export interface FeaturedPostsSideMediaBlockSelect<T extends boolean = true> {
   smallRowPromoHref?: T;
   sideMedia?: T;
   sideMediaHref?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HeroCarouselBlock_select".
+ */
+export interface HeroCarouselBlockSelect<T extends boolean = true> {
+  autoplayDelay?: T;
+  slides?:
+    | T
+    | {
+        type?: T;
+        media?: T;
+        href?: T;
+        eyebrow?: T;
+        title?: T;
+        description?: T;
+        links?:
+          | T
+          | {
+              link?:
+                | T
+                | {
+                    type?: T;
+                    newTab?: T;
+                    reference?: T;
+                    url?: T;
+                    label?: T;
+                    appearance?: T;
+                  };
+              id?: T;
+            };
+        id?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -2036,6 +2593,61 @@ export interface NewsletterSignupBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "YouTubeEmbedBlock_select".
+ */
+export interface YouTubeEmbedBlockSelect<T extends boolean = true> {
+  title?: T;
+  videoTitle?: T;
+  youtubeUrl?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ListingsCategoriesGridBlock_select".
+ */
+export interface ListingsCategoriesGridBlockSelect<T extends boolean = true> {
+  title?: T;
+  source?: T;
+  categories?: T;
+  limit?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ListingsCategoryItemBlock_select".
+ */
+export interface ListingsCategoryItemBlockSelect<T extends boolean = true> {
+  category?: T;
+  title?: T;
+  limit?: T;
+  viewMoreLabel?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarketplaceStatsBlock_select".
+ */
+export interface MarketplaceStatsBlockSelect<T extends boolean = true> {
+  title?: T;
+  subtitle?: T;
+  items?:
+    | T
+    | {
+        icon?: T;
+        value?: T;
+        label?: T;
+        id?: T;
+      };
+  buttonLabel?: T;
+  buttonUrl?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts_select".
  */
 export interface PostsSelect<T extends boolean = true> {
@@ -2183,6 +2795,48 @@ export interface CategoriesSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "listing-categories_select".
+ */
+export interface ListingCategoriesSelect<T extends boolean = true> {
+  title?: T;
+  generateSlug?: T;
+  slug?: T;
+  thumbnail?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "listings_select".
+ */
+export interface ListingsSelect<T extends boolean = true> {
+  title?: T;
+  generateSlug?: T;
+  slug?: T;
+  categories?: T;
+  listingType?: T;
+  priceLabel?: T;
+  summary?: T;
+  description?: T;
+  contactPhone?: T;
+  city?: T;
+  district?: T;
+  address?: T;
+  packageName?: T;
+  contactName?: T;
+  supportPhone?: T;
+  statusLabel?: T;
+  zaloUrl?: T;
+  avatar?: T;
+  thumbnail?: T;
+  gallery?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2507,6 +3161,7 @@ export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
     | T
     | {
         find?: T;
+        create?: T;
         update?: T;
       };
   media?:
@@ -2532,6 +3187,14 @@ export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
     | {
         find?: T;
         create?: T;
+      };
+  listings?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
       };
   header?:
     | T

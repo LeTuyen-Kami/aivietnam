@@ -171,23 +171,24 @@ export const FeaturedPostsSideMediaBlockComponent: React.FC<Props> = ({
         <aside className="lg:col-span-3 h-full">
           {(() => {
             const raw = typeof sideMediaHref === 'string' ? sideMediaHref.trim() : ''
-            const shellClass =
-              'group relative block overflow-hidden w-full h-full min-h-[320px]'
+            const shellClass = 'group relative block overflow-hidden w-full h-full min-h-[320px]'
             const imgClass = raw
               ? 'h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105'
               : 'h-full w-full object-cover'
             const inner = (
               <Image
-                alt={sideMedia.alt || ''}
+                alt={sideMedia?.alt || ''}
                 className={imgClass}
                 fill
                 sizes="(max-width: 1024px) 100vw, 25vw"
-                src={getMediaUrl(sideMedia.url, sideMedia.updatedAt)}
+                src={getMediaUrl(sideMedia?.url, sideMedia?.updatedAt)}
               />
             )
 
             if (!raw) {
-              return <div className="relative overflow-hidden w-full h-full min-h-[320px]">{inner}</div>
+              return (
+                <div className="relative overflow-hidden w-full h-full min-h-[320px]">{inner}</div>
+              )
             }
 
             return (

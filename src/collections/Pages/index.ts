@@ -3,16 +3,22 @@ import type { CollectionConfig } from 'payload'
 import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
 import { Archive } from '../../blocks/ArchiveBlock/config'
+import { AIEcosystemMap } from '../../blocks/AIEcosystemMap/config'
 import { CallToAction } from '../../blocks/CallToAction/config'
 import { Content } from '../../blocks/Content/config'
 import { FormBlock } from '../../blocks/Form/config'
 import { EnhancedMediaBlock } from '../../blocks/EnhancedMediaBlock/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
 import { FeaturedPostsSideMedia } from '../../blocks/FeaturedPostsSideMedia/config'
+import { HeroCarousel } from '../../blocks/HeroCarousel/config'
 import { MediaHubTriptych } from '../../blocks/MediaHubTriptych/config'
 import { NewsletterSignup } from '../../blocks/NewsletterSignup/config'
 import { HumanitiesCorner } from '../../blocks/HumanitiesCorner/config'
 import { PortalSplitLayout } from '../../blocks/PortalSplitLayout/config'
+import { YouTubeEmbed } from '../../blocks/YouTubeEmbed/config'
+import { ListingsCategoriesGrid } from '../../blocks/ListingsCategoriesGrid/config'
+import { ListingsCategoryItem } from '../../blocks/ListingsCategoryItem/config'
+import { MarketplaceStats } from '../../blocks/MarketplaceStats/config'
 import { hero } from '@/heros/config'
 import { slugField } from 'payload'
 
@@ -82,16 +88,22 @@ export const Pages: CollectionConfig<'pages'> = {
               type: 'blocks',
               blocks: [
                 CallToAction,
+                AIEcosystemMap,
                 Content,
                 MediaBlock,
                 EnhancedMediaBlock,
                 Archive,
                 FormBlock,
                 FeaturedPostsSideMedia,
+                HeroCarousel,
                 PortalSplitLayout,
                 HumanitiesCorner,
                 MediaHubTriptych,
                 NewsletterSignup,
+                YouTubeEmbed,
+                ListingsCategoriesGrid,
+                ListingsCategoryItem,
+                MarketplaceStats,
               ],
               required: true,
               admin: {

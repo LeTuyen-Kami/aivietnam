@@ -3,9 +3,11 @@ import React, { Fragment } from 'react'
 import type { Page } from '@/payload-types'
 
 import { ArchiveBlock } from '@/blocks/ArchiveBlock/Component'
+import { AIEcosystemMapBlockComponent } from '@/blocks/AIEcosystemMap/Component'
 import { CallToActionBlock } from '@/blocks/CallToAction/Component'
 import { ContentBlock } from '@/blocks/Content/Component'
 import { FeaturedPostsSideMediaBlockComponentAsync } from '@/blocks/FeaturedPostsSideMedia/Component'
+import { HeroCarouselBlock } from '@/blocks/HeroCarousel/Component'
 import { MediaHubTriptychBlockComponent } from '@/blocks/MediaHubTriptych/Component'
 import { NewsletterSignupBlock } from '@/blocks/NewsletterSignup/Component'
 import { HumanitiesCornerBlockComponent } from '@/blocks/HumanitiesCorner/Component'
@@ -13,19 +15,29 @@ import { PortalSplitLayoutBlockAsync } from '@/blocks/PortalSplitLayout/Componen
 import { FormBlock } from '@/blocks/Form/Component'
 import { EnhancedMediaBlock } from '@/blocks/EnhancedMediaBlock/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
+import { YouTubeEmbedBlockComponent } from '@/blocks/YouTubeEmbed/Component'
+import { ListingsCategoriesGridBlockComponent } from '@/blocks/ListingsCategoriesGrid/Component'
+import { ListingsCategoryItemBlockComponent } from '@/blocks/ListingsCategoryItem/Component'
+import { MarketplaceStatsBlockComponent } from '@/blocks/MarketplaceStats/Component'
 
 const blockComponents = {
   archive: ArchiveBlock,
+  aiEcosystemMap: AIEcosystemMapBlockComponent,
   content: ContentBlock,
   cta: CallToActionBlock,
   formBlock: FormBlock,
   featuredPostsSideMedia: FeaturedPostsSideMediaBlockComponentAsync,
+  heroCarousel: HeroCarouselBlock,
   portalSplitLayout: PortalSplitLayoutBlockAsync,
   humanitiesCorner: HumanitiesCornerBlockComponent,
   mediaHubTriptych: MediaHubTriptychBlockComponent,
   newsletterSignup: NewsletterSignupBlock,
   mediaBlock: MediaBlock,
   enhancedMediaBlock: EnhancedMediaBlock,
+  youtubeEmbed: YouTubeEmbedBlockComponent,
+  listingsCategoriesGrid: ListingsCategoriesGridBlockComponent,
+  listingsCategoryItem: ListingsCategoryItemBlockComponent,
+  marketplaceStats: MarketplaceStatsBlockComponent,
 }
 
 export const RenderBlocks: React.FC<{
@@ -46,9 +58,9 @@ export const RenderBlocks: React.FC<{
 
             if (Block) {
               return (
-                <div className="my-8" key={index}>
-                  {/* @ts-expect-error there may be some mismatch between the expected types here */}
-                  <Block {...block} disableInnerContainer />
+                <div className="my-8 relative z-0" key={index}>
+                  {/* @ts-expect-error block union props are resolved at runtime by blockType */}
+                  <Block {...block} />
                 </div>
               )
             }
