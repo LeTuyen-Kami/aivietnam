@@ -1,17 +1,16 @@
 'use client'
 
-import React, { startTransition, useEffect, useOptimistic, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 import * as Dialog from '@radix-ui/react-dialog'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 
-import { Flag, X } from 'lucide-react'
+import { Flag, Smile, ThumbsUp, X } from 'lucide-react'
 
 import { useAuth } from '@/providers/Auth'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { CommentTextClamp } from '@/components/Auth/CommentTextClamp'
 import { cn } from '@/utilities/ui'
 
 /** Strong ease-out — responsive first frame (animations.dev / Emil-style UI) */
@@ -36,23 +35,14 @@ type ReactionType = 'like' | 'love' | 'haha' | 'wow' | 'sad' | 'angry'
 type CommentsPage = {
   docs: CommentDoc[]
   approvedCount: number
-  totalPages: number
   hasNextPage: boolean
-  hasPrevPage: boolean
 }
 
-type OptimisticReactionAction =
-  | { type: 'set'; commentId: number; reaction: ReactionType | null }
-  | { type: 'clear'; commentId: number }
-
 const PAGE_SIZE = 5
-const REACTIONS: Array<{ type: ReactionType; label: string; emoji: string }> = [
-  { type: 'like', label: 'Thích', emoji: '👍' },
-  { type: 'love', label: 'Yêu thích', emoji: '❤️' },
-  { type: 'haha', label: 'Haha', emoji: '😆' },
-  { type: 'wow', label: 'Wow', emoji: '😮' },
-  { type: 'sad', label: 'Buồn', emoji: '😢' },
-  { type: 'angry', label: 'Phẫn nộ', emoji: '😡' },
+const REACTIONS: Array<{ type: ReactionType; label: string; emoji: string; dataName: string }> = [
+  { type: 'like', label: 'Thích', emoji: '👍', dataName: 'like' },
+  { type: 'wow', label: 'Ngạc nhiên', emoji: '😮', dataName: 'surprised' },
+  { type: 'sad', label: 'Buồn', emoji: '😢', dataName: 'sad' },
 ]
 
 export type CommentSort = 'newest' | 'popular'
@@ -86,41 +76,6 @@ function applyReactionPreview(
   }
 }
 
-function withOptimisticReactions(
-  comments: CommentDoc[],
-  overrides: Record<number, ReactionType | null>,
-): CommentDoc[] {
-  return comments.map((comment) => {
-    const reactionOverride = Object.prototype.hasOwnProperty.call(overrides, comment.id)
-      ? overrides[comment.id]
-      : undefined
-    const nextComment =
-      reactionOverride === undefined
-        ? comment
-        : {
-            ...comment,
-            ...applyReactionPreview(comment, reactionOverride),
-          }
-
-    const nextReplies = (nextComment.replies ?? []).map((reply) => {
-      const replyOverride = Object.prototype.hasOwnProperty.call(overrides, reply.id)
-        ? overrides[reply.id]
-        : undefined
-      return replyOverride === undefined
-        ? reply
-        : {
-            ...reply,
-            ...applyReactionPreview(reply, replyOverride),
-          }
-    })
-
-    return {
-      ...nextComment,
-      replies: nextReplies,
-    }
-  })
-}
-
 function findCommentById(comments: CommentDoc[], commentId: number): CommentDoc | null {
   for (const comment of comments) {
     if (comment.id === commentId) return comment
@@ -129,6 +84,52 @@ function findCommentById(comments: CommentDoc[], commentId: number): CommentDoc 
     }
   }
   return null
+}
+
+function updateCommentById(
+  comments: CommentDoc[],
+  commentId: number,
+  updater: (comment: CommentDoc) => CommentDoc,
+): CommentDoc[] {
+  return comments.map((comment) => {
+    if (comment.id === commentId) return updater(comment)
+
+    return {
+      ...comment,
+      replies: (comment.replies ?? []).map((reply) =>
+        reply.id === commentId ? updater(reply) : reply,
+      ),
+    }
+  })
+}
+
+function getReactionTotal(comment: CommentDoc) {
+  const summaryTotal = Object.values(comment.reactionSummary ?? {}).reduce(
+    (sum, count) => sum + (count ?? 0),
+    0,
+  )
+  return summaryTotal > 0 ? summaryTotal : comment.likeCount
+}
+
+function formatCommentTime(value: string) {
+  const createdAt = new Date(value).getTime()
+  if (!Number.isFinite(createdAt)) return ''
+
+  const diffSeconds = Math.max(0, Math.floor((Date.now() - createdAt) / 1000))
+  const minutes = Math.floor(diffSeconds / 60)
+  const hours = Math.floor(minutes / 60)
+  const days = Math.floor(hours / 24)
+
+  if (minutes < 1) return 'vừa xong'
+  if (minutes < 60) return `${minutes}’ trước`
+  if (hours < 24) return `${hours}h trước`
+  if (days < 7) return `${days} ngày trước`
+
+  return new Date(value).toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
 }
 
 async function fetchCommentsPage(
@@ -184,30 +185,23 @@ async function fetchCommentsPage(
       }
     }),
     approvedCount: typeof data.approvedCount === 'number' ? data.approvedCount : 0,
-    totalPages: Math.max(1, data.totalPages ?? 1),
     hasNextPage: Boolean(data.hasNextPage),
-    hasPrevPage: Boolean(data.hasPrevPage),
   }
 }
 
 function CommentBody({ c }: { c: CommentDoc }) {
   const authorName = c.author?.name || 'Thành viên'
-  const authorSubline = c.author?.id ? `${String(c.author.id)}` : 'Khách'
   const avatarText = authorName.trim().charAt(0).toUpperCase() || 'U'
 
   return (
-    <div className="flex items-start gap-3">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
+    <div className="flex min-w-0 items-start gap-3">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e6e6e6] text-[17px] font-medium text-[#8b8b8b]">
         {avatarText}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="rounded-2xl bg-muted px-3 py-2">
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="font-semibold text-foreground">{authorName}</span>
-            <span className="text-muted-foreground">{authorSubline}</span>
-          </div>
-          <CommentTextClamp className="mt-1 text-sm text-foreground" maxLines={3} text={c.body} />
-        </div>
+        <p className="overflow-hidden text-[15px] leading-[1.45] text-[#3f3f3f] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:3]">
+          <span className="font-bold text-[#222]">{authorName}</span> {c.body}
+        </p>
         {c.status === 'pending' ? (
           <span className="mt-1 inline-block rounded bg-secondary px-1.5 py-0.5 text-[10px] uppercase text-muted-foreground">
             Chờ duyệt
@@ -248,10 +242,12 @@ function CommentActionRow({
 
   const myReaction = comment.myReaction
   const activeReaction = REACTIONS.find((item) => item.type === myReaction)
-  const totalReactions = Object.values(comment.reactionSummary ?? {}).reduce(
-    (sum, count) => sum + (count ?? 0),
-    0,
-  )
+  const totalReactions = getReactionTotal(comment)
+  const shownReactionBadges = REACTIONS.filter(
+    (item) => (comment.reactionSummary?.[item.type] ?? 0) > 0,
+  ).slice(0, 2)
+  const reactionBadges =
+    shownReactionBadges.length > 0 ? shownReactionBadges : totalReactions > 0 ? [REACTIONS[0]] : []
 
   const openPicker = () => {
     if (hideTimerRef.current != null) {
@@ -280,7 +276,7 @@ function CommentActionRow({
   }, [])
 
   return (
-    <div className="mt-2 flex flex-wrap items-center gap-3 pl-13 text-xs">
+    <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 pl-12 text-[13px] leading-none text-[#777]">
       <div
         className="relative"
         onMouseEnter={openPicker}
@@ -292,52 +288,56 @@ function CommentActionRow({
           type="button"
           className={cn(
             pressable,
-            'inline-flex items-center gap-1 font-medium text-muted-foreground hover:text-rose-600 cursor-pointer',
-            myReaction && 'text-rose-600',
+            'inline-flex items-center gap-1.5 text-[#777] hover:text-[#c72a55] cursor-pointer',
+            myReaction && 'font-medium text-[#c72a55]',
           )}
           onClick={() => {
             if (!user) return openAuthModal()
             onReact('like')
           }}
         >
-          {activeReaction ? <span className="leading-none">{activeReaction.emoji}</span> : null}
+          <ThumbsUp className="h-3.5 w-3.5" />
           <span>{activeReaction?.label ?? 'Thích'}</span>
-          {totalReactions > 0 ? (
-            <span className="tabular-nums text-[11px] text-muted-foreground">{totalReactions}</span>
-          ) : null}
         </button>
         <AnimatePresence>
           {pickerOpen && (
             <motion.div
               key="picker"
-              initial={{ opacity: 0.5, scale: 0.1 }}
+              initial={{ opacity: 0, y: 4, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0.5, scale: 0.1 }}
-              transition={{ duration: 0.2 }}
-              className={cn(
-                'absolute -top-12 left-0 z-20 rounded-full border border-border bg-background px-1.5 py-1 shadow-lg transition duration-150 origin-bottom-left',
-              )}
+              exit={{ opacity: 0, y: 4, scale: 0.98 }}
+              transition={{ duration: 0.12 }}
+              className="reactions-container absolute bottom-full left-0 z-20 mb-2 w-[236px] border border-[#d7d7d7] bg-white px-3 py-2 shadow-sm"
             >
-              <div className="flex items-center gap-1">
-                {REACTIONS.map(({ type, label, emoji }) => (
-                  <button
-                    key={`${comment.id}-${type}`}
-                    type="button"
-                    disabled={reactionPending}
-                    className={cn(
-                      pressable,
-                      'flex h-8 w-8 items-center justify-center rounded-full text-base hover:bg-muted cursor-pointer',
-                      myReaction === type && 'bg-muted',
-                    )}
-                    aria-label={label}
-                    title={label}
-                    onClick={() => {
-                      if (!user) return openAuthModal()
-                      onReact(type)
-                    }}
-                  >
-                    {emoji}
-                  </button>
+              <div
+                className="reactions-list reactions-menu grid grid-cols-3 gap-2"
+                data-selected={activeReaction?.dataName ?? ''}
+              >
+                {REACTIONS.map(({ type, label, emoji, dataName }) => (
+                  <div key={`${comment.id}-${type}`} className="reaction-item text-center">
+                    <button
+                      type="button"
+                      disabled={reactionPending}
+                      className={cn(
+                        pressable,
+                        'reaction mx-auto flex h-8 w-8 items-center justify-center rounded-full text-[18px] hover:bg-[#f3f3f3] disabled:opacity-50 cursor-pointer',
+                        myReaction === type && 'bg-[#fbe4eb]',
+                      )}
+                      aria-label={label}
+                      title={label}
+                      data-name={dataName}
+                      data-rel={comment.id}
+                      onClick={() => {
+                        if (!user) return openAuthModal()
+                        onReact(type)
+                      }}
+                    >
+                      {emoji}
+                    </button>
+                    <span className="label mt-1 block text-[11px] leading-tight text-[#666]">
+                      {label}
+                    </span>
+                  </div>
                 ))}
               </div>
             </motion.div>
@@ -345,10 +345,26 @@ function CommentActionRow({
         </AnimatePresence>
       </div>
 
+      {totalReactions > 0 ? (
+        <span className="-ml-3 inline-flex items-center gap-1 tabular-nums text-[#777]">
+          <span className="flex -space-x-1">
+            {reactionBadges.map((reaction) => (
+              <span
+                key={`${comment.id}-${reaction.type}-badge`}
+                className="flex h-[17px] w-[17px] items-center justify-center rounded-full border border-white bg-[#f8d9e2] text-[10px]"
+              >
+                {reaction.emoji}
+              </span>
+            ))}
+          </span>
+          <span>{totalReactions}</span>
+        </span>
+      ) : null}
+
       {onReply ? (
         <button
           type="button"
-          className={cn(pressable, 'font-medium text-muted-foreground hover:text-foreground')}
+          className={cn(pressable, 'text-[#777] hover:text-[#333] cursor-pointer')}
           onClick={onReply}
         >
           Trả lời
@@ -358,21 +374,20 @@ function CommentActionRow({
       {onReport ? (
         <button
           type="button"
-          className={cn(pressable, 'text-muted-foreground hover:text-destructive')}
+          className={cn(pressable, 'text-[#8a8a8a] hover:text-[#c72a55] cursor-pointer')}
+          aria-label="Báo cáo bình luận"
           onClick={onReport}
         >
-          <Flag className="mr-1 inline h-3.5 w-3.5" />
+          <Flag className="h-3.5 w-3.5" />
         </button>
       ) : null}
 
-      <time className="ml-auto text-[11px] text-muted-foreground" dateTime={comment.createdAt}>
-        {new Date(comment.createdAt).toLocaleString('vi-VN', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        })}
+      <time
+        className="ml-auto text-[13px] text-[#8d8d8d]"
+        dateTime={comment.createdAt}
+        title={new Date(comment.createdAt).toLocaleString('vi-VN')}
+      >
+        {formatCommentTime(comment.createdAt)}
       </time>
     </div>
   )
@@ -389,7 +404,8 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
   const [message, setMessage] = useState<string | null>(null)
   const [messageTone, setMessageTone] = useState<'muted' | 'success'>('muted')
   const [page, setPage] = useState(1)
-  const [sort, setSort] = useState<CommentSort>('newest')
+  const [sort, setSort] = useState<CommentSort>('popular')
+  const [visibleDocs, setVisibleDocs] = useState<CommentDoc[]>([])
   const [highlightId, setHighlightId] = useState<number | null>(null)
   const [replyingToId, setReplyingToId] = useState<number | null>(null)
   const [replyBody, setReplyBody] = useState('')
@@ -406,9 +422,25 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
 
   useEffect(() => {
     listIntroDoneRef.current = false
-    setSort('newest')
+    setVisibleDocs([])
+    setSort('popular')
     setPage(1)
   }, [postId])
+
+  useEffect(() => {
+    if (!data || isPlaceholderData) return
+
+    setVisibleDocs((prev) => {
+      if (page === 1) return data.docs
+
+      const incomingById = new Map(data.docs.map((doc) => [doc.id, doc]))
+      const existingIds = new Set(prev.map((doc) => doc.id))
+      const merged = prev.map((doc) => incomingById.get(doc.id) ?? doc)
+      const appended = data.docs.filter((doc) => !existingIds.has(doc.id))
+
+      return [...merged, ...appended]
+    })
+  }, [data, isPlaceholderData, page])
 
   useEffect(() => {
     if (highlightId == null) return
@@ -446,6 +478,7 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
       if (payload.doc?.id != null) {
         setHighlightId(payload.doc.id)
       }
+      setVisibleDocs([])
       setSort('newest')
       setPage(1)
       void queryClient.invalidateQueries({ queryKey: commentsQueryKey(postId) })
@@ -458,7 +491,8 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
       reaction,
     }: {
       commentId: number
-      reaction: ReactionType | null
+      reaction: ReactionType
+      optimisticReaction: ReactionType | null
     }) => {
       const res = await fetch('/api/site-comments/reaction', {
         method: 'POST',
@@ -484,48 +518,39 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
     },
 
     // 🔥 OPTIMISTIC UPDATE CHUẨN
-    onMutate: async ({ commentId, reaction }) => {
+    onMutate: async ({ commentId, optimisticReaction }) => {
       const queryKey = [...commentsQueryKey(postId), sort, page]
 
       await queryClient.cancelQueries({ queryKey })
 
       const previousData = queryClient.getQueryData<CommentsPage>(queryKey)
+      const previousVisibleDocs = visibleDocs
+      const applyOptimistic = (comment: CommentDoc): CommentDoc => ({
+        ...comment,
+        ...applyReactionPreview(comment, optimisticReaction),
+      })
 
       queryClient.setQueryData<CommentsPage>(queryKey, (old) => {
         if (!old) return old
 
         return {
           ...old,
-          docs: old.docs.map((comment) => {
-            if (comment.id === commentId) {
-              return {
-                ...comment,
-                ...applyReactionPreview(comment, reaction),
-              }
-            }
-
-            return {
-              ...comment,
-              replies: (comment.replies ?? []).map((reply) =>
-                reply.id === commentId
-                  ? {
-                      ...reply,
-                      ...applyReactionPreview(reply, reaction),
-                    }
-                  : reply,
-              ),
-            }
-          }),
+          docs: updateCommentById(old.docs, commentId, applyOptimistic),
         }
       })
 
-      return { previousData, queryKey }
+      setVisibleDocs((current) => updateCommentById(current, commentId, applyOptimistic))
+
+      return { previousData, previousVisibleDocs, queryKey }
     },
 
     // ❌ rollback nếu lỗi
     onError: (_err, _vars, context) => {
       if (context?.previousData && context?.queryKey) {
         queryClient.setQueryData(context.queryKey, context.previousData)
+      }
+      if (context?.previousVisibleDocs) {
+        setVisibleDocs(context.previousVisibleDocs)
       }
     },
 
@@ -537,40 +562,24 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
         (sum, count) => sum + (count ?? 0),
         0,
       )
+      const applyServerReaction = (comment: CommentDoc): CommentDoc => ({
+        ...comment,
+        likeCount: nextLikeCount,
+        myReaction: result.myReaction,
+        likedByMe: result.myReaction === 'like',
+        reactionSummary: result.reactionSummary,
+      })
 
       queryClient.setQueryData<CommentsPage>(queryKey, (old) => {
         if (!old) return old
 
         return {
           ...old,
-          docs: old.docs.map((comment) => {
-            if (comment.id === vars.commentId) {
-              return {
-                ...comment,
-                likeCount: nextLikeCount,
-                myReaction: result.myReaction,
-                likedByMe: result.myReaction === 'like',
-                reactionSummary: result.reactionSummary,
-              }
-            }
-
-            return {
-              ...comment,
-              replies: (comment.replies ?? []).map((reply) =>
-                reply.id === vars.commentId
-                  ? {
-                      ...reply,
-                      likeCount: nextLikeCount,
-                      myReaction: result.myReaction,
-                      likedByMe: result.myReaction === 'like',
-                      reactionSummary: result.reactionSummary,
-                    }
-                  : reply,
-              ),
-            }
-          }),
+          docs: updateCommentById(old.docs, vars.commentId, applyServerReaction),
         }
       })
+
+      setVisibleDocs((current) => updateCommentById(current, vars.commentId, applyServerReaction))
     },
 
     onSettled: () => {
@@ -652,19 +661,17 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
     })
   }
 
-  const docs = data?.docs ?? []
+  const docs = visibleDocs.length > 0 ? visibleDocs : (data?.docs ?? [])
   const approvedCount = data?.approvedCount ?? 0
-  const totalPages = data?.totalPages ?? 1
   const hasNextPage = data?.hasNextPage ?? false
-  const hasPrevPage = data?.hasPrevPage ?? false
 
   const showEmpty = !isPending && docs.length === 0
-  const showPagination = !isPending && docs.length > 0 && totalPages > 1
+  const showLoadMore = !isPending && docs.length > 0 && hasNextPage
   const listPagingOverlay = isFetching && isPlaceholderData
 
   const rowClass = (c: CommentDoc) =>
     cn(
-      'border-b border-border pb-4 transition-shadow duration-300 ease-out last:border-0',
+      'pb-5 transition-shadow duration-300 ease-out',
       highlightId === c.id &&
         'rounded-md shadow-[0_0_0_2px_hsl(var(--primary)/0.38)] ring-offset-2 ring-offset-background',
     )
@@ -673,18 +680,19 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
 
   const reactToComment = (commentId: number, reaction: ReactionType) => {
     const currentComment = findCommentById(docs, commentId)
-    const nextReaction = currentComment?.myReaction === reaction ? null : reaction
+    const optimisticReaction = currentComment?.myReaction === reaction ? null : reaction
 
     reactionMutation.mutate({
       commentId,
-      reaction: nextReaction,
+      reaction,
+      optimisticReaction,
     })
   }
 
   return (
-    <section className="mt-10 border-t border-border pt-6">
+    <section className="mt-10 border-t border-[#e6e6e6] pt-5">
       <motion.h2
-        className="text-base font-semibold"
+        className="font-serif text-[22px] font-semibold leading-tight tracking-tight text-[#111]"
         initial={reduceMotion ? false : { opacity: 0, y: -4 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: reduceMotion ? 0 : 0.2, ease: EASE_OUT }}
@@ -692,22 +700,41 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
         Ý kiến ({approvedCount})
       </motion.h2>
 
-      <form className="mt-3 space-y-2" onSubmit={submit}>
-        <Textarea
-          aria-label="Nhập ý kiến"
-          className="min-h-20 resize-y"
-          placeholder={
-            loading ? 'Đang tải…' : user ? 'Chia sẻ ý kiến của bạn' : 'Đăng nhập để bình luận'
-          }
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          readOnly={!user && !loading}
-          onClick={() => {
-            if (!loading && !user) openAuthModal()
-          }}
-        />
-        <div className="flex flex-wrap items-center gap-2">
-          {user ? (
+      <form className="mt-4 space-y-2" onSubmit={submit}>
+        <div className="relative">
+          <Textarea
+            aria-label="Nhập ý kiến"
+            className="min-h-[52px] resize-none rounded-[3px] border-0 border-l-2 border-l-[#c92552] bg-[#f5f5f5] py-4 pr-12 pl-4 text-[15px] shadow-none focus-visible:ring-0 focus-visible:outline-none"
+            placeholder={
+              loading ? 'Đang tải…' : user ? 'Chia sẻ ý kiến của bạn' : 'Đăng nhập để bình luận'
+            }
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            readOnly={!user && !loading}
+            onClick={() => {
+              if (!loading && !user) openAuthModal()
+            }}
+          />
+          <button
+            type="button"
+            className="absolute top-1/2 right-3 -translate-y-1/2 text-[#b9b9b9] hover:text-[#8a8a8a]"
+            aria-label="Mở biểu tượng cảm xúc"
+            onClick={() => {
+              if (!loading && !user) openAuthModal()
+            }}
+          >
+            <Smile className="h-5 w-5" />
+          </button>
+        </div>
+
+        {user && !body.trim() ? (
+          <p className="text-[13px] leading-none text-[#c92552]">
+            Bạn chưa nhập nội dung bình luận.
+          </p>
+        ) : null}
+
+        {body.trim() ? (
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               className={pressable}
               disabled={submitMutation.isPending || !body.trim()}
@@ -716,7 +743,9 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
             >
               {submitMutation.isPending ? 'Đang gửi…' : 'Gửi ý kiến'}
             </Button>
-          ) : (
+          </div>
+        ) : !user ? (
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               className={pressable}
               disabled={loading}
@@ -727,8 +756,8 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
             >
               Đăng nhập để bình luận
             </Button>
-          )}
-        </div>
+          </div>
+        ) : null}
       </form>
 
       {submitMutation.isError ? (
@@ -750,32 +779,43 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
       ) : null}
 
       {!isPending && !isError && approvedCount > 0 ? (
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <span className="text-xs text-muted-foreground">Sắp xếp:</span>
-          <Button
-            className={pressable}
-            size="sm"
+        <div className="mt-5 flex items-end gap-7 border-b border-[#dedede]">
+          <button
+            className={cn(
+              pressable,
+              'relative pb-3 text-[15px] font-semibold text-[#a1a1a1] cursor-pointer',
+              sort === 'popular' && 'text-[#c92552]',
+            )}
             type="button"
-            variant={sort === 'newest' ? 'default' : 'outline'}
             onClick={() => {
-              setSort('newest')
-              setPage(1)
-            }}
-          >
-            Mới nhất
-          </Button>
-          <Button
-            className={pressable}
-            size="sm"
-            type="button"
-            variant={sort === 'popular' ? 'default' : 'outline'}
-            onClick={() => {
+              setVisibleDocs([])
               setSort('popular')
               setPage(1)
             }}
           >
             Quan tâm nhất
-          </Button>
+            {sort === 'popular' ? (
+              <span className="absolute right-0 bottom-[-1px] left-0 h-0.5 bg-[#c92552]" />
+            ) : null}
+          </button>
+          <button
+            className={cn(
+              pressable,
+              'relative pb-3 text-[15px] font-semibold text-[#a1a1a1] cursor-pointer',
+              sort === 'newest' && 'text-[#c92552]',
+            )}
+            type="button"
+            onClick={() => {
+              setVisibleDocs([])
+              setSort('newest')
+              setPage(1)
+            }}
+          >
+            Mới nhất
+            {sort === 'newest' ? (
+              <span className="absolute right-0 bottom-[-1px] left-0 h-0.5 bg-[#c92552]" />
+            ) : null}
+          </button>
         </div>
       ) : null}
 
@@ -794,7 +834,7 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
         </p>
       ) : null}
 
-      <div className="relative mt-6 min-h-12">
+      <div className="relative mt-4 min-h-12">
         <AnimatePresence mode="wait">
           {isPending ? (
             <motion.p
@@ -894,11 +934,11 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
 
                     {replyingToId === c.id ? (
                       <form
-                        className="mt-3 space-y-2 rounded-md border border-border p-3"
+                        className="mt-3 ml-12 space-y-2 rounded-[3px] border border-[#e5e5e5] bg-[#fafafa] p-3"
                         onSubmit={submitReply}
                       >
                         <Textarea
-                          className="min-h-16"
+                          className="min-h-16 resize-none border-[#dedede] bg-white text-[14px] shadow-none focus-visible:ring-0"
                           placeholder="Nhập bình luận trả lời..."
                           value={replyBody}
                           onChange={(e) => setReplyBody(e.target.value)}
@@ -929,22 +969,8 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
                     ) : null}
 
                     {(c.replies?.length ?? 0) > 0 ? (
-                      <div className="mt-3 space-y-3 border-l border-border pl-4">
-                        {c.replies?.map((reply) => (
-                          <article
-                            key={reply.id}
-                            className="rounded-md border border-border/60 p-3"
-                          >
-                            <CommentBody c={reply} />
-                            <CommentActionRow
-                              comment={reply}
-                              openAuthModal={openAuthModal}
-                              reactionPending={reactionMutation.isPending}
-                              user={user}
-                              onReact={(reaction) => reactToComment(reply.id, reaction)}
-                            />
-                          </article>
-                        ))}
+                      <div className="mt-2 ml-12 text-[13px] leading-none text-[#777]">
+                        ↪ {c.replies?.length ?? 0} trả lời
                       </div>
                     ) : null}
                   </div>
@@ -971,34 +997,18 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
         </AnimatePresence>
       </div>
 
-      {showPagination ? (
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
-          <span>
-            Trang {page} / {totalPages}
-          </span>
-          <div className="flex gap-2">
-            <Button
-              className={pressable}
-              disabled={!hasPrevPage || isFetching}
-              size="sm"
-              type="button"
-              variant="outline"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              Trước
-            </Button>
-            <Button
-              className={pressable}
-              disabled={!hasNextPage || isFetching}
-              size="sm"
-              type="button"
-              variant="outline"
-              onClick={() => setPage((p) => p + 1)}
-            >
-              Sau
-            </Button>
-          </div>
-        </div>
+      {showLoadMore ? (
+        <button
+          className={cn(
+            pressable,
+            'mt-4 flex h-12 w-full items-center justify-center rounded-[3px] bg-[#fde3eb] text-[15px] font-semibold text-[#c92552] hover:bg-[#fad8e3] disabled:cursor-not-allowed disabled:opacity-70',
+          )}
+          disabled={isFetching}
+          type="button"
+          onClick={() => setPage((p) => p + 1)}
+        >
+          {isFetching ? 'Đang tải…' : 'Xem thêm ý kiến'}
+        </button>
       ) : null}
 
       <Dialog.Root
