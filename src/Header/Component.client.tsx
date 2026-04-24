@@ -2,7 +2,7 @@
 import { useHeaderTheme } from '@/providers/HeaderTheme'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useState } from 'react'
 import Image from 'next/image'
 
 import type { GeneralSetting, Header, Media } from '@/payload-types'
@@ -52,6 +52,8 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data, generalSetting
       mediaQuery.removeEventListener('change', updateIsMobile)
     }
   }, [])
+
+  console.log('isMobile', isMobile)
 
   // const themeProps = theme ? { 'data-theme': theme } : {}
   const themeProps = {}
@@ -145,32 +147,39 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data, generalSetting
       )}
 
       {isMobile ? (
-        <header className="sticky top-0 z-[1] w-full shadow-sm" {...themeProps}>
-          <div className="flex h-[61px] w-full items-center justify-between border-b border-border/60 bg-background px-4 supports-backdrop-filter:bg-background/90 supports-backdrop-filter:backdrop-blur-md">
-            <div className="flex min-w-[88px] items-center gap-2">
-              <button
-                type="button"
-                className="inline-flex h-10 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
-                aria-label="Mở menu"
-              >
-                <MenuIcon className="h-6 w-6" />
-              </button>
-              <Link
-                href="/search"
-                className="inline-flex h-10 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
-                aria-label="Tìm kiếm"
-              >
-                <SearchIcon className="h-5 w-5" />
+        <>
+          <header className="w-full shadow-sm" {...themeProps}>
+            <div className="flex h-[61px] w-full items-center justify-between border-b border-border/60 bg-background px-4 supports-backdrop-filter:bg-background/90 supports-backdrop-filter:backdrop-blur-md">
+              <div className="flex min-w-[88px] items-center gap-2">
+                <button
+                  type="button"
+                  className="inline-flex h-10 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+                  aria-label="Mở menu"
+                >
+                  <MenuIcon className="h-6 w-6" />
+                </button>
+                <Link
+                  href="/search"
+                  className="inline-flex h-10 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+                  aria-label="Tìm kiếm"
+                >
+                  <SearchIcon className="h-5 w-5" />
+                </Link>
+              </div>
+              <Link href="/" className="flex min-w-0 flex-1 items-center justify-center px-2">
+                {logo}
               </Link>
+              <div className="flex min-w-[88px] justify-end">{mobileAccountControl}</div>
             </div>
-            <Link href="/" className="flex min-w-0 flex-1 items-center justify-center px-2">
-              {logo}
-            </Link>
-            <div className="flex min-w-[88px] justify-end">{mobileAccountControl}</div>
-          </div>
+          </header>
 
-          <div className="w-full overflow-hidden border-b border-border/60 bg-[#F1F1F1]">
-            <nav className="flex h-12 items-center gap-4 overflow-x-auto whitespace-nowrap px-1 text-base leading-none text-muted-foreground">
+          <div className="sticky top-0 z-50 w-full border-b border-border/60 bg-[#F1F1F1] shadow-sm">
+            <nav
+              className="flex h-12 items-center gap-4 overflow-x-auto overflow-y-hidden whitespace-nowrap px-1 text-base leading-none text-muted-foreground"
+              style={{
+                scrollbarWidth: 'none',
+              }}
+            >
               {navItems.map(({ link }, i) => (
                 <div key={i} className="shrink-0">
                   <CMSLink
@@ -186,11 +195,11 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data, generalSetting
           <div className="w-full border-b border-border/60 bg-background px-2 py-2">
             <HeaderWeatherBar isMobile={true} />
           </div>
-        </header>
+        </>
       ) : (
         <>
           {/* Top-level sticky block (banner is a sibling so this still spans the whole scroll) */}
-          <header className="sticky top-0 z-[1] w-full shadow-sm" {...themeProps}>
+          <header className="sticky top-0 z-1 w-full shadow-sm" {...themeProps}>
             <div className="flex w-full items-center border-b border-border/60 bg-background px-4 py-2 supports-backdrop-filter:bg-background/90 supports-backdrop-filter:backdrop-blur-md">
               <div className="w-1/3 min-w-0 pr-2">
                 <HeaderWeatherBar isMobile={false} />
