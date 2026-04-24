@@ -56,12 +56,12 @@ export async function resolvePosts(
   return out
 }
 
-export const getLatestLeftPosts = cache(async (limit: number): Promise<Post[]> => {
+export const getLatestLeftPosts = cache(async (from: number, to: number): Promise<Post[]> => {
   const payload = await getPayload({ config: configPromise })
   const result = await payload.find({
     collection: 'posts',
     depth: 1,
-    limit,
+    limit: to,
     overrideAccess: false,
     pagination: false,
     sort: '-publishedAt',
@@ -72,5 +72,5 @@ export const getLatestLeftPosts = cache(async (limit: number): Promise<Post[]> =
     },
   })
 
-  return result.docs as Post[]
+  return (result.docs as Post[]).slice(from - 1, to)
 })

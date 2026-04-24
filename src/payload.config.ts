@@ -96,6 +96,11 @@ export default buildConfig({
   ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer, GeneralSettings],
+  upload: {
+    limits: {
+      fileSize: 30 * 1024 * 1024, // 30MB
+    },
+  },
   plugins: [
     ...plugins,
     vercelBlobStorage({
@@ -106,11 +111,6 @@ export default buildConfig({
       token: process.env.BLOB_READ_WRITE_TOKEN,
     }),
   ],
-  upload: {
-    limits: {
-      fileSize: 30 * 1024 * 1024, // 30MB
-    },
-  },
   secret: process.env.PAYLOAD_SECRET,
   sharp,
   typescript: {

@@ -1,5 +1,6 @@
 import type {
   Block,
+  NumberFieldSingleValidation,
   RelationshipFieldManyValidation,
   RelationshipFieldSingleValidation,
 } from 'payload'
@@ -76,16 +77,66 @@ export const PortalSplitLayout: Block = {
     {
       name: 'leftLatestLimit',
       type: 'number',
-      defaultValue: 8,
       min: 1,
       max: 30,
       admin: {
-        condition: (_, siblingData) => siblingData?.leftSource === 'latest',
-        description: {
-          en: 'How many latest posts to show on the left.',
-          vi: 'Số bài mới nhất hiển thị bên trái.',
-        },
+        hidden: true,
       },
+    },
+    {
+      type: 'row',
+      admin: {
+        condition: (_, siblingData) => siblingData?.leftSource === 'latest',
+      },
+      fields: [
+        {
+          name: 'leftLatestFrom',
+          type: 'number',
+          defaultValue: 1,
+          min: 1,
+          max: 30,
+          label: {
+            en: 'Latest from',
+            vi: 'Bài mới từ vị trí',
+          },
+          admin: {
+            description: {
+              en: '1-based start position after sorting by newest published date.',
+              vi: 'Vị trí bắt đầu, tính từ 1, sau khi sắp theo bài mới nhất.',
+            },
+          },
+        },
+        {
+          name: 'leftLatestTo',
+          type: 'number',
+          defaultValue: 8,
+          min: 1,
+          max: 30,
+          label: {
+            en: 'Latest to',
+            vi: 'Đến vị trí',
+          },
+          admin: {
+            description: {
+              en: 'Inclusive end position. Example: from 9 to 16 skips the first 8 newest posts.',
+              vi: 'Vị trí kết thúc, có bao gồm. Ví dụ: từ 9 đến 16 sẽ bỏ qua 8 bài mới nhất đầu.',
+            },
+          },
+          validate: ((value, { siblingData }) => {
+            if ((siblingData as { leftSource?: string })?.leftSource !== 'latest') {
+              return true
+            }
+
+            const from = (siblingData as { leftLatestFrom?: number })?.leftLatestFrom ?? 1
+
+            if (typeof value === 'number' && value < from) {
+              return 'Latest to must be greater than or equal to latest from.'
+            }
+
+            return true
+          }) as NumberFieldSingleValidation,
+        },
+      ],
     },
     {
       type: 'collapsible',

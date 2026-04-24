@@ -1154,10 +1154,15 @@ export interface PortalSplitLayoutBlock {
    * Posts for the left column (order is preserved).
    */
   leftPosts?: (number | Post)[] | null;
-  /**
-   * How many latest posts to show on the left.
-   */
   leftLatestLimit?: number | null;
+  /**
+   * 1-based start position after sorting by newest published date.
+   */
+  leftLatestFrom?: number | null;
+  /**
+   * Inclusive end position. Example: from 9 to 16 skips the first 8 newest posts.
+   */
+  leftLatestTo?: number | null;
   row1LeftTitle?: string | null;
   row1LeftAccent?: ('gold' | 'yellow' | 'green' | 'purple' | 'blue' | 'red' | 'teal') | null;
   /**
@@ -2446,6 +2451,8 @@ export interface PortalSplitLayoutBlockSelect<T extends boolean = true> {
   leftSource?: T;
   leftPosts?: T;
   leftLatestLimit?: T;
+  leftLatestFrom?: T;
+  leftLatestTo?: T;
   row1LeftTitle?: T;
   row1LeftAccent?: T;
   row1CenterGraphic?: T;

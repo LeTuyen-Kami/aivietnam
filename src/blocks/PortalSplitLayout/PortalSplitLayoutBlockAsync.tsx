@@ -16,8 +16,11 @@ export const PortalSplitLayoutBlockAsync = async (
   let leftPostsResolved: Post[] = []
 
   if (block.leftSource === 'latest') {
-    const limit = block.leftLatestLimit ?? 8
-    leftPostsResolved = await getLatestLeftPosts(limit)
+    const legacyLimit = block.leftLatestLimit ?? 8
+    const from = Math.max(1, Math.floor(block.leftLatestFrom ?? 1))
+    const to = Math.max(from, Math.floor(block.leftLatestTo ?? legacyLimit))
+
+    leftPostsResolved = await getLatestLeftPosts(from, to)
   } else {
     leftPostsResolved = await resolvePosts(payload, block.leftPosts ?? [])
   }

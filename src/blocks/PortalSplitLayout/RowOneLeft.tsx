@@ -55,7 +55,7 @@ export function RowOneLeft({
 
             const inner = (
               <>
-                <div className="relative aspect-square overflow-hidden bg-muted">
+                <div className="relative aspect-square overflow-hidden bg-muted rounded-full max-w-[80px] mx-auto">
                   {typeof cell.icon === 'object' && cell.icon && (
                     <MediaComponent
                       className="h-full w-full"

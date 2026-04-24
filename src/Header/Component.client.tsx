@@ -8,11 +8,12 @@ import Image from 'next/image'
 import type { GeneralSetting, Header, Media } from '@/payload-types'
 
 import { Logo } from '@/components/Logo/Logo'
+import { CMSLink } from '@/components/Link'
 import { HeaderNav } from './Nav'
 import { HeaderWeatherBar } from './HeaderWeatherBar'
 import { useAuth } from '@/providers/Auth'
 import { getMediaUrl } from '@/utilities/getMediaUrl'
-import { SearchIcon } from 'lucide-react'
+import { MenuIcon, SearchIcon, UserIcon } from 'lucide-react'
 
 interface HeaderClientProps {
   data: Header
@@ -22,6 +23,7 @@ interface HeaderClientProps {
 export const HeaderClient: React.FC<HeaderClientProps> = ({ data, generalSettings }) => {
   /* Storing the value in a useState to avoid hydration errors */
   const [theme, setTheme] = useState<string | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
   const { headerTheme, setHeaderTheme } = useHeaderTheme()
   const pathname = usePathname()
   const { user, loading: authLoading, openAuthModal, logout } = useAuth()
@@ -39,8 +41,76 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data, generalSetting
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [headerTheme])
 
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 767px)')
+    const updateIsMobile = () => setIsMobile(mediaQuery.matches)
+
+    updateIsMobile()
+    mediaQuery.addEventListener('change', updateIsMobile)
+
+    return () => {
+      mediaQuery.removeEventListener('change', updateIsMobile)
+    }
+  }, [])
+
   // const themeProps = theme ? { 'data-theme': theme } : {}
   const themeProps = {}
+  const navItems = data?.navItems || []
+  const bannerAspectClass = isMobile ? 'aspect-[1.8]' : 'aspect-[5]'
+  const logo = logoMedia?.url ? (
+    <Image
+      alt={logoMedia.alt || generalSettings?.siteName || 'Site logo'}
+      src={getMediaUrl(logoMedia.url, logoMedia.updatedAt)}
+      width={110}
+      height={30}
+      priority
+      className="h-7 w-auto object-contain"
+    />
+  ) : (
+    <Logo
+      loading="eager"
+      priority="high"
+      className="h-7! w-auto! max-w-none invert dark:invert-0"
+    />
+  )
+
+  const accountControl = authLoading ? (
+    <div className="h-9 min-w-22 shrink-0 animate-pulse rounded-full bg-muted/60" aria-hidden />
+  ) : user ? (
+    <div className="flex max-w-[min(100%,11rem)] flex-col items-end gap-0.5 text-right sm:max-w-52">
+      <span className="truncate text-sm font-medium text-foreground" title={user.email}>
+        {user.name?.trim() || user.email}
+      </span>
+      <button
+        type="button"
+        className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+        onClick={() => void logout()}
+      >
+        Đăng xuất
+      </button>
+    </div>
+  ) : (
+    <button
+      type="button"
+      className="shrink-0 rounded-full border border-border bg-background px-4 py-2 text-sm font-medium text-foreground shadow-xs transition-colors hover:bg-accent"
+      onClick={openAuthModal}
+    >
+      Đăng nhập
+    </button>
+  )
+
+  const mobileAccountControl = authLoading ? (
+    <div className="h-10 w-10 shrink-0 animate-pulse rounded-full bg-muted/60" aria-hidden />
+  ) : (
+    <button
+      type="button"
+      className="inline-flex h-10 w-10 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+      aria-label={user ? `Tài khoản ${user.email}` : 'Đăng nhập'}
+      onClick={user ? () => void logout() : openAuthModal}
+    >
+      <UserIcon className="h-5 w-5" />
+    </button>
+  )
 
   return (
     <>
@@ -49,7 +119,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data, generalSetting
           {data?.bannerLink ? (
             <Link
               href={data.bannerLink}
-              className="block relative overflow-hidden aspect-[5] w-full"
+              className={`block relative overflow-hidden ${bannerAspectClass} w-full`}
               aria-label="Header banner"
             >
               <Image
@@ -61,7 +131,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data, generalSetting
               />
             </Link>
           ) : (
-            <div className="relative overflow-hidden aspect-[5] w-full">
+            <div className={`relative overflow-hidden ${bannerAspectClass} w-full`}>
               <Image
                 alt={bannerMedia.alt || 'Banner'}
                 src={getMediaUrl(bannerMedia.url, bannerMedia.updatedAt)}
@@ -74,74 +144,80 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data, generalSetting
         </div>
       )}
 
-      {/* Top-level sticky block (banner is a sibling so this still spans the whole scroll) */}
-      <header className="sticky top-0 z-[1] w-full shadow-sm" {...themeProps}>
-        <div className="flex w-full items-center border-b border-border/60 bg-background px-4 py-2 supports-backdrop-filter:bg-background/90 supports-backdrop-filter:backdrop-blur-md">
-          <div className="w-1/3 min-w-0 pr-2">
-            <HeaderWeatherBar />
-          </div>
-          <div className="flex flex-1 items-center justify-center">
-            {logoMedia?.url ? (
-              <Image
-                alt={logoMedia.alt || generalSettings?.siteName || 'Site logo'}
-                src={getMediaUrl(logoMedia.url, logoMedia.updatedAt)}
-                width={110}
-                height={30}
-                priority
-                className="h-7 w-auto object-contain"
-              />
-            ) : (
-              <Logo
-                loading="eager"
-                priority="high"
-                className="h-7! w-auto! max-w-none invert dark:invert-0"
-              />
-            )}
-          </div>
-          <div className="flex w-1/3 items-center justify-end gap-2">
-            <Link href="/search">
-              <div className="flex items-center rounded-full border border-border px-4 py-2">
-                <span className="mr-10 text-sm font-medium text-muted-foreground">Tìm kiếm</span>
-                <SearchIcon className="h-4 w-4 text-muted-foreground transition-colors hover:text-foreground" />
-              </div>
-            </Link>
-
-            {authLoading ? (
-              <div
-                className="h-9 min-w-22 shrink-0 animate-pulse rounded-full bg-muted/60"
-                aria-hidden
-              />
-            ) : user ? (
-              <div className="flex max-w-[min(100%,11rem)] flex-col items-end gap-0.5 text-right sm:max-w-52">
-                <span className="truncate text-sm font-medium text-foreground" title={user.email}>
-                  {user.name?.trim() || user.email}
-                </span>
-                <button
-                  type="button"
-                  className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
-                  onClick={() => void logout()}
-                >
-                  Đăng xuất
-                </button>
-              </div>
-            ) : (
+      {isMobile ? (
+        <header className="sticky top-0 z-[1] w-full shadow-sm" {...themeProps}>
+          <div className="flex h-[61px] w-full items-center justify-between border-b border-border/60 bg-background px-4 supports-backdrop-filter:bg-background/90 supports-backdrop-filter:backdrop-blur-md">
+            <div className="flex min-w-[88px] items-center gap-2">
               <button
                 type="button"
-                className="shrink-0 rounded-full border border-border bg-background px-4 py-2 text-sm font-medium text-foreground shadow-xs transition-colors hover:bg-accent"
-                onClick={openAuthModal}
+                className="inline-flex h-10 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+                aria-label="Mở menu"
               >
-                Đăng nhập
+                <MenuIcon className="h-6 w-6" />
               </button>
-            )}
+              <Link
+                href="/search"
+                className="inline-flex h-10 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+                aria-label="Tìm kiếm"
+              >
+                <SearchIcon className="h-5 w-5" />
+              </Link>
+            </div>
+            <Link href="/" className="flex min-w-0 flex-1 items-center justify-center px-2">
+              {logo}
+            </Link>
+            <div className="flex min-w-[88px] justify-end">{mobileAccountControl}</div>
           </div>
-        </div>
 
-        <div className="bg-[#F1F1F1]">
-          <div className="container py-2">
-            <HeaderNav data={data} />
+          <div className="w-full overflow-hidden border-b border-border/60 bg-[#F1F1F1]">
+            <nav className="flex h-12 items-center gap-4 overflow-x-auto whitespace-nowrap px-1 text-base leading-none text-muted-foreground">
+              {navItems.map(({ link }, i) => (
+                <div key={i} className="shrink-0">
+                  <CMSLink
+                    {...link}
+                    appearance="link"
+                    className="h-auto! px-0! text-base font-normal transition-colors hover:text-foreground"
+                  />
+                </div>
+              ))}
+            </nav>
           </div>
-        </div>
-      </header>
+
+          <div className="w-full border-b border-border/60 bg-background px-2 py-2">
+            <HeaderWeatherBar isMobile={true} />
+          </div>
+        </header>
+      ) : (
+        <>
+          {/* Top-level sticky block (banner is a sibling so this still spans the whole scroll) */}
+          <header className="sticky top-0 z-[1] w-full shadow-sm" {...themeProps}>
+            <div className="flex w-full items-center border-b border-border/60 bg-background px-4 py-2 supports-backdrop-filter:bg-background/90 supports-backdrop-filter:backdrop-blur-md">
+              <div className="w-1/3 min-w-0 pr-2">
+                <HeaderWeatherBar isMobile={false} />
+              </div>
+              <div className="flex flex-1 items-center justify-center">{logo}</div>
+              <div className="flex w-1/3 items-center justify-end gap-2">
+                <Link href="/search">
+                  <div className="flex items-center rounded-full border border-border px-4 py-2">
+                    <span className="mr-10 text-sm font-medium text-muted-foreground">
+                      Tìm kiếm
+                    </span>
+                    <SearchIcon className="h-4 w-4 text-muted-foreground transition-colors hover:text-foreground" />
+                  </div>
+                </Link>
+
+                {accountControl}
+              </div>
+            </div>
+
+            <div className="bg-[#F1F1F1]">
+              <div className="container py-2">
+                <HeaderNav data={data} />
+              </div>
+            </div>
+          </header>
+        </>
+      )}
     </>
   )
 }

@@ -246,7 +246,7 @@ export const MediaHubTriptychBlockComponent: React.FC<Props> = (props) => {
   const bottomItems = photoColumn?.bottomItems ?? []
 
   const inner = (
-    <div className="grid gap-4 lg:grid-cols-3 lg:gap-5 container">
+    <div className="grid gap-4 lg:grid-cols-3 lg:gap-5">
       {/* Podcasts — cream / orange border */}
       <section
         className={cn(
@@ -500,5 +500,5 @@ export const MediaHubTriptychBlockComponent: React.FC<Props> = (props) => {
     return <div className="media-hub-triptych">{inner}</div>
   }
 
-  return <div className="media-hub-triptych container">{inner}</div>
+  return <div className="container">{inner}</div>
 }

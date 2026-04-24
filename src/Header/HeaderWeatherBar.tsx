@@ -1,5 +1,6 @@
 'use client'
 
+import { cn } from '@/utilities/ui'
 import React, { useEffect, useState } from 'react'
 
 const DIVISIONS_URL = 'https://dbthoitiet.com/api/divisions?depth=1'
@@ -221,7 +222,7 @@ function DropletIcon({ className }: { className?: string }) {
   )
 }
 
-export const HeaderWeatherBar: React.FC = () => {
+export const HeaderWeatherBar: React.FC<{ isMobile: boolean }> = ({ isMobile }) => {
   const [label, setLabel] = useState('Đang tải địa điểm...')
   const [temp, setTemp] = useState<string | null>(null)
   const [humidity, setHumidity] = useState<string | null>(null)
@@ -292,7 +293,10 @@ export const HeaderWeatherBar: React.FC = () => {
 
   return (
     <div
-      className="flex w-fit min-w-0 items-center justify-between gap-2 text-sm text-foreground"
+      className={cn(
+        'flex w-fit min-w-0 items-center justify-between gap-2 text-sm text-foreground',
+        isMobile ? 'w-full' : '',
+      )}
       role="status"
       aria-live="polite"
     >

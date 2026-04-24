@@ -244,12 +244,7 @@ function RowOneCircularInfographic({
   return (
     <div
       ref={containerRef}
-      className={cn(
-        'relative mx-auto my-4 aspect-square w-full max-w-[min(100%,28rem)] z-0',
-        'rounded-4xl border border-stone-200/70 bg-[#f7f4ed]',
-        'shadow-[0_1px_0_0_rgba(255,255,255,0.65)_inset,0_24px_48px_-28px_rgba(15,23,42,0.18)]',
-        'dark:border-white/10 dark:bg-slate-950/50 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.05)_inset,0_20px_40px_-24px_rgba(0,0,0,0.55)]',
-      )}
+      className={cn('relative mx-auto my-4 aspect-square w-full max-w-[min(100%,28rem)] z-0')}
       style={
         orbitRpx != null
           ? ({ ['--orbit-r' as string]: `${orbitRpx}px` } as CSSProperties)
@@ -291,11 +286,8 @@ function RowOneCircularInfographic({
       {uniform.map((p, i) => {
         const { tag, index, reactKey } = p
         const α = anglesDeg?.[i] ?? p.angleFromTopDeg
-        const emphasis = index % 2 === 0
-        const typo = emphasis ? emphasisTypography() : supportingTypography()
         const linkClass = cn(
-          typo,
-          'block max-w-[11rem] text-pretty text-center font-serif underline-offset-[3px] transition-colors duration-300 hover:underline sm:max-w-[12.5rem]',
+          'block max-w-[11rem] text-pretty text-center font-serif sm:max-w-[12.5rem]',
           accentHover.link,
         )
 
@@ -304,9 +296,7 @@ function RowOneCircularInfographic({
             {tag.label}
           </SmartLink>
         ) : (
-          <span
-            className={cn(typo, 'block max-w-44 text-pretty text-center font-serif sm:max-w-50')}
-          >
+          <span className={cn('block max-w-44 text-pretty text-center font-serif sm:max-w-50')}>
             {tag.label}
           </span>
         )
@@ -325,10 +315,7 @@ function RowOneCircularInfographic({
           >
             <div
               className={cn(
-                'pointer-events-auto inline-block w-max max-w-[min(11rem,42vw)] rounded-sm border border-stone-200/90 bg-white antialiased px-3 py-2 shadow-[0_10px_28px_-12px_rgba(15,23,42,0.28),0_2px_8px_-2px_rgba(15,23,42,0.08)]',
-                'transition-[box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_36px_-14px_rgba(15,23,42,0.32),0_4px_12px_-2px_rgba(15,23,42,0.1)]',
-                'dark:border-white/12 dark:bg-slate-900/92 dark:shadow-[0_12px_32px_-14px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.05)]',
-                'dark:hover:shadow-[0_16px_40px_-12px_rgba(0,0,0,0.65)]',
+                'pointer-events-auto inline-block w-max max-w-[min(11rem,42vw)] rounded-sm  antialiased px-3 py-2 cursor-pointer',
               )}
             >
               {inner}
