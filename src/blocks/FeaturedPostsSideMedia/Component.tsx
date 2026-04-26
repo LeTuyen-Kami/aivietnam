@@ -4,8 +4,7 @@ import React from 'react'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { cache } from 'react'
-
-import type { FeaturedPostsSideMediaBlock, Post } from '@/payload-types'
+import type { FeaturedPostsSideMediaBlock, Media as MediaType, Post } from '@/payload-types'
 
 import { Media } from '@/components/Media'
 import { SmartLink } from '@/components/SmartLink'
@@ -102,17 +101,10 @@ export const FeaturedPostsSideMediaBlockComponent: React.FC<Props> = ({
     posts = featuredPost ? [featuredPost, ...smallPosts] : []
   }
 
-  if (source === 'latest') {
-    // Keep component sync type-safe by delaying render to async wrapper below.
-    return null
-  }
+  const _sideMedia = sideMedia as MediaType
 
   const [featuredPost, ...smallPostsRaw] = posts
   const smallPosts = smallPostsRaw.slice(0, 2)
-
-  if (!featuredPost || typeof sideMedia !== 'object') {
-    return null
-  }
 
   return (
     <section className="container">
@@ -177,11 +169,11 @@ export const FeaturedPostsSideMediaBlockComponent: React.FC<Props> = ({
               : 'h-full w-full object-cover'
             const inner = (
               <Image
-                alt={sideMedia?.alt || ''}
+                alt={_sideMedia?.alt || ''}
                 className={imgClass}
                 fill
                 sizes="(max-width: 1024px) 100vw, 25vw"
-                src={getMediaUrl(sideMedia?.url, sideMedia?.updatedAt)}
+                src={getMediaUrl(_sideMedia?.url, _sideMedia?.updatedAt)}
               />
             )
 
