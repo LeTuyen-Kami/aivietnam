@@ -1156,6 +1156,10 @@ export interface PortalSplitLayoutBlock {
   leftPosts?: (number | Post)[] | null;
   leftLatestLimit?: number | null;
   /**
+   * Filter latest posts by categories (multi-select).
+   */
+  leftCategoryFilters?: (number | Category)[] | null;
+  /**
    * 1-based start position after sorting by newest published date.
    */
   leftLatestFrom?: number | null;
@@ -2451,6 +2455,7 @@ export interface PortalSplitLayoutBlockSelect<T extends boolean = true> {
   leftSource?: T;
   leftPosts?: T;
   leftLatestLimit?: T;
+  leftCategoryFilters?: T;
   leftLatestFrom?: T;
   leftLatestTo?: T;
   row1LeftTitle?: T;

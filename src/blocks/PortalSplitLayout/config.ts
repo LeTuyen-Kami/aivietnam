@@ -36,105 +36,127 @@ export const PortalSplitLayout: Block = {
   },
   fields: [
     {
-      name: 'leftSource',
-      type: 'select',
-      defaultValue: 'manual',
-      required: true,
-      enumName: 'psl_left_src',
-      options: [
-        { label: { en: 'Manual', vi: 'Chọn thủ công' }, value: 'manual' },
-        { label: { en: 'Latest posts', vi: 'Bài mới nhất' }, value: 'latest' },
-      ],
-      admin: {
-        description: {
-          en: 'Left column: vertical post feed.',
-          vi: 'Cột trái: danh sách bài dọc.',
-        },
-      },
-    },
-    {
-      name: 'leftPosts',
-      type: 'relationship',
-      relationTo: 'posts',
-      hasMany: true,
-      admin: {
-        condition: (_, siblingData) => siblingData?.leftSource === 'manual',
-        description: {
-          en: 'Posts for the left column (order is preserved).',
-          vi: 'Các bài cho cột trái (giữ thứ tự).',
-        },
-      },
-      validate: ((value, { siblingData }) => {
-        if ((siblingData as { leftSource?: string })?.leftSource !== 'manual') {
-          return true
-        }
-        if (!Array.isArray(value) || value.length < 1) {
-          return 'Select at least one post.'
-        }
-        return true
-      }) as RelationshipFieldManyValidation,
-    },
-    {
-      name: 'leftLatestLimit',
-      type: 'number',
-      min: 1,
-      max: 30,
-      admin: {
-        hidden: true,
-      },
-    },
-    {
-      type: 'row',
-      admin: {
-        condition: (_, siblingData) => siblingData?.leftSource === 'latest',
+      type: 'collapsible',
+      label: {
+        en: 'Left column source',
+        vi: 'Nguồn dữ liệu cột trái',
       },
       fields: [
         {
-          name: 'leftLatestFrom',
-          type: 'number',
-          defaultValue: 1,
-          min: 1,
-          max: 30,
-          label: {
-            en: 'Latest from',
-            vi: 'Bài mới từ vị trí',
-          },
+          name: 'leftSource',
+          type: 'select',
+          defaultValue: 'manual',
+          required: true,
+          enumName: 'psl_left_src',
+          options: [
+            { label: { en: 'Manual', vi: 'Chọn thủ công' }, value: 'manual' },
+            { label: { en: 'Latest posts', vi: 'Bài mới nhất' }, value: 'latest' },
+          ],
           admin: {
             description: {
-              en: '1-based start position after sorting by newest published date.',
-              vi: 'Vị trí bắt đầu, tính từ 1, sau khi sắp theo bài mới nhất.',
+              en: 'Left column: vertical post feed.',
+              vi: 'Cột trái: danh sách bài dọc.',
             },
           },
         },
         {
-          name: 'leftLatestTo',
-          type: 'number',
-          defaultValue: 8,
-          min: 1,
-          max: 30,
-          label: {
-            en: 'Latest to',
-            vi: 'Đến vị trí',
-          },
+          name: 'leftPosts',
+          type: 'relationship',
+          relationTo: 'posts',
+          hasMany: true,
           admin: {
+            condition: (_, siblingData) => siblingData?.leftSource === 'manual',
             description: {
-              en: 'Inclusive end position. Example: from 9 to 16 skips the first 8 newest posts.',
-              vi: 'Vị trí kết thúc, có bao gồm. Ví dụ: từ 9 đến 16 sẽ bỏ qua 8 bài mới nhất đầu.',
+              en: 'Posts for the left column (order is preserved).',
+              vi: 'Các bài cho cột trái (giữ thứ tự).',
             },
           },
           validate: ((value, { siblingData }) => {
-            if ((siblingData as { leftSource?: string })?.leftSource !== 'latest') {
+            if ((siblingData as { leftSource?: string })?.leftSource !== 'manual') {
               return true
             }
-
-            const from = (siblingData as { leftLatestFrom?: number })?.leftLatestFrom ?? 1
-
-            if (typeof value === 'number' && value < from) {
-              return 'Latest to must be greater than or equal to latest from.'
+            if (!Array.isArray(value) || value.length < 1) {
+              return 'Select at least one post.'
             }
-
             return true
-          }) as NumberFieldSingleValidation,
+          }) as RelationshipFieldManyValidation,
+        },
+        {
+          name: 'leftLatestLimit',
+          type: 'number',
+          min: 1,
+          max: 30,
+          admin: {
+            hidden: true,
+          },
+        },
+        {
+          name: 'leftCategoryFilters',
+          type: 'relationship',
+          relationTo: 'categories',
+          hasMany: true,
+          admin: {
+            condition: (_, siblingData) => siblingData?.leftSource === 'latest',
+            description: {
+              en: 'Filter latest posts by categories (multi-select).',
+              vi: 'Lọc bài mới theo danh mục (chọn nhiều).',
+            },
+          },
+        },
+        {
+          type: 'row',
+          admin: {
+            condition: (_, siblingData) => siblingData?.leftSource === 'latest',
+          },
+          fields: [
+            {
+              name: 'leftLatestFrom',
+              type: 'number',
+              defaultValue: 1,
+              min: 1,
+              max: 30,
+              label: {
+                en: 'Latest from',
+                vi: 'Bài mới từ vị trí',
+              },
+              admin: {
+                description: {
+                  en: '1-based start position after sorting by newest published date.',
+                  vi: 'Vị trí bắt đầu, tính từ 1, sau khi sắp theo bài mới nhất.',
+                },
+              },
+            },
+            {
+              name: 'leftLatestTo',
+              type: 'number',
+              defaultValue: 8,
+              min: 1,
+              max: 30,
+              label: {
+                en: 'Latest to',
+                vi: 'Đến vị trí',
+              },
+              admin: {
+                description: {
+                  en: 'Inclusive end position. Example: from 9 to 16 skips the first 8 newest posts.',
+                  vi: 'Vị trí kết thúc, có bao gồm. Ví dụ: từ 9 đến 16 sẽ bỏ qua 8 bài mới nhất đầu.',
+                },
+              },
+              validate: ((value, { siblingData }) => {
+                if ((siblingData as { leftSource?: string })?.leftSource !== 'latest') {
+                  return true
+                }
+
+                const from = (siblingData as { leftLatestFrom?: number })?.leftLatestFrom ?? 1
+
+                if (typeof value === 'number' && value < from) {
+                  return 'Latest to must be greater than or equal to latest from.'
+                }
+
+                return true
+              }) as NumberFieldSingleValidation,
+            },
+          ],
         },
       ],
     },

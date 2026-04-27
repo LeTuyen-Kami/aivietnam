@@ -63,7 +63,7 @@ const SmallRowPromo: React.FC<{
     <Media
       className="absolute inset-0"
       fill
-      imgClassName="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+      imgClassName="h-full w-full object-contain transition-transform duration-300 ease-out group-hover:scale-105"
       resource={media}
       size="(max-width: 768px) 100vw, 33vw"
     />

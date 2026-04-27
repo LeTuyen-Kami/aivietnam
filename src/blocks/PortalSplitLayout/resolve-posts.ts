@@ -1,6 +1,6 @@
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
-import type { Payload } from 'payload'
+import type { Payload, Where } from 'payload'
 import { cache } from 'react'
 
 import type { Post } from '@/payload-types'
@@ -56,21 +56,52 @@ export async function resolvePosts(
   return out
 }
 
-export const getLatestLeftPosts = cache(async (from: number, to: number): Promise<Post[]> => {
-  const payload = await getPayload({ config: configPromise })
-  const result = await payload.find({
-    collection: 'posts',
-    depth: 1,
-    limit: to,
-    overrideAccess: false,
-    pagination: false,
-    sort: '-publishedAt',
-    where: {
+export const getLatestLeftPosts = cache(
+  async (from: number, to: number, categoryIds: (number | string)[] = []): Promise<Post[]> => {
+    const payload = await getPayload({ config: configPromise })
+    const normalizedFrom = Math.max(1, Math.floor(from))
+    const normalizedTo = Math.max(normalizedFrom, Math.floor(to))
+    const normalizedCategoryIds = categoryIds.filter(
+      (id, index, arr): id is number | string =>
+        (typeof id === 'number' && Number.isFinite(id) && id > 0 && arr.indexOf(id) === index) ||
+        (typeof id === 'string' && id.trim().length > 0 && arr.indexOf(id) === index),
+    )
+
+    const where: Where = {
       _status: {
         equals: 'published',
       },
-    },
-  })
+      ...(normalizedCategoryIds.length > 0
+        ? {
+            categories: {
+              in: normalizedCategoryIds,
+            },
+          }
+        : {}),
+    }
 
-  return (result.docs as Post[]).slice(from - 1, to)
-})
+    const result = await payload.find({
+      collection: 'posts',
+      depth: 1,
+      limit: normalizedTo,
+      overrideAccess: false,
+      pagination: false,
+      sort: '-publishedAt',
+      where,
+    })
+
+    const docs = result.docs as Post[]
+    if (docs.length === 0) {
+      return []
+    }
+
+    const startIndex = normalizedFrom - 1
+    const endIndex = normalizedTo
+
+    if (startIndex >= docs.length) {
+      return docs
+    }
+
+    return docs.slice(startIndex, endIndex)
+  },
+)

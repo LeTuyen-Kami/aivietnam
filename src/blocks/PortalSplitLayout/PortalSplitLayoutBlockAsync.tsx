@@ -19,8 +19,13 @@ export const PortalSplitLayoutBlockAsync = async (
     const legacyLimit = block.leftLatestLimit ?? 8
     const from = Math.max(1, Math.floor(block.leftLatestFrom ?? 1))
     const to = Math.max(from, Math.floor(block.leftLatestTo ?? legacyLimit))
+    const leftCategoryFilterIds = (block.leftCategoryFilters ?? [])
+      .map((category) =>
+        typeof category === 'object' && category !== null ? category.id : category,
+      )
+      .filter((id): id is number => Number.isFinite(id) && id > 0)
 
-    leftPostsResolved = await getLatestLeftPosts(from, to)
+    leftPostsResolved = await getLatestLeftPosts(from, to, leftCategoryFilterIds)
   } else {
     leftPostsResolved = await resolvePosts(payload, block.leftPosts ?? [])
   }
