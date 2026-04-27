@@ -265,8 +265,7 @@ export const PortalSplitLayout: Block = {
         {
           name: 'row1GridItems',
           type: 'array',
-          minRows: 12,
-          maxRows: 12,
+          defaultValue: Array.from({ length: 12 }, () => ({ label: '' })),
           labels: {
             singular: { en: 'Grid cell', vi: 'Ô lưới' },
             plural: { en: '4×3 link grid', vi: 'Lưới 4×3' },
