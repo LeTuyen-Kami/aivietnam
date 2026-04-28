@@ -39,6 +39,7 @@ export const PortalSplitLayoutBlockAsync = async (
 
     standardSectionsResolved.push({
       accent: section.accent,
+      accentCustomHex: section.accentCustomHex,
       featuredPost,
       footerPosts,
       id: section.id,

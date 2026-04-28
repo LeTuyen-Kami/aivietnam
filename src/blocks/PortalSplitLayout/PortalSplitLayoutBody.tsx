@@ -19,10 +19,12 @@ export const PortalSplitLayoutBody: React.FC<
     row1CenterGraphic,
     row1GridItems,
     row1LeftAccent,
+    row1LeftAccentCustomHex,
     row1LeftTitle,
     row1OrbitRadiusMaxPct,
     row1OrbitRadiusMinPct,
     row1RightAccent,
+    row1RightAccentCustomHex,
     row1RightCards,
     row1RightTitle,
     row1TagItems,
@@ -51,6 +53,7 @@ export const PortalSplitLayoutBody: React.FC<
                 row1CenterGraphic={row1CenterGraphic}
                 row1GridItems={row1GridItems}
                 row1LeftAccent={row1LeftAccent}
+                row1LeftAccentCustomHex={row1LeftAccentCustomHex}
                 row1LeftTitle={row1LeftTitle}
                 row1OrbitRadiusMaxPct={row1OrbitRadiusMaxPct}
                 row1OrbitRadiusMinPct={row1OrbitRadiusMinPct}
@@ -58,6 +61,7 @@ export const PortalSplitLayoutBody: React.FC<
               />
               <RowOneRight
                 row1RightAccent={row1RightAccent}
+                row1RightAccentCustomHex={row1RightAccentCustomHex}
                 row1RightCards={row1RightCards}
                 row1RightTitle={row1RightTitle}
               />
@@ -67,6 +71,7 @@ export const PortalSplitLayoutBody: React.FC<
           {standardSectionsResolved.map((section, index) => (
             <StandardSection
               accent={section.accent}
+              accentCustomHex={section.accentCustomHex}
               featuredPost={section.featuredPost}
               footerPosts={section.footerPosts}
               key={section.id ?? `${section.sectionTitle}-${index}`}

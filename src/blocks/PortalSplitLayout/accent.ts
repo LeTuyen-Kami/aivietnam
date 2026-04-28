@@ -27,6 +27,25 @@ export function getAccentStyle(accent: AccentKey | null | undefined): AccentStyl
   return ACCENTS[key] ?? ACCENTS.teal
 }
 
+const HEX_COLOR_REGEX = /^#(?:[0-9A-Fa-f]{3}){1,2}$/
+
+export function getAccentStyleWithCustomHex(
+  accent: AccentKey | null | undefined,
+  customHex: string | null | undefined,
+): AccentStyle {
+  const fallback = getAccentStyle(accent)
+  const normalized = customHex?.trim()
+
+  if (!normalized || !HEX_COLOR_REGEX.test(normalized)) {
+    return fallback
+  }
+
+  return {
+    bar: normalized,
+    text: normalized,
+  }
+}
+
 export function accentTextVarStyle(textHex: string): CSSProperties {
   return { [ACCENT_TEXT_VAR]: textHex } as CSSProperties
 }

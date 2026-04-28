@@ -4,36 +4,35 @@ import type { Post } from '@/payload-types'
 
 import { Media as MediaComponent } from '@/components/Media'
 
-import { accentHover, accentTextVarStyle, getAccentStyle } from './accent'
+import { accentHover, accentTextVarStyle, getAccentStyleWithCustomHex } from './accent'
 import { PostExcerpt } from './PostExcerpt'
 import type { SectionAccent } from './types'
 import { cn } from '@/utilities/ui'
 
 export function StandardSection({
   accent,
+  accentCustomHex,
   featuredPost,
   footerPosts,
   sectionTitle,
   subPosts,
 }: {
   accent: SectionAccent
+  accentCustomHex?: string | null
   featuredPost: Post | null
   footerPosts: Post[]
   sectionTitle: string
   subPosts: Post[]
 }) {
-  const palette = getAccentStyle(accent)
+  const palette = getAccentStyleWithCustomHex(accent, accentCustomHex)
 
   if (!featuredPost) {
     return null
   }
 
   return (
-    <section
-      className="border-t border-border/40 pt-10 first:border-t-0 first:pt-0"
-      style={accentTextVarStyle(palette.text)}
-    >
-      <div className="mb-4 h-1 w-full rounded-sm" style={{ backgroundColor: palette.bar }} />
+    <section style={accentTextVarStyle(palette.text)}>
+      <div className="mb-4 h-0.5 w-full rounded-sm" style={{ backgroundColor: palette.bar }} />
       <h2 className="mb-6 font-serif text-xl font-bold text-foreground">{sectionTitle}</h2>
 
       <div className="group/feat mb-8 grid gap-4 md:grid-cols-2 md:gap-6">

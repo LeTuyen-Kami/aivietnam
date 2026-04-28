@@ -4,7 +4,7 @@ import { Media as MediaComponent } from '@/components/Media'
 
 import { cn } from '@/utilities/ui'
 
-import { accentHover, accentTextVarStyle, getAccentStyle } from './accent'
+import { accentHover, accentTextVarStyle, getAccentStyleWithCustomHex } from './accent'
 import RowOneCircularInfographic from './RowOneCircularInfographic'
 import { SmartLink } from '@/components/SmartLink'
 
@@ -12,6 +12,7 @@ export function RowOneLeft({
   row1CenterGraphic,
   row1GridItems,
   row1LeftAccent,
+  row1LeftAccentCustomHex,
   row1LeftTitle,
   row1OrbitRadiusMaxPct,
   row1OrbitRadiusMinPct,
@@ -21,18 +22,24 @@ export function RowOneLeft({
   | 'row1CenterGraphic'
   | 'row1GridItems'
   | 'row1LeftAccent'
+  | 'row1LeftAccentCustomHex'
   | 'row1LeftTitle'
   | 'row1OrbitRadiusMaxPct'
   | 'row1OrbitRadiusMinPct'
   | 'row1TagItems'
 >) {
-  const palette = getAccentStyle(row1LeftAccent ?? 'teal')
+  const palette = getAccentStyleWithCustomHex(row1LeftAccent ?? 'teal', row1LeftAccentCustomHex)
 
   return (
     <div style={accentTextVarStyle(palette.text)}>
-      <div className="mb-3 h-1 w-full rounded-sm" style={{ backgroundColor: palette.bar }} />
+      <div className="mb-3 h-0.5 w-full rounded-sm" style={{ backgroundColor: palette.bar }} />
       {row1LeftTitle && (
-        <h2 className="font-serif text-lg font-bold uppercase tracking-wide text-foreground">
+        <h2
+          className="font-serif text-lg font-bold uppercase tracking-wide text-foreground text-center"
+          style={{
+            color: palette.text,
+          }}
+        >
           {row1LeftTitle}
         </h2>
       )}

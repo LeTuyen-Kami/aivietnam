@@ -14,7 +14,7 @@ export function LeftFeed({ posts }: { posts: Post[] }) {
   return (
     <div className="space-y-10">
       {posts.map((post) => (
-        <article className="border-b border-border/60 pb-10 last:border-0 last:pb-0" key={post.id}>
+        <article className="last:pb-0" key={post.id}>
           <Link className="group block" href={`/posts/${post.slug}`}>
             {typeof post.meta?.image === 'object' && post.meta.image && (
               <MediaComponent

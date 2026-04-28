@@ -15,6 +15,20 @@ const accentOptions = [
   { label: { en: 'Teal', vi: 'Xanh ngọc' }, value: 'teal' },
 ]
 
+const HEX_COLOR_REGEX = /^#(?:[0-9A-Fa-f]{3}){1,2}$/
+
+const hexColorValidation = (value: unknown) => {
+  if (value == null || value === '') {
+    return true
+  }
+
+  if (typeof value !== 'string' || !HEX_COLOR_REGEX.test(value.trim())) {
+    return 'Enter a valid HEX color (e.g. #005C5C or #0F0).'
+  }
+
+  return true
+}
+
 export const portalAccentField = {
   name: 'accent',
   type: 'select' as const,
@@ -23,6 +37,19 @@ export const portalAccentField = {
   required: true,
   /** Short PG enum name — avoids exceeding Postgres 63-char identifier limit */
   enumName: 'psl_sec_accent',
+}
+
+export const portalAccentCustomHexField = {
+  name: 'accentCustomHex',
+  type: 'text' as const,
+  validate: hexColorValidation,
+  admin: {
+    description: {
+      en: 'Optional HEX override for accent (e.g. #005C5C). Keeps preset when empty.',
+      vi: 'HEX tuỳ chọn để ghi đè accent (ví dụ #005C5C). Để trống sẽ dùng màu preset.',
+    },
+    placeholder: '#005C5C',
+  },
 }
 
 export const PortalSplitLayout: Block = {
@@ -185,6 +212,14 @@ export const PortalSplitLayout: Block = {
               enumName: 'psl_r1_l_ac',
               options: accentOptions,
             },
+            {
+              name: 'row1LeftAccentCustomHex',
+              type: 'text',
+              validate: hexColorValidation,
+              admin: {
+                placeholder: '#005C5C',
+              },
+            },
           ],
         },
         {
@@ -317,13 +352,20 @@ export const PortalSplitLayout: Block = {
               enumName: 'psl_r1_r_ac',
               options: accentOptions,
             },
+            {
+              name: 'row1RightAccentCustomHex',
+              type: 'text',
+              validate: hexColorValidation,
+              admin: {
+                placeholder: '#2D1E5F',
+              },
+            },
           ],
         },
         {
           name: 'row1RightCards',
           type: 'array',
-          minRows: 8,
-          maxRows: 8,
+          defaultValue: Array.from({ length: 8 }, () => ({ caption: '' })),
           labels: {
             singular: { en: 'Card', vi: 'Thẻ' },
             plural: { en: '2×4 marketplace cards', vi: 'Thẻ 2×4' },
@@ -378,6 +420,7 @@ export const PortalSplitLayout: Block = {
               },
             },
             portalAccentField,
+            portalAccentCustomHexField,
           ],
         },
         {

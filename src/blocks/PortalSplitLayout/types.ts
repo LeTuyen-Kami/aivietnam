@@ -10,6 +10,7 @@ export type SectionAccent = StandardSectionRow['accent']
 
 export type ResolvedSection = {
   accent: SectionAccent
+  accentCustomHex?: string | null
   featuredPost: Post | null
   footerPosts: Post[]
   id?: string | null

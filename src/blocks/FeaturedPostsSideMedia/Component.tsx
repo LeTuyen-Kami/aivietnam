@@ -128,7 +128,7 @@ export const FeaturedPostsSideMediaBlockComponent: React.FC<Props> = ({
                     {featuredPost.title}
                   </h3>
                   {featuredPost.meta?.description && (
-                    <p className="mt-3 text-sm text-muted-foreground lg:text-base">
+                    <p className="mt-3 text-sm text-muted-foreground lg:text-sm">
                       {featuredPost.meta.description}
                     </p>
                   )}

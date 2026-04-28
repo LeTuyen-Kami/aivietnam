@@ -1169,6 +1169,7 @@ export interface PortalSplitLayoutBlock {
   leftLatestTo?: number | null;
   row1LeftTitle?: string | null;
   row1LeftAccent?: ('gold' | 'yellow' | 'green' | 'purple' | 'blue' | 'red' | 'teal') | null;
+  row1LeftAccentCustomHex?: string | null;
   /**
    * Central graphic (ecosystem diagram).
    */
@@ -1207,6 +1208,7 @@ export interface PortalSplitLayoutBlock {
     | null;
   row1RightTitle?: string | null;
   row1RightAccent?: ('gold' | 'yellow' | 'green' | 'purple' | 'blue' | 'red' | 'teal') | null;
+  row1RightAccentCustomHex?: string | null;
   row1RightCards?:
     | {
         image: number | Media;
@@ -1222,6 +1224,10 @@ export interface PortalSplitLayoutBlock {
     | {
         sectionTitle: string;
         accent: 'gold' | 'yellow' | 'green' | 'purple' | 'blue' | 'red' | 'teal';
+        /**
+         * Optional HEX override for accent (e.g. #005C5C). Keeps preset when empty.
+         */
+        accentCustomHex?: string | null;
         featuredPost: number | Post;
         /**
          * Exactly 3 smaller posts
@@ -2460,6 +2466,7 @@ export interface PortalSplitLayoutBlockSelect<T extends boolean = true> {
   leftLatestTo?: T;
   row1LeftTitle?: T;
   row1LeftAccent?: T;
+  row1LeftAccentCustomHex?: T;
   row1CenterGraphic?: T;
   row1TagItems?:
     | T
@@ -2480,6 +2487,7 @@ export interface PortalSplitLayoutBlockSelect<T extends boolean = true> {
       };
   row1RightTitle?: T;
   row1RightAccent?: T;
+  row1RightAccentCustomHex?: T;
   row1RightCards?:
     | T
     | {
@@ -2493,6 +2501,7 @@ export interface PortalSplitLayoutBlockSelect<T extends boolean = true> {
     | {
         sectionTitle?: T;
         accent?: T;
+        accentCustomHex?: T;
         featuredPost?: T;
         subPosts?: T;
         footerPosts?: T;

@@ -2,26 +2,35 @@ import type { Media, PortalSplitLayoutBlock } from '@/payload-types'
 
 import { Media as MediaComponent } from '@/components/Media'
 
-import { accentHover, accentTextVarStyle, getAccentStyle } from './accent'
+import { accentHover, accentTextVarStyle, getAccentStyleWithCustomHex } from './accent'
 import { SmartLink } from '@/components/SmartLink'
 
 export function RowOneRight({
   row1RightAccent,
+  row1RightAccentCustomHex,
   row1RightCards,
   row1RightTitle,
-}: Pick<PortalSplitLayoutBlock, 'row1RightAccent' | 'row1RightCards' | 'row1RightTitle'>) {
-  const palette = getAccentStyle(row1RightAccent ?? 'purple')
+}: Pick<
+  PortalSplitLayoutBlock,
+  'row1RightAccent' | 'row1RightAccentCustomHex' | 'row1RightCards' | 'row1RightTitle'
+>) {
+  const palette = getAccentStyleWithCustomHex(row1RightAccent ?? 'purple', row1RightAccentCustomHex)
 
   return (
     <div style={accentTextVarStyle(palette.text)}>
-      <div className="mb-3 h-1 w-full rounded-sm" style={{ backgroundColor: palette.bar }} />
+      <div className="mb-3 h-0.5 w-full rounded-sm" style={{ backgroundColor: palette.bar }} />
       {row1RightTitle && (
-        <h2 className="mb-6 font-serif text-lg font-bold uppercase tracking-wide text-foreground">
+        <h2
+          className="mb-6 font-serif text-lg font-bold uppercase tracking-wide text-foreground text-center"
+          style={{
+            color: palette.text,
+          }}
+        >
           {row1RightTitle}
         </h2>
       )}
       {row1RightCards && row1RightCards.length > 0 && (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-8">
           {row1RightCards.map((card, index) => {
             const href = card.href?.trim()
             const key = card.id != null ? `${card.id}-${index}` : `${card.caption}-${index}`
@@ -39,7 +48,7 @@ export function RowOneRight({
                   {typeof card.image === 'object' && (
                     <MediaComponent
                       className="h-full w-full"
-                      imgClassName="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+                      imgClassName="object-cover transition-transform duration-300 ease-out group-hover:scale-105 size-full"
                       resource={card.image as Media}
                       size="(max-width: 1024px) 50vw, 25vw"
                     />
