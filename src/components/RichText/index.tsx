@@ -47,7 +47,7 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) 
     if (node.relationTo === 'media') {
       const caption = node.fields?.caption
       const uploadDoc = node.value
-      if (typeof uploadDoc !== 'object') {
+      if (!uploadDoc || typeof uploadDoc !== 'object') {
         return null
       }
       const { alt, height, url, width } = uploadDoc
