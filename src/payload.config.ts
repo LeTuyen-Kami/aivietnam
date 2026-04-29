@@ -148,7 +148,7 @@ export default buildConfig({
                   }
                 : true,
             },
-            clientUploads: true,
+            // clientUploads: true,
             bucket: process.env.R2_BUCKET || '',
             config: {
               region: 'auto',

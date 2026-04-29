@@ -1,0 +1,28 @@
+diff --git a/node_modules/payload/.DS_Store b/.DS_Store
+new file mode 100644
+index 0000000000000000000000000000000000000000..896b35dfe8bc34bd9e57caa98d17d48bf4f34cfb
+Binary files /dev/null and b/.DS_Store differ
+diff --git a/dist/uploads/canResizeImage.js b/dist/uploads/canResizeImage.js
+index baed0133aa8b1faf1ba0fbcd95fd418902f6cf11..aecd72ebe9143ec139af6371dd8e8fade58a2ed1 100644
+--- a/dist/uploads/canResizeImage.js
++++ b/dist/uploads/canResizeImage.js
+@@ -2,7 +2,6 @@ export function canResizeImage(mimeType) {
+     return [
+         'image/jpeg',
+         'image/png',
+-        'image/gif',
+         'image/webp',
+         'image/tiff',
+         'image/avif'
+diff --git a/dist/uploads/generateFileData.js b/dist/uploads/generateFileData.js
+index 02d5f2fa77e236bf8844a3cdb34437bba7e8acf2..766cb7b7e080a32b4e5d4fcf330c78f643842b6c 100644
+--- a/dist/uploads/generateFileData.js
++++ b/dist/uploads/generateFileData.js
+@@ -106,7 +106,6 @@ export const generateFileData = async ({ collection: { config: collectionConfig
+     const fileData = {};
+     const fileIsAnimatedType = [
+         'image/avif',
+-        'image/gif',
+         'image/webp'
+     ].includes(file.mimetype);
+     const cropData = typeof uploadEdits === 'object' && 'crop' in uploadEdits ? uploadEdits.crop : undefined;

@@ -111,5 +111,8 @@
       "esbuild",
       "unrs-resolver"
     ]
+  },
+  "patchedDependencies": {
+    "payload@3.79.1": "patches/payload@3.79.1.patch"
   }
 }
