@@ -71,6 +71,7 @@ export interface Config {
     pages: Page;
     posts: Post;
     media: Media;
+    'media-gifs': MediaGif;
     categories: Category;
     'listing-categories': ListingCategory;
     listings: Listing;
@@ -95,13 +96,14 @@ export interface Config {
   };
   collectionsJoins: {
     'payload-folders': {
-      documentsAndFolders: 'payload-folders' | 'media';
+      documentsAndFolders: 'payload-folders' | 'media' | 'media-gifs';
     };
   };
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    'media-gifs': MediaGifsSelect<false> | MediaGifsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     'listing-categories': ListingCategoriesSelect<false> | ListingCategoriesSelect<true>;
     listings: ListingsSelect<false> | ListingsSelect<true>;
@@ -454,13 +456,38 @@ export interface FolderInterface {
           relationTo?: 'media';
           value: number | Media;
         }
+      | {
+          relationTo?: 'media-gifs';
+          value: number | MediaGif;
+        }
     )[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
-  folderType?: 'media'[] | null;
+  folderType?: ('media' | 'media-gifs')[] | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media-gifs".
+ */
+export interface MediaGif {
+  id: number;
+  alt?: string | null;
+  folder?: (number | null) | FolderInterface;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {};
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1039,7 +1066,15 @@ export interface FeaturedPostsSideMediaBlock {
   /**
    * Third column: full-height image (replaces the former 3rd small post). Optional.
    */
-  smallRowPromoImage?: (number | null) | Media;
+  smallRowPromoImage?:
+    | ({
+        relationTo: 'media';
+        value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'media-gifs';
+        value: number | MediaGif;
+      } | null);
   /**
    * Optional link when the promo image is clicked (e.g. /posts/slug or https://…).
    */
@@ -1047,7 +1082,15 @@ export interface FeaturedPostsSideMediaBlock {
   /**
    * Image/GIF displayed on the right side.
    */
-  sideMedia: number | Media;
+  sideMedia:
+    | {
+        relationTo: 'media';
+        value: number | Media;
+      }
+    | {
+        relationTo: 'media-gifs';
+        value: number | MediaGif;
+      };
   /**
    * Optional link when the side image is clicked (e.g. /posts/slug or https://…).
    */
@@ -1962,6 +2005,10 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
+        relationTo: 'media-gifs';
+        value: number | MediaGif;
+      } | null)
+    | ({
         relationTo: 'categories';
         value: number | Category;
       } | null)
@@ -2724,6 +2771,26 @@ export interface MediaSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media-gifs_select".
+ */
+export interface MediaGifsSelect<T extends boolean = true> {
+  alt?: T;
+  folder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?: T | {};
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

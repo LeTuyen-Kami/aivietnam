@@ -15,6 +15,7 @@ import { LivestreamChatEventReceipts } from './collections/LivestreamChatEventRe
 import { ListingCategories } from './collections/ListingCategories'
 import { Listings } from './collections/Listings'
 import { Media } from './collections/Media'
+import { MediaGifs } from './collections/MediaGifs'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
@@ -93,6 +94,7 @@ export default buildConfig({
     Pages,
     Posts,
     Media,
+    MediaGifs,
     Categories,
     ListingCategories,
     Listings,
@@ -118,6 +120,20 @@ export default buildConfig({
           s3Storage({
             collections: {
               [Media.slug]: r2PublicBaseURL
+                ? {
+                    generateFileURL: ({
+                      filename,
+                      prefix,
+                    }: {
+                      filename: string
+                      prefix?: string
+                    }) => {
+                      const normalizedPrefix = prefix ? `${prefix.replace(/\/$/, '')}/` : ''
+                      return `${r2PublicBaseURL}/${normalizedPrefix}${filename}`
+                    },
+                  }
+                : true,
+              [MediaGifs.slug]: r2PublicBaseURL
                 ? {
                     generateFileURL: ({
                       filename,

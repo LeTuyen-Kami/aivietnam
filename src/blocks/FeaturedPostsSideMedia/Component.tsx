@@ -4,7 +4,12 @@ import React from 'react'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { cache } from 'react'
-import type { FeaturedPostsSideMediaBlock, Media as MediaType, Post } from '@/payload-types'
+import type {
+  FeaturedPostsSideMediaBlock,
+  MediaGif,
+  Media as MediaType,
+  Post,
+} from '@/payload-types'
 
 import { Media } from '@/components/Media'
 import { SmartLink } from '@/components/SmartLink'
@@ -51,7 +56,8 @@ const SmallRowPromo: React.FC<{
   image: Props['smallRowPromoImage']
   href: Props['smallRowPromoHref']
 }> = ({ image, href }) => {
-  const media = typeof image === 'object' && image ? image : null
+  const media = typeof image === 'object' && image ? image?.value : null
+
   if (!media) {
     return <div aria-hidden className="hidden min-h-0 sm:block" />
   }
@@ -101,7 +107,7 @@ export const FeaturedPostsSideMediaBlockComponent: React.FC<Props> = ({
     posts = featuredPost ? [featuredPost, ...smallPosts] : []
   }
 
-  const _sideMedia = sideMedia as MediaType
+  const _sideMedia = sideMedia?.value as MediaType | MediaGif
 
   const [featuredPost, ...smallPostsRaw] = posts
   const smallPosts = smallPostsRaw.slice(0, 2)
@@ -165,8 +171,8 @@ export const FeaturedPostsSideMediaBlockComponent: React.FC<Props> = ({
             const raw = typeof sideMediaHref === 'string' ? sideMediaHref.trim() : ''
             const shellClass = 'group relative block overflow-hidden w-full h-full min-h-[320px]'
             const imgClass = raw
-              ? 'h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105'
-              : 'h-full w-full object-cover'
+              ? 'h-full w-full object-contain transition-transform duration-300 ease-out group-hover:scale-105'
+              : 'h-full w-full object-contain'
             const inner = (
               <Image
                 alt={_sideMedia?.alt || ''}

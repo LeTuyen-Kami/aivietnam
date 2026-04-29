@@ -1,4 +1,8 @@
-import type { Block, RelationshipFieldManyValidation, RelationshipFieldSingleValidation } from 'payload'
+import type {
+  Block,
+  RelationshipFieldManyValidation,
+  RelationshipFieldSingleValidation,
+} from 'payload'
 
 export const FeaturedPostsSideMedia: Block = {
   slug: 'featuredPostsSideMedia',
@@ -90,7 +94,7 @@ export const FeaturedPostsSideMedia: Block = {
     {
       name: 'smallRowPromoImage',
       type: 'upload',
-      relationTo: 'media',
+      relationTo: ['media', 'media-gifs'],
       admin: {
         condition: (_, siblingData) => siblingData?.source === 'manual',
         description: {
@@ -113,7 +117,7 @@ export const FeaturedPostsSideMedia: Block = {
     {
       name: 'sideMedia',
       type: 'upload',
-      relationTo: 'media',
+      relationTo: ['media', 'media-gifs'],
       required: true,
       admin: {
         description: {
