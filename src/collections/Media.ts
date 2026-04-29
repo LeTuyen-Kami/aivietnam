@@ -8,6 +8,7 @@ import {
 
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
+import sharp from 'sharp'
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -34,41 +35,52 @@ export const Media: CollectionConfig = {
       }),
     },
   ],
-
   upload: {
     adminThumbnail: 'thumbnail',
     focalPoint: true,
+    disableLocalStorage: true,
+    formatOptions: {
+      format: 'webp',
+      options: {
+        quality: 70,
+        effort: 2,
+      },
+    },
     imageSizes: [
       {
         name: 'thumbnail',
         width: 300,
-      },
-      {
-        name: 'square',
-        width: 500,
-        height: 500,
-      },
-      {
-        name: 'small',
-        width: 600,
-      },
-      {
-        name: 'medium',
-        width: 900,
+        formatOptions: {
+          format: 'webp',
+          options: {
+            quality: 70,
+            effort: 2,
+          },
+        },
       },
       {
         name: 'large',
         width: 1400,
-      },
-      {
-        name: 'xlarge',
-        width: 1920,
+        formatOptions: {
+          format: 'webp',
+          options: {
+            quality: 70,
+            effort: 2,
+          },
+        },
       },
       {
         name: 'og',
         width: 1200,
         height: 630,
         crop: 'center',
+        formatOptions: {
+          format: 'webp',
+          options: {
+            quality: 70,
+            effort: 2,
+          },
+        },
       },
     ],
   },

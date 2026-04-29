@@ -264,24 +264,32 @@ export default buildConfig({
   // ...
 ```
 
-We also support Vercel's blob storage:
+This project uses Cloudflare R2 (S3-compatible) for new media uploads:
 
 ```bash
-pnpm add @payloadcms/storage-vercel-blob
+pnpm add @payloadcms/storage-s3
 ```
 
 ```ts
 // payload.config.ts
-import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
+import { s3Storage } from '@payloadcms/storage-s3'
 
 export default buildConfig({
   // ...
   plugins: [
-    vercelBlobStorage({
+    s3Storage({
       collections: {
         [Media.slug]: true,
       },
-      token: process.env.BLOB_READ_WRITE_TOKEN || '',
+      bucket: process.env.R2_BUCKET || '',
+      config: {
+        region: 'auto',
+        endpoint: process.env.R2_ENDPOINT || '',
+        credentials: {
+          accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
+          secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+        },
+      },
     }),
   ],
   // ...

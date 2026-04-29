@@ -1,5 +1,5 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
-import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
+import { s3Storage } from '@payloadcms/storage-s3'
 import sharp from 'sharp'
 import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
@@ -30,6 +30,16 @@ import { lexicalEditor } from '@payloadcms/richtext-lexical'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+const mediaStorageProvider = process.env.MEDIA_STORAGE_PROVIDER?.toLowerCase()
+const r2Endpoint = process.env.R2_ENDPOINT ?? ''
+const r2PublicBaseURL = process.env.R2_PUBLIC_BASE_URL?.replace(/\/$/, '')
+const r2StorageEnabled = Boolean(
+  mediaStorageProvider !== 'local' &&
+  process.env.R2_BUCKET &&
+  process.env.R2_ACCESS_KEY_ID &&
+  process.env.R2_SECRET_ACCESS_KEY &&
+  r2Endpoint,
+)
 
 export default buildConfig({
   admin: {
@@ -103,13 +113,38 @@ export default buildConfig({
   },
   plugins: [
     ...plugins,
-    vercelBlobStorage({
-      collections: {
-        [Media.slug]: true,
-      },
-      enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-    }),
+    ...(r2StorageEnabled
+      ? [
+          s3Storage({
+            collections: {
+              [Media.slug]: r2PublicBaseURL
+                ? {
+                    generateFileURL: ({
+                      filename,
+                      prefix,
+                    }: {
+                      filename: string
+                      prefix?: string
+                    }) => {
+                      const normalizedPrefix = prefix ? `${prefix.replace(/\/$/, '')}/` : ''
+                      return `${r2PublicBaseURL}/${normalizedPrefix}${filename}`
+                    },
+                  }
+                : true,
+            },
+            clientUploads: true,
+            bucket: process.env.R2_BUCKET || '',
+            config: {
+              region: 'auto',
+              endpoint: r2Endpoint,
+              credentials: {
+                accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
+                secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+              },
+            },
+          }),
+        ]
+      : []),
   ],
   secret: process.env.PAYLOAD_SECRET,
   sharp,
