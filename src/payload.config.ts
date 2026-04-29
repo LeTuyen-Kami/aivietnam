@@ -1,21 +1,23 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { s3Storage } from '@payloadcms/storage-s3'
-import sharp from 'sharp'
 import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
+import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
+import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { en } from '@payloadcms/translations/languages/en'
+import { vi } from '@payloadcms/translations/languages/vi'
 import { Categories } from './collections/Categories'
-import { CommentModerationRules } from './collections/CommentModerationRules'
 import { CommentLikes } from './collections/CommentLikes'
+import { CommentModerationRules } from './collections/CommentModerationRules'
 import { Comments } from './collections/Comments'
-import { Livestreams } from './collections/Livestreams'
-import { LivestreamChatMessages } from './collections/LivestreamChatMessages'
-import { LivestreamChatEventReceipts } from './collections/LivestreamChatEventReceipts'
 import { ListingCategories } from './collections/ListingCategories'
 import { Listings } from './collections/Listings'
+import { LivestreamChatEventReceipts } from './collections/LivestreamChatEventReceipts'
+import { LivestreamChatMessages } from './collections/LivestreamChatMessages'
+import { Livestreams } from './collections/Livestreams'
 import { Media } from './collections/Media'
-import { MediaGifs } from './collections/MediaGifs'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
@@ -23,11 +25,7 @@ import { Footer } from './Footer/config'
 import { GeneralSettings } from './GeneralSettings/config'
 import { Header } from './Header/config'
 import { plugins } from './plugins'
-import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
-import { vi } from '@payloadcms/translations/languages/vi'
-import { en } from '@payloadcms/translations/languages/en'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -88,13 +86,13 @@ export default buildConfig({
     },
     // This project points at a shared remote Postgres instance.
     // Disable dev-time schema push so all shape changes go through explicit migrations.
-    push: false,
+    push: true,
   }),
   collections: [
     Pages,
     Posts,
     Media,
-    MediaGifs,
+    // MediaGifs,
     Categories,
     ListingCategories,
     Listings,
@@ -133,20 +131,20 @@ export default buildConfig({
                     },
                   }
                 : true,
-              [MediaGifs.slug]: r2PublicBaseURL
-                ? {
-                    generateFileURL: ({
-                      filename,
-                      prefix,
-                    }: {
-                      filename: string
-                      prefix?: string
-                    }) => {
-                      const normalizedPrefix = prefix ? `${prefix.replace(/\/$/, '')}/` : ''
-                      return `${r2PublicBaseURL}/${normalizedPrefix}${filename}`
-                    },
-                  }
-                : true,
+              // [MediaGifs.slug]: r2PublicBaseURL
+              //   ? {
+              //       generateFileURL: ({
+              //         filename,
+              //         prefix,
+              //       }: {
+              //         filename: string
+              //         prefix?: string
+              //       }) => {
+              //         const normalizedPrefix = prefix ? `${prefix.replace(/\/$/, '')}/` : ''
+              //         return `${r2PublicBaseURL}/${normalizedPrefix}${filename}`
+              //       },
+              //     }
+              //   : true,
             },
             // clientUploads: true,
             bucket: process.env.R2_BUCKET || '',

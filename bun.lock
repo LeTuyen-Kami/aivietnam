@@ -25,6 +25,7 @@
         "@radix-ui/react-label": "^2.1.8",
         "@radix-ui/react-select": "^2.2.6",
         "@radix-ui/react-slot": "^1.2.4",
+        "@rumess/payload-audit-log": "^1.1.0",
         "@stream-io/node-sdk": "^0.7.54",
         "@stream-io/video-react-sdk": "^1.35.2",
         "@tanstack/react-query": "^5.99.1",
@@ -709,6 +710,8 @@
     "@rollup/rollup-win32-x64-msvc": ["@rollup/rollup-win32-x64-msvc@4.59.0", "", { "os": "win32", "cpu": "x64" }, "sha512-2HRCml6OztYXyJXAvdDXPKcawukWY2GpR5/nxKp4iBgiO3wcoEGkAaqctIbZcNB6KlUQBIqt8VYkNSj2397EfA=="],
 
     "@rtsao/scc": ["@rtsao/scc@1.1.0", "", {}, "sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g=="],
+
+    "@rumess/payload-audit-log": ["@rumess/payload-audit-log@1.1.0", "", { "peerDependencies": { "payload": "^3.0.0" } }, "sha512-l1NpAiGmvZ+GB7NkaoDpjKXFy5To1hA7ECI8FTENH1Cq3AIXTU6DrDlylBEDhloLPdoGiqxrjLcVUncZA16dWA=="],
 
     "@rushstack/eslint-patch": ["@rushstack/eslint-patch@1.16.1", "", {}, "sha512-TvZbIpeKqGQQ7X0zSCvPH9riMSFQFSggnfBjFZ1mEoILW+UuXCKwOoPcgjMwiUtRqFZ8jWhPJc4um14vC6I4ag=="],
 

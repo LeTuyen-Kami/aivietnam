@@ -4,12 +4,7 @@ import React from 'react'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { cache } from 'react'
-import type {
-  FeaturedPostsSideMediaBlock,
-  MediaGif,
-  Media as MediaType,
-  Post,
-} from '@/payload-types'
+import type { FeaturedPostsSideMediaBlock, Media as MediaType, Post } from '@/payload-types'
 
 import { Media } from '@/components/Media'
 import { SmartLink } from '@/components/SmartLink'
@@ -56,7 +51,7 @@ const SmallRowPromo: React.FC<{
   image: Props['smallRowPromoImage']
   href: Props['smallRowPromoHref']
 }> = ({ image, href }) => {
-  const media = typeof image === 'object' && image ? image?.value : null
+  const media = typeof image === 'object' && image ? image : null
 
   if (!media) {
     return <div aria-hidden className="hidden min-h-0 sm:block" />
@@ -107,7 +102,7 @@ export const FeaturedPostsSideMediaBlockComponent: React.FC<Props> = ({
     posts = featuredPost ? [featuredPost, ...smallPosts] : []
   }
 
-  const _sideMedia = sideMedia?.value as MediaType | MediaGif
+  const _sideMedia = sideMedia as MediaType
 
   const [featuredPost, ...smallPostsRaw] = posts
   const smallPosts = smallPostsRaw.slice(0, 2)

@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
-import { isUsersCollectionAdmin } from '@/access/isAdminUser'
+import { canAccessAdminPanel, isUsersCollectionAdmin } from '@/access/isAdminUser'
+import moderator from '../Users/access/mod'
 
 export const LivestreamChatMessages: CollectionConfig = {
   slug: 'livestream-chat-messages',
@@ -9,10 +10,10 @@ export const LivestreamChatMessages: CollectionConfig = {
     useAsTitle: 'streamMessageId',
   },
   access: {
-    create: ({ req: { user } }) => isUsersCollectionAdmin(user),
-    read: ({ req: { user } }) => isUsersCollectionAdmin(user),
-    update: ({ req: { user } }) => isUsersCollectionAdmin(user),
-    delete: ({ req: { user } }) => isUsersCollectionAdmin(user),
+    create: moderator,
+    read: ({ req: { user } }) => canAccessAdminPanel(user),
+    update: moderator,
+    delete: moderator,
   },
   fields: [
     {

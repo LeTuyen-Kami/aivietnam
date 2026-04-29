@@ -71,7 +71,6 @@ export interface Config {
     pages: Page;
     posts: Post;
     media: Media;
-    'media-gifs': MediaGif;
     categories: Category;
     'listing-categories': ListingCategory;
     listings: Listing;
@@ -87,6 +86,7 @@ export interface Config {
     'form-submissions': FormSubmission;
     search: Search;
     'payload-mcp-api-keys': PayloadMcpApiKey;
+    'audit-logs': AuditLog;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-folders': FolderInterface;
@@ -96,14 +96,13 @@ export interface Config {
   };
   collectionsJoins: {
     'payload-folders': {
-      documentsAndFolders: 'payload-folders' | 'media' | 'media-gifs';
+      documentsAndFolders: 'payload-folders' | 'media';
     };
   };
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
-    'media-gifs': MediaGifsSelect<false> | MediaGifsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     'listing-categories': ListingCategoriesSelect<false> | ListingCategoriesSelect<true>;
     listings: ListingsSelect<false> | ListingsSelect<true>;
@@ -119,6 +118,7 @@ export interface Config {
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
     search: SearchSelect<false> | SearchSelect<true>;
     'payload-mcp-api-keys': PayloadMcpApiKeysSelect<false> | PayloadMcpApiKeysSelect<true>;
+    'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-folders': PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
@@ -456,38 +456,13 @@ export interface FolderInterface {
           relationTo?: 'media';
           value: number | Media;
         }
-      | {
-          relationTo?: 'media-gifs';
-          value: number | MediaGif;
-        }
     )[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
-  folderType?: ('media' | 'media-gifs')[] | null;
+  folderType?: 'media'[] | null;
   updatedAt: string;
   createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media-gifs".
- */
-export interface MediaGif {
-  id: number;
-  alt?: string | null;
-  folder?: (number | null) | FolderInterface;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
-  sizes?: {};
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -496,7 +471,7 @@ export interface MediaGif {
 export interface User {
   id: number;
   name?: string | null;
-  roles: ('admin' | 'member')[];
+  roles: ('admin' | 'member' | 'editor' | 'moderator')[];
   /**
    * Google account subject (sub). Set automatically for OAuth sign-in.
    */
@@ -1066,15 +1041,7 @@ export interface FeaturedPostsSideMediaBlock {
   /**
    * Third column: full-height image (replaces the former 3rd small post). Optional.
    */
-  smallRowPromoImage?:
-    | ({
-        relationTo: 'media';
-        value: number | Media;
-      } | null)
-    | ({
-        relationTo: 'media-gifs';
-        value: number | MediaGif;
-      } | null);
+  smallRowPromoImage?: (number | null) | Media;
   /**
    * Optional link when the promo image is clicked (e.g. /posts/slug or https://…).
    */
@@ -1082,15 +1049,7 @@ export interface FeaturedPostsSideMediaBlock {
   /**
    * Image/GIF displayed on the right side.
    */
-  sideMedia:
-    | {
-        relationTo: 'media';
-        value: number | Media;
-      }
-    | {
-        relationTo: 'media-gifs';
-        value: number | MediaGif;
-      };
+  sideMedia: number | Media;
   /**
    * Optional link when the side image is clicked (e.g. /posts/slug or https://…).
    */
@@ -1878,6 +1837,32 @@ export interface PayloadMcpApiKey {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-logs".
+ */
+export interface AuditLog {
+  id: number;
+  collection: string;
+  action: 'create' | 'update' | 'delete' | 'read';
+  documentId: string;
+  timestamp: string;
+  user?: (number | null) | User;
+  /**
+   * Changes made in this operation
+   */
+  changes?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -2005,10 +1990,6 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
-        relationTo: 'media-gifs';
-        value: number | MediaGif;
-      } | null)
-    | ({
         relationTo: 'categories';
         value: number | Category;
       } | null)
@@ -2067,6 +2048,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'payload-mcp-api-keys';
         value: number | PayloadMcpApiKey;
+      } | null)
+    | ({
+        relationTo: 'audit-logs';
+        value: number | AuditLog;
       } | null)
     | ({
         relationTo: 'payload-folders';
@@ -2774,26 +2759,6 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media-gifs_select".
- */
-export interface MediaGifsSelect<T extends boolean = true> {
-  alt?: T;
-  folder?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  url?: T;
-  thumbnailURL?: T;
-  filename?: T;
-  mimeType?: T;
-  filesize?: T;
-  width?: T;
-  height?: T;
-  focalX?: T;
-  focalY?: T;
-  sizes?: T | {};
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories_select".
  */
 export interface CategoriesSelect<T extends boolean = true> {
@@ -3232,6 +3197,20 @@ export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
   enableAPIKey?: T;
   apiKey?: T;
   apiKeyIndex?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-logs_select".
+ */
+export interface AuditLogsSelect<T extends boolean = true> {
+  collection?: T;
+  action?: T;
+  documentId?: T;
+  timestamp?: T;
+  user?: T;
+  changes?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

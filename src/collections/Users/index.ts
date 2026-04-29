@@ -1,12 +1,13 @@
 import type { CollectionConfig } from 'payload'
 
 import { adminOrSelf } from '../../access/adminOrSelf'
-import { isUsersCollectionAdmin } from '../../access/isAdminUser'
+import { canAccessAdminPanel, isUsersCollectionAdmin } from '../../access/isAdminUser'
+import { protectRoles } from './hooks/protectRoles'
 
 export const Users: CollectionConfig = {
   slug: 'users',
   access: {
-    admin: ({ req: { user } }) => isUsersCollectionAdmin(user),
+    admin: ({ req: { user } }) => canAccessAdminPanel(user),
     create: () => true,
     delete: ({ req: { user } }) => isUsersCollectionAdmin(user),
     read: adminOrSelf,
@@ -31,6 +32,8 @@ export const Users: CollectionConfig = {
       options: [
         { label: 'Admin', value: 'admin' },
         { label: 'Member', value: 'member' },
+        { label: 'Editor', value: 'editor' },
+        { label: 'Moderator', value: 'moderator' },
       ],
       saveToJWT: true,
       access: {
@@ -63,6 +66,7 @@ export const Users: CollectionConfig = {
         return data
       },
     ],
+    beforeChange: [protectRoles],
   },
   timestamps: true,
 }

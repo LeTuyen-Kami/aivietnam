@@ -2,9 +2,10 @@ import type { CollectionConfig } from 'payload'
 import type { RowField } from 'payload'
 import { slugField } from 'payload'
 
-import { isUsersCollectionAdmin } from '@/access/isAdminUser'
+import { canAccessAdminPanel, isUsersCollectionAdmin } from '@/access/isAdminUser'
 import { slugifyTitle } from '@/utilities/slugify'
 import { getLivestreamViewerAbsoluteUrl } from '@/utilities/livestreamViewerUrl'
+import moderator from '../Users/access/mod'
 
 export const Livestreams: CollectionConfig<'livestreams'> = {
   slug: 'livestreams',
@@ -12,22 +13,20 @@ export const Livestreams: CollectionConfig<'livestreams'> = {
   admin: {
     defaultColumns: ['title', 'slug', 'status', 'scheduledAt', 'updatedAt'],
     livePreview: {
-      url: ({ data }) =>
-        getLivestreamViewerAbsoluteUrl(data?.slug as string | undefined) ?? '',
+      url: ({ data }) => getLivestreamViewerAbsoluteUrl(data?.slug as string | undefined) ?? '',
     },
-    preview: (data) =>
-      getLivestreamViewerAbsoluteUrl(data?.slug as string | undefined) ?? '',
+    preview: (data) => getLivestreamViewerAbsoluteUrl(data?.slug as string | undefined) ?? '',
     useAsTitle: 'title',
   },
   access: {
-    create: ({ req: { user } }) => isUsersCollectionAdmin(user),
-    delete: ({ req: { user } }) => isUsersCollectionAdmin(user),
+    create: moderator,
+    delete: moderator,
     read: ({ req: { user } }) => {
       if (!user) return false
-      if (isUsersCollectionAdmin(user)) return true
+      if (canAccessAdminPanel(user)) return true
       return { status: { not_equals: 'draft' } }
     },
-    update: ({ req: { user } }) => isUsersCollectionAdmin(user),
+    update: moderator,
   },
   fields: [
     {

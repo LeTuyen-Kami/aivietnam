@@ -94,7 +94,7 @@ export const FeaturedPostsSideMedia: Block = {
     {
       name: 'smallRowPromoImage',
       type: 'upload',
-      relationTo: ['media', 'media-gifs'],
+      relationTo: 'media',
       admin: {
         condition: (_, siblingData) => siblingData?.source === 'manual',
         description: {
@@ -117,7 +117,7 @@ export const FeaturedPostsSideMedia: Block = {
     {
       name: 'sideMedia',
       type: 'upload',
-      relationTo: ['media', 'media-gifs'],
+      relationTo: 'media',
       required: true,
       admin: {
         description: {
