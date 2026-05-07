@@ -1,0 +1,11 @@
+services:
+  app:
+    build:
+      context: .
+      args:
+        PAYLOAD_SECRET: 7750dd5a53e3f86ae3f29f14
+    ports:
+      - '3000:3000'
+    env_file:
+      - .env
+    restart: always

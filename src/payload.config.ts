@@ -29,16 +29,6 @@ import { getServerSideURL } from './utilities/getURL'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
-const mediaStorageProvider = process.env.MEDIA_STORAGE_PROVIDER?.toLowerCase()
-const r2Endpoint = process.env.R2_ENDPOINT ?? ''
-const r2PublicBaseURL = process.env.R2_PUBLIC_BASE_URL?.replace(/\/$/, '')
-const r2StorageEnabled = Boolean(
-  mediaStorageProvider !== 'local' &&
-  process.env.R2_BUCKET &&
-  process.env.R2_ACCESS_KEY_ID &&
-  process.env.R2_SECRET_ACCESS_KEY &&
-  r2Endpoint,
-)
 
 export default buildConfig({
   admin: {
@@ -113,52 +103,28 @@ export default buildConfig({
   },
   plugins: [
     ...plugins,
-    ...(r2StorageEnabled
-      ? [
-          s3Storage({
-            collections: {
-              [Media.slug]: r2PublicBaseURL
-                ? {
-                    generateFileURL: ({
-                      filename,
-                      prefix,
-                    }: {
-                      filename: string
-                      prefix?: string
-                    }) => {
-                      const normalizedPrefix = prefix ? `${prefix.replace(/\/$/, '')}/` : ''
-                      return `${r2PublicBaseURL}/${normalizedPrefix}${filename}`
-                    },
-                  }
-                : true,
-              // [MediaGifs.slug]: r2PublicBaseURL
-              //   ? {
-              //       generateFileURL: ({
-              //         filename,
-              //         prefix,
-              //       }: {
-              //         filename: string
-              //         prefix?: string
-              //       }) => {
-              //         const normalizedPrefix = prefix ? `${prefix.replace(/\/$/, '')}/` : ''
-              //         return `${r2PublicBaseURL}/${normalizedPrefix}${filename}`
-              //       },
-              //     }
-              //   : true,
-            },
-            // clientUploads: true,
-            bucket: process.env.R2_BUCKET || '',
-            config: {
-              region: 'auto',
-              endpoint: r2Endpoint,
-              credentials: {
-                accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
-                secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
-              },
-            },
-          }),
-        ]
-      : []),
+    // s3Storage({
+    //   collections: {
+    //     [Media.slug]: r2PublicBaseURL
+    //       ? {
+    //           generateFileURL: ({ filename, prefix }: { filename: string; prefix?: string }) => {
+    //             const normalizedPrefix = prefix ? `${prefix.replace(/\/$/, '')}/` : ''
+    //             return `${r2PublicBaseURL}/${normalizedPrefix}${filename}`
+    //           },
+    //         }
+    //       : true,
+    //   },
+    //   // clientUploads: true,
+    //   bucket: process.env.R2_BUCKET || '',
+    //   config: {
+    //     region: 'auto',
+    //     endpoint: r2Endpoint,
+    //     credentials: {
+    //       accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
+    //       secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+    //     },
+    //   },
+    // }),
   ],
   secret: process.env.PAYLOAD_SECRET,
   sharp,
