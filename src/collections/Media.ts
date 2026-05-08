@@ -38,7 +38,7 @@ export const Media: CollectionConfig = {
   upload: {
     adminThumbnail: 'thumbnail',
     focalPoint: true,
-    disableLocalStorage: true,
+    disableLocalStorage: false,
     formatOptions: {
       format: 'webp',
       options: {
