@@ -21,3 +21,19 @@ export const getMediaUrl = (url: string | null | undefined, cacheTag?: string | 
   // return cacheTag ? `${baseUrl}${url}?${cacheTag}` : `${baseUrl}${url}`
   return cacheTag ? `${url}?${cacheTag}` : `${url}`
 }
+
+// docker stop aivietnam
+// docker rm aivietnam
+
+// docker rm aivietnam 2>/dev/null || true
+
+// docker run -d --name aivietnam --env-file /var/www/aivietnam/.env -p 3000:3000 --pull always ghcr.io/letuyen-kami/aivietnam:latest
+
+// docker stop aivietnam
+// docker rm aivietnam
+// docker run -d \
+//   --name aivietnam \
+//   --env-file /var/www/aivietnam/.env \
+//   -p 3000:3000 \
+//   --pull always \
+//   ghcr.io/letuyen-kami/aivietnam:latest
