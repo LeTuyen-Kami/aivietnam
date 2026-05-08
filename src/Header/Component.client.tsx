@@ -1,19 +1,19 @@
 'use client'
 import { useHeaderTheme } from '@/providers/HeaderTheme'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import React, { useEffect, useLayoutEffect, useState } from 'react'
-import Image from 'next/image'
+import React, { useEffect, useState } from 'react'
 
 import type { GeneralSetting, Header, Media } from '@/payload-types'
 
-import { Logo } from '@/components/Logo/Logo'
 import { CMSLink } from '@/components/Link'
-import { HeaderNav } from './Nav'
-import { HeaderWeatherBar } from './HeaderWeatherBar'
+import { Logo } from '@/components/Logo/Logo'
 import { useAuth } from '@/providers/Auth'
 import { getMediaUrl } from '@/utilities/getMediaUrl'
 import { MenuIcon, SearchIcon, UserIcon } from 'lucide-react'
+import { HeaderWeatherBar } from './HeaderWeatherBar'
+import { HeaderNav } from './Nav'
 
 interface HeaderClientProps {
   data: Header
@@ -52,8 +52,6 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data, generalSetting
       mediaQuery.removeEventListener('change', updateIsMobile)
     }
   }, [])
-
-  console.log('isMobile', isMobile)
 
   // const themeProps = theme ? { 'data-theme': theme } : {}
   const themeProps = {}
