@@ -85,7 +85,7 @@ jobs:
               --restart unless-stopped \
               --env-file /var/www/aivietnam/.env \
               -p 3000:3000 \
-              -v /opt/aivietnam/media:/media \
+              -v /opt/aivietnam/media:/app/media \
               ghcr.io/letuyen-kami/aivietnam:latest
 
             echo "Waiting for app..."
