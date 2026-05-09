@@ -1,7 +1,7 @@
 import config from '@payload-config'
 import { headers } from 'next/headers'
-import { getPayload } from 'payload'
 import { NextRequest, NextResponse } from 'next/server'
+import { getPayload } from 'payload'
 
 import { isUsersCollectionAdmin } from '@/access/isAdminUser'
 import { ensureLivestreamChatChannel, isStreamChatEnabled } from '@/lib/stream/chatServer'
@@ -24,7 +24,8 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   const requestHeaders = await headers()
   const { user } = await payload.auth({ headers: requestHeaders })
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  if (!isUsersCollectionAdmin(user)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!isUsersCollectionAdmin(user))
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const livestream = await payload.findByID({
     collection: 'livestreams',
@@ -73,7 +74,9 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       },
     })
     joinedAsPublisher = Array.isArray(membersResult?.members)
-      ? membersResult.members.some((member: { user_id?: string }) => member.user_id === streamUserId)
+      ? membersResult.members.some(
+          (member: { user_id?: string }) => member.user_id === streamUserId,
+        )
       : false
   }
 
@@ -85,7 +88,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   let chatChannelCid: string | null = null
   if (isStreamChatEnabled() && livestream.slug) {
     const ensuredChat = await ensureLivestreamChatChannel({
-      slug: livestream.slug,
+      slug: livestream?.slug,
       createdById: streamUserId,
       name: livestream.title ?? livestream.slug,
     })

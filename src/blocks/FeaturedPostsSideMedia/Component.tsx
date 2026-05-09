@@ -1,10 +1,9 @@
-import Link from 'next/link'
-import Image from 'next/image'
-import React from 'react'
-import configPromise from '@payload-config'
-import { getPayload } from 'payload'
-import { cache } from 'react'
 import type { FeaturedPostsSideMediaBlock, Media as MediaType, Post } from '@/payload-types'
+import configPromise from '@payload-config'
+import Image from 'next/image'
+import Link from 'next/link'
+import { getPayload } from 'payload'
+import React, { cache } from 'react'
 
 import { Media } from '@/components/Media'
 import { SmartLink } from '@/components/SmartLink'
@@ -112,34 +111,36 @@ export const FeaturedPostsSideMediaBlockComponent: React.FC<Props> = ({
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-6">
         <div className="lg:col-span-9">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:items-stretch lg:gap-5">
-            <article className="overflow-hidden sm:col-span-3">
-              <Link
-                className="group grid grid-cols-1 md:grid-cols-2"
-                href={`/posts/${featuredPost.slug}`}
-              >
-                {typeof featuredPost.meta?.image === 'object' && (
-                  <Media
-                    className="h-full min-h-48 overflow-hidden md:min-h-0"
-                    imgClassName="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
-                    resource={featuredPost.meta.image}
-                  />
-                )}
-                <div className="p-4 lg:p-5">
-                  <h3 className="text-base font-semibold leading-snug text-foreground transition-colors duration-200 underline-offset-2 group-hover:underline">
-                    {featuredPost.title}
-                  </h3>
-                  {featuredPost.meta?.description && (
-                    <p className="mt-3 text-sm text-muted-foreground lg:text-sm">
-                      {featuredPost.meta.description}
-                    </p>
+            {!!featuredPost && (
+              <article className="overflow-hidden sm:col-span-3">
+                <Link
+                  className="group grid grid-cols-1 md:grid-cols-2"
+                  href={`/posts/${featuredPost?.slug}`}
+                >
+                  {typeof featuredPost?.meta?.image === 'object' && (
+                    <Media
+                      className="h-full min-h-48 overflow-hidden md:min-h-0"
+                      imgClassName="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+                      resource={featuredPost.meta.image}
+                    />
                   )}
-                </div>
-              </Link>
-            </article>
+                  <div className="p-4 lg:p-5">
+                    <h3 className="text-base font-semibold leading-snug text-foreground transition-colors duration-200 underline-offset-2 group-hover:underline">
+                      {featuredPost.title}
+                    </h3>
+                    {featuredPost.meta?.description && (
+                      <p className="mt-3 text-sm text-muted-foreground lg:text-sm">
+                        {featuredPost.meta.description}
+                      </p>
+                    )}
+                  </div>
+                </Link>
+              </article>
+            )}
 
             {smallPosts.map((post) => (
               <article className="flex h-full min-h-0 flex-col overflow-hidden" key={post.id}>
-                <Link className="group flex h-full min-h-0 flex-col" href={`/posts/${post.slug}`}>
+                <Link className="group flex h-full min-h-0 flex-col" href={`/posts/${post?.slug}`}>
                   <div className="pb-2">
                     <h4 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground transition-colors duration-200 underline-offset-2 group-hover:underline">
                       {post.title}

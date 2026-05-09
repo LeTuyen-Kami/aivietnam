@@ -1,26 +1,26 @@
 import type { Metadata } from 'next'
 
 import { PayloadRedirects } from '@/components/PayloadRedirects'
-import configPromise from '@payload-config'
-import { getPayload } from 'payload'
-import { draftMode } from 'next/headers'
-import React, { cache } from 'react'
 import RichText from '@/components/RichText'
+import configPromise from '@payload-config'
+import { draftMode } from 'next/headers'
 import Link from 'next/link'
+import { getPayload } from 'payload'
+import React, { cache } from 'react'
 
 import type { GeneralSetting, Media as MediaDoc, Post } from '@/payload-types'
 
-import { generateMeta } from '@/utilities/generateMeta'
-import PageClient from './page.client'
+import { NewsletterSignupBlock } from '@/blocks/NewsletterSignup/Component'
+import { PostComments } from '@/components/Auth/PostComments'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { Media } from '@/components/Media'
-import { PostComments } from '@/components/Auth/PostComments'
-import { ViewCounter } from './ViewCounter'
-import { formatDateTime } from '@/utilities/formatDateTime'
-import { formatAuthors } from '@/utilities/formatAuthors'
-import { NewsletterSignupBlock } from '@/blocks/NewsletterSignup/Component'
 import { SmartLink } from '@/components/SmartLink'
-import { Clock, Folder, User, ChevronRight } from 'lucide-react'
+import { formatAuthors } from '@/utilities/formatAuthors'
+import { formatDateTime } from '@/utilities/formatDateTime'
+import { generateMeta } from '@/utilities/generateMeta'
+import { ChevronRight, Clock, Folder, User } from 'lucide-react'
+import PageClient from './page.client'
+import { ViewCounter } from './ViewCounter'
 
 export async function generateStaticParams() {
   // Workaround for Payload + Postgres dev spam:
@@ -186,7 +186,7 @@ export default async function Post({ params: paramsPromise }: Args) {
                     {relatedPosts.map((item) => (
                       <Link
                         className="group flex items-start gap-3 border-b border-border pb-4 last:border-none"
-                        href={`/posts/${item.slug}`}
+                        href={`/posts/${item?.slug}`}
                         key={item.id}
                       >
                         {typeof item.meta?.image === 'object' ? (
@@ -275,7 +275,7 @@ export default async function Post({ params: paramsPromise }: Args) {
                   {sidebarItems.slice(0, 6).map((item) => (
                     <Link
                       className="group flex items-start gap-2"
-                      href={`/posts/${item.slug}`}
+                      href={`/posts/${item?.slug}`}
                       key={`side-${item.id}`}
                     >
                       {typeof item.meta?.image === 'object' ? (

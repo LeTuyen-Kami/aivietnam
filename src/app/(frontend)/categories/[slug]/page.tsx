@@ -1,8 +1,8 @@
+import configPromise from '@payload-config'
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { cache } from 'react'
-import configPromise from '@payload-config'
 import { getPayload } from 'payload'
+import { cache } from 'react'
 
 import { NewsletterSignupBlock } from '@/blocks/NewsletterSignup/Component'
 import { Media } from '@/components/Media'
@@ -21,7 +21,10 @@ type Args = {
   }>
 }
 
-export default async function CategoryPage({ params: paramsPromise, searchParams: searchParamsPromise }: Args) {
+export default async function CategoryPage({
+  params: paramsPromise,
+  searchParams: searchParamsPromise,
+}: Args) {
   const { slug = '' } = await paramsPromise
   const { page: rawPage } = await searchParamsPromise
   const decodedSlug = decodeURIComponent(slug)
@@ -50,35 +53,36 @@ export default async function CategoryPage({ params: paramsPromise, searchParams
     )
   }
 
-  const [featuredResult, allCategories, sidebarForm, sidebarPosts, defaultPostAssets] = await Promise.all([
-    payload.find({
-      collection: 'posts',
-      depth: 1,
-      draft: false,
-      limit: FEATURED_COUNT,
-      overrideAccess: false,
-      pagination: false,
-      sort: '-publishedAt',
-      where: {
-        and: [
-          {
-            categories: {
-              in: [category.id],
+  const [featuredResult, allCategories, sidebarForm, sidebarPosts, defaultPostAssets] =
+    await Promise.all([
+      payload.find({
+        collection: 'posts',
+        depth: 1,
+        draft: false,
+        limit: FEATURED_COUNT,
+        overrideAccess: false,
+        pagination: false,
+        sort: '-publishedAt',
+        where: {
+          and: [
+            {
+              categories: {
+                in: [category.id],
+              },
             },
-          },
-          {
-            _status: {
-              equals: 'published',
+            {
+              _status: {
+                equals: 'published',
+              },
             },
-          },
-        ],
-      },
-    }),
-    queryAllCategories(),
-    querySidebarForm(),
-    querySidebarPosts(),
-    queryPostPageAssetDefaults(),
-  ])
+          ],
+        },
+      }),
+      queryAllCategories(),
+      querySidebarForm(),
+      querySidebarPosts(),
+      queryPostPageAssetDefaults(),
+    ])
 
   const featuredPosts = featuredResult.docs as Post[]
   const featuredIDs = featuredPosts.map((post) => post.id)
@@ -136,7 +140,10 @@ export default async function CategoryPage({ params: paramsPromise, searchParams
 
           {mainFeatured ? (
             <section className="border-b border-border pb-6">
-              <Link className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]" href={`/posts/${mainFeatured.slug}`}>
+              <Link
+                className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
+                href={`/posts/${mainFeatured?.slug}`}
+              >
                 {typeof mainFeatured.meta?.image === 'object' ? (
                   <div className="overflow-hidden border border-border">
                     <Media
@@ -147,7 +154,9 @@ export default async function CategoryPage({ params: paramsPromise, searchParams
                   </div>
                 ) : null}
                 <div className="min-w-0">
-                  <h2 className="text-2xl font-semibold leading-tight hover:underline">{mainFeatured.title}</h2>
+                  <h2 className="text-2xl font-semibold leading-tight hover:underline">
+                    {mainFeatured.title}
+                  </h2>
                   {mainFeatured.meta?.description ? (
                     <p className="mt-3 line-clamp-4 text-sm text-muted-foreground">
                       {mainFeatured.meta.description}
@@ -162,7 +171,11 @@ export default async function CategoryPage({ params: paramsPromise, searchParams
             <section className="mt-6 border-b border-border pb-6">
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                 {secondaryFeatured.map((post) => (
-                  <Link className="group min-w-0" href={`/posts/${post.slug}`} key={`secondary-${post.id}`}>
+                  <Link
+                    className="group min-w-0"
+                    href={`/posts/${post?.slug}`}
+                    key={`secondary-${post.id}`}
+                  >
                     {typeof post.meta?.image === 'object' ? (
                       <div className="overflow-hidden border border-border">
                         <Media
@@ -187,7 +200,7 @@ export default async function CategoryPage({ params: paramsPromise, searchParams
                 {(listPosts.docs as Post[]).map((post) => (
                   <Link
                     className="group grid gap-4 border-b border-border pb-5 md:grid-cols-[220px_minmax(0,1fr)]"
-                    href={`/posts/${post.slug}`}
+                    href={`/posts/${post?.slug}`}
                     key={`list-${post.id}`}
                   >
                     {typeof post.meta?.image === 'object' ? (
@@ -217,7 +230,10 @@ export default async function CategoryPage({ params: paramsPromise, searchParams
             )}
 
             {totalPages > 1 ? (
-              <nav aria-label="Phân trang bài viết" className="mt-8 flex items-center justify-center gap-2 text-sm">
+              <nav
+                aria-label="Phân trang bài viết"
+                className="mt-8 flex items-center justify-center gap-2 text-sm"
+              >
                 <PaginationLink
                   currentPage={currentPage}
                   label="Trước"
@@ -252,7 +268,11 @@ export default async function CategoryPage({ params: paramsPromise, searchParams
             <h2 className="mb-3 text-sm font-semibold uppercase">Danh mục</h2>
             <div className="space-y-2 text-sm">
               {allCategories.map((item) => (
-                <Link className="block hover:underline" href={`/categories/${item.slug}`} key={`sidebar-category-${item.id}`}>
+                <Link
+                  className="block hover:underline"
+                  href={`/categories/${item.slug}`}
+                  key={`sidebar-category-${item.id}`}
+                >
                   {item.title}
                 </Link>
               ))}
@@ -263,7 +283,11 @@ export default async function CategoryPage({ params: paramsPromise, searchParams
             <h2 className="mb-3 text-sm font-semibold uppercase">Tin xem nhiều</h2>
             <div className="space-y-3">
               {sidebarPosts.map((post) => (
-                <Link className="group flex items-start gap-2" href={`/posts/${post.slug}`} key={`side-${post.id}`}>
+                <Link
+                  className="group flex items-start gap-2"
+                  href={`/posts/${post?.slug}`}
+                  key={`side-${post.id}`}
+                >
                   {typeof post.meta?.image === 'object' ? (
                     <div className="w-20 shrink-0 overflow-hidden">
                       <Media
@@ -273,7 +297,9 @@ export default async function CategoryPage({ params: paramsPromise, searchParams
                       />
                     </div>
                   ) : null}
-                  <p className="line-clamp-3 text-xs leading-snug group-hover:underline">{post.title}</p>
+                  <p className="line-clamp-3 text-xs leading-snug group-hover:underline">
+                    {post.title}
+                  </p>
                 </Link>
               ))}
             </div>
@@ -334,13 +360,18 @@ function PaginationLink(props: {
 
   if ((label === 'Trước' && currentPage <= 1) || (label === 'Sau' && currentPage >= totalPages)) {
     return (
-      <span className="rounded border border-border px-3 py-1 text-muted-foreground opacity-60">{label}</span>
+      <span className="rounded border border-border px-3 py-1 text-muted-foreground opacity-60">
+        {label}
+      </span>
     )
   }
 
   if (label === 'Sau' && page === currentPage + 1) {
     return (
-      <Link className="rounded border border-border px-3 py-1 hover:bg-muted" href={`/categories/${slug}?page=${page}`}>
+      <Link
+        className="rounded border border-border px-3 py-1 hover:bg-muted"
+        href={`/categories/${slug}?page=${page}`}
+      >
         {label}
       </Link>
     )
@@ -348,7 +379,10 @@ function PaginationLink(props: {
 
   if (label === 'Trước') {
     return (
-      <Link className="rounded border border-border px-3 py-1 hover:bg-muted" href={`/categories/${slug}?page=${page}`}>
+      <Link
+        className="rounded border border-border px-3 py-1 hover:bg-muted"
+        href={`/categories/${slug}?page=${page}`}
+      >
         {label}
       </Link>
     )
@@ -356,12 +390,17 @@ function PaginationLink(props: {
 
   if (label !== 'Trước' && label !== 'Sau' && page === currentPage) {
     return (
-      <span className="rounded border border-foreground px-3 py-1 font-semibold text-foreground">{label}</span>
+      <span className="rounded border border-foreground px-3 py-1 font-semibold text-foreground">
+        {label}
+      </span>
     )
   }
 
   return (
-    <Link className="rounded border border-border px-3 py-1 hover:bg-muted" href={`/categories/${slug}?page=${page}`}>
+    <Link
+      className="rounded border border-border px-3 py-1 hover:bg-muted"
+      href={`/categories/${slug}?page=${page}`}
+    >
       {label}
     </Link>
   )
@@ -372,7 +411,8 @@ function isPopulatedMedia(value: unknown): value is MediaDoc {
     typeof value === 'object' &&
     value !== null &&
     'id' in value &&
-    (typeof (value as { id: unknown }).id === 'number' || typeof (value as { id: unknown }).id === 'string')
+    (typeof (value as { id: unknown }).id === 'number' ||
+      typeof (value as { id: unknown }).id === 'string')
   )
 }
 

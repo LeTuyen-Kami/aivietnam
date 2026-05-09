@@ -4,10 +4,10 @@ import type { Post } from '@/payload-types'
 
 import { Media as MediaComponent } from '@/components/Media'
 
+import { cn } from '@/utilities/ui'
 import { accentHover, accentTextVarStyle, getAccentStyleWithCustomHex } from './accent'
 import { PostExcerpt } from './PostExcerpt'
 import type { SectionAccent } from './types'
-import { cn } from '@/utilities/ui'
 
 export function StandardSection({
   accent,
@@ -36,7 +36,7 @@ export function StandardSection({
       <h2 className="mb-6 font-serif text-xl font-bold text-foreground">{sectionTitle}</h2>
 
       <div className="group/feat mb-8 grid gap-4 md:grid-cols-2 md:gap-6">
-        <Link className="block overflow-hidden md:col-span-1" href={`/posts/${featuredPost.slug}`}>
+        <Link className="block overflow-hidden md:col-span-1" href={`/posts/${featuredPost?.slug}`}>
           {typeof featuredPost.meta?.image === 'object' && featuredPost.meta?.image && (
             <MediaComponent
               className="mb-0 overflow-hidden"
@@ -47,7 +47,7 @@ export function StandardSection({
           )}
         </Link>
         <div className="flex flex-col justify-start">
-          <Link className="block" href={`/posts/${featuredPost.slug}`}>
+          <Link className="block" href={`/posts/${featuredPost?.slug}`}>
             <h3
               className={cn(
                 'font-serif text-xl font-bold leading-snug text-foreground transition-colors duration-200 underline-offset-2 group-hover/feat:underline',
@@ -68,7 +68,7 @@ export function StandardSection({
               className="group/sub grid grid-cols-[minmax(0,120px)_1fr] gap-3 sm:grid-cols-[minmax(0,140px)_1fr]"
               key={post.id}
             >
-              <Link className="block shrink-0 overflow-hidden" href={`/posts/${post.slug}`}>
+              <Link className="block shrink-0 overflow-hidden" href={`/posts/${post?.slug}`}>
                 {typeof post.meta?.image === 'object' && post.meta?.image && (
                   <MediaComponent
                     className="h-full w-full"
@@ -79,7 +79,7 @@ export function StandardSection({
                 )}
               </Link>
               <div>
-                <Link className="block" href={`/posts/${post.slug}`}>
+                <Link className="block" href={`/posts/${post?.slug}`}>
                   <h4
                     className={cn(
                       'font-serif text-base font-bold leading-snug text-foreground transition-colors duration-200 underline-offset-2 group-hover/sub:underline',
@@ -104,7 +104,7 @@ export function StandardSection({
                 'flex gap-2 text-sm font-semibold leading-snug text-foreground transition-colors duration-200 underline-offset-2 hover:underline',
                 accentHover.link,
               )}
-              href={`/posts/${post.slug}`}
+              href={`/posts/${post?.slug}`}
               key={post.id}
             >
               <span

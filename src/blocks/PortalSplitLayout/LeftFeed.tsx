@@ -15,7 +15,7 @@ export function LeftFeed({ posts }: { posts: Post[] }) {
     <div className="space-y-10">
       {posts.map((post) => (
         <article className="last:pb-0" key={post.id}>
-          <Link className="group block" href={`/posts/${post.slug}`}>
+          <Link className="group block" href={`/posts/${post?.slug}`}>
             {typeof post.meta?.image === 'object' && post.meta.image && (
               <MediaComponent
                 className="mb-3 overflow-hidden"

@@ -1,8 +1,8 @@
-import { getCachedGlobal } from '@/utilities/getGlobals'
-import { getMediaUrl } from '@/utilities/getMediaUrl'
-import { isNativeHref, SmartLink } from '@/components/SmartLink'
 import { CMSLink } from '@/components/Link'
 import { Media } from '@/components/Media'
+import { isNativeHref, SmartLink } from '@/components/SmartLink'
+import { getCachedGlobal } from '@/utilities/getGlobals'
+import { getMediaUrl } from '@/utilities/getMediaUrl'
 import {
   Bird,
   CirclePlay,
@@ -24,15 +24,17 @@ import { cn } from '@/utilities/ui'
 
 const accentClass = 'text-[#D32F2F] underline underline-offset-2'
 
-type LinkField = NonNullable<NonNullable<FooterType['categoryColumns']>[number]['links']>[number]['link']
+type LinkField = NonNullable<
+  NonNullable<FooterType['categoryColumns']>[number]['links']
+>[number]['link']
 
 function getFooterHref(link: LinkField): string | null {
   if (
     link.type === 'reference' &&
     typeof link.reference?.value === 'object' &&
-    link.reference.value.slug
+    link.reference.value?.slug
   ) {
-    const slug = link.reference.value.slug
+    const slug = link.reference.value?.slug
     return link.reference.relationTo !== 'pages'
       ? `/${link.reference.relationTo}/${slug}`
       : `/${slug}`
@@ -43,13 +45,7 @@ function getFooterHref(link: LinkField): string | null {
   return null
 }
 
-function FooterRichLink({
-  link,
-  className,
-}: {
-  link: LinkField
-  className?: string
-}) {
+function FooterRichLink({ link, className }: { link: LinkField; className?: string }) {
   const url = link.url?.trim() ?? ''
   if (link.type === 'custom' && url && isNativeHref(url)) {
     return (
@@ -60,7 +56,11 @@ function FooterRichLink({
   }
 
   return (
-    <CMSLink appearance="inline" className={cn('text-foreground hover:opacity-80', className)} {...link} />
+    <CMSLink
+      appearance="inline"
+      className={cn('text-foreground hover:opacity-80', className)}
+      {...link}
+    />
   )
 }
 
@@ -105,7 +105,9 @@ export async function Footer() {
   const categoriesHeading = data.categoriesHeading?.trim() || 'Chuyên mục'
 
   const appStoreBadge =
-    typeof data.appStoreBadge === 'object' && data.appStoreBadge?.url ? (data.appStoreBadge as MediaType) : null
+    typeof data.appStoreBadge === 'object' && data.appStoreBadge?.url
+      ? (data.appStoreBadge as MediaType)
+      : null
   const googlePlayBadge =
     typeof data.googlePlayBadge === 'object' && data.googlePlayBadge?.url
       ? (data.googlePlayBadge as MediaType)
@@ -118,14 +120,20 @@ export async function Footer() {
     data.centerPhoneHref?.trim() ||
     (data.centerPhone ? `tel:${data.centerPhone.replace(/\s/g, '')}` : '')
   const emailRaw = data.centerEmail?.trim() ?? ''
-  const emailHref = emailRaw ? (emailRaw.startsWith('mailto:') ? emailRaw : `mailto:${emailRaw}`) : ''
+  const emailHref = emailRaw
+    ? emailRaw.startsWith('mailto:')
+      ? emailRaw
+      : `mailto:${emailRaw}`
+    : ''
 
   return (
     <footer className="mt-auto border-t border-neutral-200 bg-background text-foreground">
       {categoryColumns.length > 0 && (
         <div className="border-b border-neutral-200">
           <div className="container py-8 md:py-10">
-            <h2 className="mb-6 text-lg font-semibold text-foreground md:text-xl">{categoriesHeading}</h2>
+            <h2 className="mb-6 text-lg font-semibold text-foreground md:text-xl">
+              {categoriesHeading}
+            </h2>
             <div className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 lg:grid-cols-5">
               {categoryColumns.map((column, colIdx) => (
                 <ul className="flex flex-col gap-2 text-sm" key={column.id ?? colIdx}>
@@ -165,7 +173,10 @@ export async function Footer() {
                         />
                       </SmartLink>
                     ) : (
-                      <SmartLink className={cn('text-sm font-medium', accentClass)} href={data.appStoreUrl.trim()}>
+                      <SmartLink
+                        className={cn('text-sm font-medium', accentClass)}
+                        href={data.appStoreUrl.trim()}
+                      >
                         App Store
                       </SmartLink>
                     ))}
@@ -312,7 +323,11 @@ export async function Footer() {
                     data.socialFacebook,
                     'Facebook',
                   )}
-                  {socialWrap(<Bird aria-hidden className={socialIconClass} strokeWidth={1.75} />, data.socialX, 'X')}
+                  {socialWrap(
+                    <Bird aria-hidden className={socialIconClass} strokeWidth={1.75} />,
+                    data.socialX,
+                    'X',
+                  )}
                   {socialWrap(
                     <CirclePlay aria-hidden className={socialIconClass} strokeWidth={1.75} />,
                     data.socialYoutube,
@@ -323,7 +338,11 @@ export async function Footer() {
                     data.socialTiktok,
                     'TikTok',
                   )}
-                  {socialWrap(<Rss aria-hidden className={socialIconClass} strokeWidth={1.75} />, data.socialRss, 'RSS')}
+                  {socialWrap(
+                    <Rss aria-hidden className={socialIconClass} strokeWidth={1.75} />,
+                    data.socialRss,
+                    'RSS',
+                  )}
                 </div>
               </div>
             )}
@@ -336,19 +355,27 @@ export async function Footer() {
                     href={data.promoHref.trim()}
                   >
                     {data.promoTitle?.trim() && (
-                      <p className="text-sm font-bold uppercase leading-snug">{data.promoTitle.trim()}</p>
+                      <p className="text-sm font-bold uppercase leading-snug">
+                        {data.promoTitle.trim()}
+                      </p>
                     )}
                     {data.promoSubtitle?.trim() && (
-                      <p className="mt-1 text-xs text-muted-foreground">{data.promoSubtitle.trim()}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {data.promoSubtitle.trim()}
+                      </p>
                     )}
                   </SmartLink>
                 ) : (
                   <div className="rounded border border-neutral-300 p-4 text-center">
                     {data.promoTitle?.trim() && (
-                      <p className="text-sm font-bold uppercase leading-snug">{data.promoTitle.trim()}</p>
+                      <p className="text-sm font-bold uppercase leading-snug">
+                        {data.promoTitle.trim()}
+                      </p>
                     )}
                     {data.promoSubtitle?.trim() && (
-                      <p className="mt-1 text-xs text-muted-foreground">{data.promoSubtitle.trim()}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {data.promoSubtitle.trim()}
+                      </p>
                     )}
                   </div>
                 )}

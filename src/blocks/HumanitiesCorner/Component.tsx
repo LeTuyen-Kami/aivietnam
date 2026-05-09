@@ -28,7 +28,7 @@ function resolveRow(
   const post = row.post
   if (typeof post === 'object' && post && 'slug' in post) {
     const p = post as Post
-    return { title: p.title, href: `/posts/${p.slug}` }
+    return { title: p.title, href: `/posts/${p?.slug}` }
   }
 
   return null
