@@ -1,12 +1,18 @@
 'use client'
 
+import { Heart, Lock, MessageCircle } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { Heart, MessageCircle } from 'lucide-react'
-import { StreamChat, type Channel, type Event, type LocalMessage, type UserResponse } from 'stream-chat'
+import {
+  StreamChat,
+  type Channel,
+  type Event,
+  type LocalMessage,
+  type UserResponse,
+} from 'stream-chat'
 
-import { useAuth } from '@/providers/Auth'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { useAuth } from '@/providers/Auth'
 import { cn } from '@/utilities/ui'
 
 type LivestreamComment = {
@@ -30,6 +36,10 @@ type ChatTokenPayload = {
     channelId: string
     channelCid: string
   }
+}
+
+type ReplayPayload = {
+  docs?: LivestreamComment[]
 }
 
 function authorInitial(name: string | null | undefined): string {
@@ -64,9 +74,13 @@ function mapMessageToComment(message: LocalMessage): LivestreamComment {
 export function LiveViewerEngagement({
   slug,
   isLive,
+  isGuest = false,
+  overlay = false,
 }: {
   slug: string
   isLive: boolean
+  isGuest?: boolean
+  overlay?: boolean
 }) {
   const { user, loading, openAuthModal } = useAuth()
   const [body, setBody] = useState('')
@@ -80,14 +94,55 @@ export function LiveViewerEngagement({
   const [chatClient, setChatClient] = useState<StreamChat | null>(null)
 
   useEffect(() => {
-    if (!slug || loading || !user) return
+    if (!slug) return
+
+    let active = true
+
+    const loadReplay = async () => {
+      setIsLoadingComments(true)
+      setQueryError(null)
+      try {
+        const replayRes = await fetch(
+          `/api/livestream-chat/replay?slug=${encodeURIComponent(slug)}&limit=40`,
+          {
+            method: 'GET',
+            credentials: 'include',
+            cache: 'no-store',
+          },
+        )
+        const replayPayload = (await replayRes.json().catch(() => ({}))) as ReplayPayload & {
+          error?: string
+        }
+        if (!replayRes.ok) {
+          throw new Error(replayPayload.error ?? 'Không tải được bình luận livestream')
+        }
+        if (!active) return
+        setComments(Array.isArray(replayPayload.docs) ? replayPayload.docs : [])
+      } catch (error) {
+        if (!active) return
+        setQueryError(
+          error instanceof Error ? error.message : 'Không tải được bình luận livestream',
+        )
+      } finally {
+        if (active) setIsLoadingComments(false)
+      }
+    }
+
+    void loadReplay()
+
+    return () => {
+      active = false
+    }
+  }, [slug])
+
+  useEffect(() => {
+    if (!slug || loading || !user || isGuest) return
 
     let active = true
     let activeChannel: Channel | null = null
     let unsubscribe: (() => void) | null = null
 
     const setup = async () => {
-      setIsLoadingComments(true)
       setQueryError(null)
       try {
         const tokenRes = await fetch('/api/stream/chat-token', {
@@ -97,7 +152,6 @@ export function LiveViewerEngagement({
           body: JSON.stringify({ slug }),
         })
         if (tokenRes.status === 401) {
-          openAuthModal()
           return
         }
 
@@ -154,9 +208,9 @@ export function LiveViewerEngagement({
         unsubscribe = () => subscription.unsubscribe()
       } catch (error) {
         if (!active) return
-        setQueryError(error instanceof Error ? error.message : 'Không tải được bình luận livestream')
-      } finally {
-        if (active) setIsLoadingComments(false)
+        setQueryError(
+          error instanceof Error ? error.message : 'Không tải được bình luận livestream',
+        )
       }
     }
 
@@ -170,7 +224,7 @@ export function LiveViewerEngagement({
         void activeChannel.stopWatching().catch(() => null)
       }
     }
-  }, [loading, openAuthModal, slug, user])
+  }, [isGuest, loading, slug, user])
 
   useEffect(() => {
     return () => {
@@ -181,6 +235,7 @@ export function LiveViewerEngagement({
   }, [chatClient])
 
   const reversedDocs = useMemo(() => [...comments].reverse(), [comments])
+  const canSend = Boolean(user) && !isGuest && isLive
 
   const sendMessage = async (text: string) => {
     if (!channel) throw new Error('Chat chưa sẵn sàng')
@@ -197,7 +252,7 @@ export function LiveViewerEngagement({
   }
 
   const toggleLike = async (comment: LivestreamComment) => {
-    if (!channel) return
+    if (!channel || isGuest) return
     setIsTogglingLike(true)
     try {
       if (comment.likedByMe) {
@@ -212,32 +267,38 @@ export function LiveViewerEngagement({
     }
   }
 
-  const canSend = Boolean(user) && isLive
-
   return (
     <aside
       className={cn(
-        'rounded-2xl border border-border/80 bg-muted/20 shadow-lg shadow-black/5',
-        'ring-1 ring-black/3 backdrop-blur-sm dark:bg-muted/10 dark:ring-white/10',
+        'overflow-hidden rounded-[1.75rem] border shadow-2xl backdrop-blur-xl',
+        overlay
+          ? 'border-white/10 bg-black/45 text-white shadow-black/30'
+          : 'border-white/10 bg-white/6 text-white shadow-black/20',
       )}
     >
-      <div className="border-b border-border/60 px-4 py-3 sm:px-5">
+      <div className={cn('border-b px-4 py-3', overlay ? 'border-white/10' : 'border-white/10')}>
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white/10 text-white ring-1 ring-white/10">
               <MessageCircle className="h-4 w-4" aria-hidden />
             </div>
             <div>
-              <h2 className="text-sm font-semibold tracking-tight">Trò chuyện</h2>
-              <p className="text-xs text-muted-foreground">
+              <h2 className="text-sm font-semibold tracking-tight text-white">Trò chuyện</h2>
+              <p className="text-xs text-white/60">
                 {comments.length} bình luận{isLive ? '' : ' · chỉ gửi khi đang live'}
               </p>
             </div>
           </div>
+          {isGuest ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white/80 ring-1 ring-white/10">
+              <Lock className="h-3.5 w-3.5" aria-hidden />
+              Guest lock
+            </span>
+          ) : null}
         </div>
       </div>
 
-      <div className="space-y-4 p-4 sm:p-5">
+      <div className="space-y-4 p-4">
         <form
           className="space-y-3"
           onSubmit={(event) => {
@@ -246,6 +307,7 @@ export function LiveViewerEngagement({
               openAuthModal()
               return
             }
+            if (isGuest) return
             const nextBody = body.trim()
             if (!nextBody || !isLive) return
             void sendMessage(nextBody)
@@ -253,90 +315,100 @@ export function LiveViewerEngagement({
         >
           <Textarea
             aria-label="Nhập bình luận livestream"
-            className="min-h-[88px] resize-y border-border/80 bg-background/80 text-sm shadow-inner"
+            className="min-h-[80px] resize-none border-white/10 bg-white/7 text-sm text-white placeholder:text-white/45"
             placeholder={
               loading
                 ? 'Đang tải...'
-                : user
-                  ? isLive
-                    ? 'Viết bình luận...'
-                    : 'Chỉ gửi bình luận khi livestream đang phát'
-                  : 'Đăng nhập để bình luận'
+                : isGuest
+                  ? 'Đăng nhập để bình luận'
+                  : user
+                    ? isLive
+                      ? 'Viết bình luận...'
+                      : 'Chỉ gửi bình luận khi livestream đang phát'
+                    : 'Đăng nhập để bình luận'
             }
             value={body}
             onChange={(event) => setBody(event.target.value)}
             onClick={() => {
-              if (!loading && !user) openAuthModal()
+              if (!loading && (!user || isGuest)) openAuthModal()
             }}
-            readOnly={!user || !isLive}
+            readOnly={!user || !isLive || isGuest}
           />
           <Button
-            className="w-full sm:w-auto"
+            className="w-full bg-white text-black hover:bg-white/90"
             disabled={isSending || !body.trim() || !canSend || !channel}
             size="sm"
             type="submit"
           >
-            {isSending ? 'Đang gửi…' : 'Gửi'}
+            {isGuest ? 'Đăng nhập để chat' : isSending ? 'Đang gửi…' : 'Gửi'}
           </Button>
         </form>
 
-        {createError ? <p className="text-xs text-destructive">{createError}</p> : null}
+        {createError ? <p className="text-xs text-rose-300">{createError}</p> : null}
+        {queryError ? <p className="text-xs text-rose-300">{queryError}</p> : null}
 
-        {queryError ? <p className="text-xs text-destructive">{queryError}</p> : null}
-
-        <div className="max-h-[min(22rem,55vh)] space-y-2 overflow-y-auto pr-1 [-webkit-overflow-scrolling:touch]">
+        <div
+          className={cn(
+            'space-y-2 overflow-y-auto pr-1 [-webkit-overflow-scrolling:touch]',
+            overlay ? 'max-h-[38svh]' : 'max-h-[calc(100svh-18rem)]',
+          )}
+        >
           {isLoadingComments ? (
-            <p className="py-6 text-center text-xs text-muted-foreground">Đang tải bình luận…</p>
+            <p className="py-6 text-center text-xs text-white/55">Đang tải bình luận…</p>
           ) : reversedDocs.length === 0 ? (
-            <p className="py-6 text-center text-xs text-muted-foreground">Chưa có bình luận. Hãy mở đầu cuộc trò chuyện.</p>
+            <p className="py-6 text-center text-xs text-white/55">Chưa có bình luận.</p>
           ) : (
             reversedDocs.map((comment) => {
               const name = comment.author?.name || 'Thành viên'
               return (
                 <article
                   key={comment.id}
-                  className="rounded-xl border border-border/60 bg-background/60 p-3 shadow-sm transition-colors hover:bg-background/90"
+                  className="rounded-2xl border border-white/8 bg-black/30 p-3 shadow-lg shadow-black/10"
                 >
                   <div className="flex gap-3">
                     <div
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary/20 to-primary/5 text-xs font-semibold text-primary"
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-white ring-1 ring-white/10"
                       aria-hidden
                     >
                       {authorInitial(name)}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                        <span className="truncate text-xs font-medium text-foreground">{name}</span>
-                        <time className="text-[10px] text-muted-foreground" dateTime={comment.createdAt}>
+                        <span className="truncate text-xs font-medium text-white">{name}</span>
+                        <time className="text-[10px] text-white/45" dateTime={comment.createdAt}>
                           {new Date(comment.createdAt).toLocaleTimeString('vi-VN', {
                             hour: '2-digit',
                             minute: '2-digit',
                           })}
                         </time>
                       </div>
-                      <p className="mt-1 whitespace-pre-wrap wrap-break-word text-sm leading-relaxed text-foreground/95">
+                      <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed text-white/88">
                         {comment.body}
                       </p>
                     </div>
                     <button
                       aria-label={comment.likedByMe ? 'Bỏ tim bình luận' : 'Thả tim bình luận'}
                       className={cn(
-                        'flex shrink-0 flex-col items-center justify-center gap-0.5 rounded-lg px-2 py-1 text-muted-foreground transition-colors',
-                        'hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400',
-                        comment.likedByMe && 'text-rose-600 dark:text-rose-400',
+                        'flex shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl px-2 py-1 text-white/50 transition-colors',
+                        !isGuest && 'hover:bg-rose-500/10 hover:text-rose-300',
+                        comment.likedByMe && !isGuest && 'text-rose-300',
                       )}
-                      disabled={isTogglingLike || !channel}
+                      disabled={isTogglingLike || !channel || isGuest}
                       type="button"
                       onClick={() => {
-                        if (!user) {
+                        if (!user || isGuest) {
                           openAuthModal()
                           return
                         }
                         void toggleLike(comment)
                       }}
                     >
-                      <Heart className={cn('h-4 w-4', comment.likedByMe && 'fill-current')} />
-                      <span className="tabular-nums text-[11px] font-medium">{comment.likeCount}</span>
+                      <Heart
+                        className={cn('h-4 w-4', comment.likedByMe && !isGuest && 'fill-current')}
+                      />
+                      <span className="tabular-nums text-[11px] font-medium">
+                        {comment.likeCount}
+                      </span>
                     </button>
                   </div>
                 </article>

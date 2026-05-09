@@ -1,8 +1,7 @@
-import { HeaderClient } from './Component.client'
 import { getCachedGlobal } from '@/utilities/getGlobals'
-import React from 'react'
+import { HeaderClient } from './Component.client'
 
-import type { GeneralSetting, Header } from '@/payload-types'
+import type { GeneralSetting, Header, Media } from '@/payload-types'
 
 export async function Header() {
   const [headerData, generalSettings]: [Header, GeneralSetting] = await Promise.all([
@@ -10,5 +9,17 @@ export async function Header() {
     getCachedGlobal('general-settings', 1)(),
   ])
 
-  return <HeaderClient data={headerData} generalSettings={generalSettings} />
+  const bannerMedia =
+    typeof headerData?.bannerImage === 'object' ? (headerData.bannerImage as Media) : null
+  const bannerWidth = bannerMedia?.width ?? null
+  const bannerHeight = bannerMedia?.height ?? null
+
+  return (
+    <HeaderClient
+      data={headerData}
+      generalSettings={generalSettings}
+      bannerWidth={bannerWidth}
+      bannerHeight={bannerHeight}
+    />
+  )
 }

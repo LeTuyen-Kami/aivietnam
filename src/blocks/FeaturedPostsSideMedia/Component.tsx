@@ -125,7 +125,7 @@ export const FeaturedPostsSideMediaBlockComponent: React.FC<Props> = ({
                     />
                   )}
                   <div className="p-4 lg:p-5">
-                    <h3 className="text-base font-semibold leading-snug text-foreground transition-colors duration-200 underline-offset-2 group-hover:underline">
+                    <h3 className="text-[20px] font-semibold leading-snug text-foreground transition-colors duration-200 underline-offset-2 group-hover:underline">
                       {featuredPost.title}
                     </h3>
                     {featuredPost.meta?.description && (

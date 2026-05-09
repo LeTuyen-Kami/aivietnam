@@ -1,7 +1,7 @@
 import configPromise from '@payload-config'
-import { getPayload } from 'payload'
 import { headers } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
+import { getPayload } from 'payload'
 
 import { isUsersCollectionAdmin } from '@/access/isAdminUser'
 import { getPublicStreamEnvStatus } from '@/lib/stream/publicClientEnv'
@@ -26,10 +26,10 @@ export default async function BroadcasterPage({ params }: Args) {
 
   if (!isUsersCollectionAdmin(user)) {
     return (
-      <main className="container py-12 sm:py-16">
-        <section className="mx-auto max-w-lg rounded-2xl border border-border/80 bg-card p-8 shadow-lg ring-1 ring-black/5 dark:ring-white/10">
+      <main className="min-h-screen bg-black px-4 py-12 text-white sm:px-6 sm:py-16">
+        <section className="mx-auto max-w-lg rounded-2xl border border-white/10 bg-white/5 p-8 shadow-lg ring-1 ring-white/10 backdrop-blur">
           <h1 className="text-2xl font-semibold tracking-tight">Không có quyền</h1>
-          <p className="mt-3 text-pretty text-muted-foreground">
+          <p className="mt-3 text-pretty text-white/70">
             Chỉ tài khoản quản trị mới có thể mở trang phát sóng livestream.
           </p>
         </section>
@@ -54,7 +54,7 @@ export default async function BroadcasterPage({ params }: Args) {
   const streamEnv = getPublicStreamEnvStatus()
 
   return (
-    <main className="container max-w-6xl py-8 sm:py-12">
+    <main className="min-h-screen bg-black text-white">
       <BroadcasterClient
         livestream={livestream}
         streamApiKey={streamEnv.apiKey}

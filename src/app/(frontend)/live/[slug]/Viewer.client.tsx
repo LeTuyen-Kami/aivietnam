@@ -1,17 +1,17 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   CallingState,
   LivestreamLayout,
   StreamCall,
   StreamVideo,
   StreamVideoClient,
-  type Call,
   useCallStateHooks,
+  type Call,
 } from '@stream-io/video-react-sdk'
 import '@stream-io/video-react-sdk/dist/css/styles.css'
-import { AlertCircle, Clock, Radio, Sparkles, User } from 'lucide-react'
+import { AlertCircle, Clock3, Radio, Sparkles, User } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { getPublicStreamSetupMessage } from '@/lib/stream/publicClientEnv'
 import type { Livestream } from '@/payload-types'
@@ -47,15 +47,6 @@ function isLiveStatus(status: Livestream['status']): boolean {
   return status === 'live'
 }
 
-function viewerReturnTo(slug: string): string {
-  const encodedSlug = encodeURIComponent(slug)
-  return `/live/${encodedSlug}`
-}
-
-function loginRequiredUrl(returnTo: string): string {
-  return `/?auth=login_required&returnTo=${encodeURIComponent(returnTo)}`
-}
-
 function statusLabel(status: Livestream['status']): string {
   switch (status) {
     case 'live':
@@ -74,15 +65,29 @@ function statusLabel(status: Livestream['status']): string {
 function statusPillClass(status: Livestream['status']): string {
   switch (status) {
     case 'live':
-      return 'bg-emerald-500/15 text-emerald-800 ring-emerald-500/30 dark:text-emerald-300'
+      return 'bg-rose-500/85 text-white ring-rose-300/30'
     case 'scheduled':
     case 'draft':
-      return 'bg-amber-500/12 text-amber-950 ring-amber-500/25 dark:text-amber-100'
+      return 'bg-amber-500/85 text-white ring-amber-300/30'
     case 'ended':
-      return 'bg-muted text-muted-foreground ring-border'
+      return 'bg-black/55 text-white ring-white/10'
     default:
-      return 'bg-muted text-muted-foreground ring-border'
+      return 'bg-black/55 text-white ring-white/10'
   }
+}
+
+function formatDate(value: string | null | undefined): string | null {
+  if (!value) return null
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return null
+
+  return new Intl.DateTimeFormat('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date)
 }
 
 function LiveCallContent() {
@@ -93,17 +98,39 @@ function LiveCallContent() {
     callingState === CallingState.RECONNECTING || callingState === CallingState.MIGRATING
 
   return (
-    <div className="space-y-3">
+    <div className="h-full w-full">
       {showReconnecting ? (
-        <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-200">
+        <div className="absolute left-3 right-3 top-16 z-20 flex items-center gap-2 rounded-full bg-amber-500/85 px-3 py-2 text-xs font-medium text-white shadow-lg backdrop-blur sm:left-6 sm:right-auto">
           <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/70 opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
           </span>
           Đang kết nối lại livestream…
         </div>
       ) : null}
       <LivestreamLayout />
+    </div>
+  )
+}
+
+function ViewerStatePanel({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode
+  title: string
+  description: string
+}) {
+  return (
+    <div className="flex h-full min-h-[60svh] flex-col items-center justify-center gap-4 px-6 text-center text-white">
+      <div className="flex h-18 w-18 items-center justify-center rounded-3xl bg-white/10 backdrop-blur ring-1 ring-white/15">
+        {icon}
+      </div>
+      <div className="max-w-md space-y-2">
+        <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">{title}</h2>
+        <p className="text-sm text-white/72 sm:text-base">{description}</p>
+      </div>
     </div>
   )
 }
@@ -125,30 +152,24 @@ export function ViewerClient({
 
   const apiKey = streamApiKey.trim()
   const hasStreamingConfig = useMemo(() => apiKey.length > 0, [apiKey])
-
-  const slug = livestream.slug ?? ''
-  const defaultReturnTo = useMemo(() => viewerReturnTo(slug), [slug])
-  const currentReturnTo = useCallback(() => {
-    if (typeof window === 'undefined') return defaultReturnTo
-    const path = `${window.location.pathname}${window.location.search}${window.location.hash}`
-    return path || defaultReturnTo
-  }, [defaultReturnTo])
-
-  const redirectToLoginRequired = useCallback(() => {
-    if (typeof window === 'undefined') return
-    window.location.assign(loginRequiredUrl(currentReturnTo()))
-  }, [currentReturnTo])
+  const isGuest = !streamUser.email
+  const live = isLiveStatus(statusState.status)
+  const waitingForLive = statusState.status === 'scheduled' || statusState.status === 'draft'
+  const scheduledAt = formatDate(livestream.scheduledAt)
+  const safeSlug = livestream.slug ?? ''
 
   const tokenProvider = useCallback(async () => {
     const response = await fetch('/api/stream/token', {
       method: 'POST',
       credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        guestId: streamUser.id,
+        guestName: streamUser.name,
+      }),
     })
-
-    if (response.status === 401) {
-      redirectToLoginRequired()
-      throw new Error('Unauthorized')
-    }
 
     const body = (await response.json().catch(() => ({}))) as { token?: string; error?: string }
     if (!response.ok || !body.token) {
@@ -156,21 +177,16 @@ export function ViewerClient({
     }
 
     return body.token
-  }, [redirectToLoginRequired])
+  }, [streamUser.id, streamUser.name])
 
   const pollStatus = useCallback(async () => {
-    if (!slug) return
+    if (!safeSlug) return
 
-    const response = await fetch(`/api/livestreams/${encodeURIComponent(slug)}/status`, {
+    const response = await fetch(`/api/livestreams/${encodeURIComponent(safeSlug)}/status`, {
       method: 'GET',
       credentials: 'include',
       cache: 'no-store',
     })
-
-    if (response.status === 401) {
-      redirectToLoginRequired()
-      return
-    }
 
     const body = (await response.json().catch(() => ({}))) as ViewerStatusResponse
     if (!response.ok || !body.status) return
@@ -180,7 +196,7 @@ export function ViewerClient({
       callId: body.callId ?? null,
       callType: body.callType ?? null,
     })
-  }, [redirectToLoginRequired, slug])
+  }, [safeSlug])
 
   useEffect(() => {
     void pollStatus()
@@ -194,7 +210,7 @@ export function ViewerClient({
   }, [pollStatus])
 
   useEffect(() => {
-    if (!hasStreamingConfig || !isLiveStatus(statusState.status)) return
+    if (!hasStreamingConfig || !live) return
     if (!statusState.callId || !statusState.callType) return
 
     const liveCallId = statusState.callId
@@ -229,7 +245,7 @@ export function ViewerClient({
         setClient(nextClient)
         setCall(nextCall)
       } catch (_setupError) {
-        setError('Không thể kết nối livestream. Vui lòng kiểm tra đăng nhập và kết nối mạng, sau đó thử lại.')
+        setError('Không thể kết nối livestream. Vui lòng kiểm tra mạng rồi thử lại.')
       }
     }
 
@@ -246,133 +262,128 @@ export function ViewerClient({
         void activeClient.disconnectUser().catch(() => null)
       }
     }
-  }, [apiKey, hasStreamingConfig, statusState.callId, statusState.callType, statusState.status, streamUser, tokenProvider])
-
-  const waitingForLive = statusState.status === 'scheduled' || statusState.status === 'draft'
-  const safeSlug = livestream.slug ?? ''
-  const live = isLiveStatus(statusState.status)
+  }, [
+    apiKey,
+    hasStreamingConfig,
+    live,
+    statusState.callId,
+    statusState.callType,
+    streamUser,
+    tokenProvider,
+  ])
 
   return (
-    <section
-      className={cn(
-        'relative mx-auto max-w-6xl rounded-2xl border border-border/80 bg-card shadow-xl shadow-black/5',
-        'ring-1 ring-black/5 dark:ring-white/10',
-      )}
-    >
-      <div
-        className="pointer-events-none absolute inset-0 rounded-2xl bg-linear-to-br from-primary/5 via-transparent to-transparent"
-        aria-hidden
-      />
-      <div className="relative p-6 sm:p-8">
-        <div className="grid gap-8 xl:grid-cols-12 xl:gap-10">
-          <div className="min-w-0 space-y-6 xl:col-span-8">
-            <header className="space-y-3">
+    <section className="relative h-[100svh] w-full overflow-hidden bg-black text-white">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_30%),linear-gradient(180deg,_rgba(0,0,0,0.18)_0%,_rgba(0,0,0,0.78)_100%)]" />
+
+      <div className="relative grid h-[100svh] w-full lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_420px]">
+        <div className="relative flex h-[100svh] min-h-0 flex-col overflow-hidden">
+          <div className="absolute left-3 right-3 top-3 z-20 flex items-start justify-between gap-3 sm:left-6 sm:right-6 sm:top-6">
+            <div className="max-w-[85%] space-y-3">
               <div className="flex flex-wrap items-center gap-2">
                 <span
                   className={cn(
-                    'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset',
+                    'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset backdrop-blur',
                     statusPillClass(statusState.status),
                   )}
                 >
                   {live ? (
                     <span className="relative flex h-2 w-2">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                      <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/70 opacity-75" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
                     </span>
                   ) : null}
                   {statusLabel(statusState.status)}
                 </span>
+                {scheduledAt ? (
+                  <span className="rounded-full bg-black/40 px-3 py-1 text-[11px] text-white/75 ring-1 ring-white/10 backdrop-blur">
+                    {scheduledAt}
+                  </span>
+                ) : null}
               </div>
-              <h1 className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl">
-                {livestream.title}
-              </h1>
-              <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                <User className="h-4 w-4 shrink-0 opacity-70" aria-hidden />
-                <span>Đang xem với tài khoản {streamUser.name}</span>
-              </div>
-            </header>
 
-            {!hasStreamingConfig ? (
-              <div
-                className="flex gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
-                role="alert"
-              >
-                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
-                <p>{streamSetupMessage ?? getPublicStreamSetupMessage()}</p>
+              <div className="space-y-1">
+                <h1 className="line-clamp-2 text-xl font-semibold tracking-tight sm:text-3xl">
+                  {livestream.title}
+                </h1>
+                {livestream.description ? (
+                  <p className="line-clamp-3 max-w-2xl text-sm text-white/70 sm:text-base">
+                    {livestream.description}
+                  </p>
+                ) : null}
               </div>
-            ) : null}
-
-            {error ? (
-              <div
-                className="flex gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
-                role="alert"
-              >
-                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
-                <p>{error}</p>
-              </div>
-            ) : null}
-
-            <div
-              className={cn(
-                'overflow-hidden rounded-xl border border-border/80 bg-linear-to-b from-muted/30 to-muted/5',
-                'shadow-inner',
-              )}
-            >
-              {hasStreamingConfig && client && call && live ? (
-                <div className="aspect-video bg-black">
-                  <StreamVideo client={client}>
-                    <StreamCall call={call}>
-                      <LiveCallContent />
-                    </StreamCall>
-                  </StreamVideo>
-                </div>
-              ) : waitingForLive ? (
-                <div className="flex aspect-video flex-col items-center justify-center gap-4 px-6 text-center">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/80 text-muted-foreground ring-1 ring-border">
-                    <Clock className="h-8 w-8" aria-hidden />
-                  </div>
-                  <div className="max-w-md space-y-2">
-                    <h2 className="text-lg font-semibold tracking-tight">Livestream chưa bắt đầu</h2>
-                    <p className="text-pretty text-sm text-muted-foreground">
-                      Giữ trang mở — trạng thái được cập nhật định kỳ. Khi host bắt đầu phát, video sẽ
-                      xuất hiện tại đây.
-                    </p>
-                  </div>
-                </div>
-              ) : statusState.status === 'ended' ? (
-                <div className="flex aspect-video flex-col items-center justify-center gap-4 px-6 text-center">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground ring-1 ring-border">
-                    <Radio className="h-8 w-8" aria-hidden />
-                  </div>
-                  <div className="max-w-md space-y-2">
-                    <h2 className="text-lg font-semibold tracking-tight">Livestream đã kết thúc</h2>
-                    <p className="text-pretty text-sm text-muted-foreground">
-                      Cảm ơn bạn đã theo dõi. Bạn có thể quay lại trang chủ để xem nội dung khác.
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex aspect-video flex-col items-center justify-center gap-4 px-6 text-center">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20">
-                    <Sparkles className="h-8 w-8" aria-hidden />
-                  </div>
-                  <div className="max-w-md space-y-2">
-                    <h2 className="text-lg font-semibold tracking-tight">Đang chờ phát sóng</h2>
-                    <p className="text-pretty text-sm text-muted-foreground">
-                      Phiên đang được chuẩn bị. Hệ thống sẽ tự tải khi livestream bắt đầu.
-                    </p>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 
-          <div className="min-w-0 xl:col-span-4">
-            <div className="xl:sticky xl:top-24">
-              <LiveViewerEngagement isLive={live} slug={safeSlug} />
+          <div className="relative flex-1">
+            {hasStreamingConfig && client && call && live ? (
+              <div className="h-full w-full bg-black">
+                <StreamVideo client={client}>
+                  <StreamCall call={call}>
+                    <LiveCallContent />
+                  </StreamCall>
+                </StreamVideo>
+              </div>
+            ) : !hasStreamingConfig ? (
+              <ViewerStatePanel
+                description={streamSetupMessage ?? getPublicStreamSetupMessage()}
+                icon={<AlertCircle className="h-9 w-9" aria-hidden />}
+                title="Chưa cấu hình livestream"
+              />
+            ) : error ? (
+              <ViewerStatePanel
+                description={error}
+                icon={<AlertCircle className="h-9 w-9" aria-hidden />}
+                title="Không thể kết nối livestream"
+              />
+            ) : waitingForLive ? (
+              <ViewerStatePanel
+                description="Giữ màn hình mở. Khi host bắt đầu phát, video sẽ xuất hiện tại đây."
+                icon={<Clock3 className="h-9 w-9" aria-hidden />}
+                title="Livestream chưa bắt đầu"
+              />
+            ) : statusState.status === 'ended' ? (
+              <ViewerStatePanel
+                description="Cảm ơn bạn đã theo dõi. Phiên phát đã kết thúc."
+                icon={<Radio className="h-9 w-9" aria-hidden />}
+                title="Livestream đã kết thúc"
+              />
+            ) : (
+              <ViewerStatePanel
+                description="Phiên đang được chuẩn bị. Hệ thống sẽ tự cập nhật khi bắt đầu phát."
+                icon={<Sparkles className="h-9 w-9" aria-hidden />}
+                title="Đang chờ phát sóng"
+              />
+            )}
+          </div>
+
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-linear-to-t from-black/90 via-black/45 to-transparent px-3 pb-4 pt-24 sm:px-6 lg:hidden">
+            <div className="pointer-events-auto ml-auto max-w-[min(100%,28rem)]">
+              <LiveViewerEngagement isGuest={isGuest} isLive={live} overlay slug={safeSlug} />
             </div>
           </div>
         </div>
+
+        <aside className="hidden border-l border-white/10 bg-black/65 backdrop-blur-xl lg:block">
+          <div className="flex h-full flex-col">
+            <div className="border-b border-white/10 px-6 py-5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/8 ring-1 ring-white/10">
+                  <User className="h-5 w-5 text-white/90" aria-hidden />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-white">{streamUser.name}</p>
+                  <p className="text-xs text-white/60">
+                    {isGuest ? 'Khách xem · chat bị khóa' : 'Đang xem livestream'}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="min-h-0 flex-1 p-4">
+              <LiveViewerEngagement isGuest={isGuest} isLive={live} slug={safeSlug} />
+            </div>
+          </div>
+        </aside>
       </div>
     </section>
   )

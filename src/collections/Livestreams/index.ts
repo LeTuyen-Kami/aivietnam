@@ -1,10 +1,9 @@
-import type { CollectionConfig } from 'payload'
-import type { RowField } from 'payload'
+import type { CollectionConfig, RowField } from 'payload'
 import { slugField } from 'payload'
 
-import { canAccessAdminPanel, isUsersCollectionAdmin } from '@/access/isAdminUser'
-import { slugifyTitle } from '@/utilities/slugify'
+import { canAccessAdminPanel } from '@/access/isAdminUser'
 import { getLivestreamViewerAbsoluteUrl } from '@/utilities/livestreamViewerUrl'
+import { slugifyTitle } from '@/utilities/slugify'
 import moderator from '../Users/access/mod'
 
 export const Livestreams: CollectionConfig<'livestreams'> = {
@@ -22,7 +21,11 @@ export const Livestreams: CollectionConfig<'livestreams'> = {
     create: moderator,
     delete: moderator,
     read: ({ req: { user } }) => {
-      if (!user) return false
+      if (!user) {
+        return {
+          status: { equals: 'live' },
+        }
+      }
       if (canAccessAdminPanel(user)) return true
       return { status: { not_equals: 'draft' } }
     },
@@ -104,6 +107,14 @@ export const Livestreams: CollectionConfig<'livestreams'> = {
         readOnly: true,
       },
       index: true,
+    },
+    {
+      name: 'coverImage',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description: 'Ảnh cover dùng cho card ngoài trang và trạng thái chờ trước khi live.',
+      },
     },
     {
       name: 'description',

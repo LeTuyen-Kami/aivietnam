@@ -2,23 +2,24 @@ import React, { Fragment } from 'react'
 
 import type { Page } from '@/payload-types'
 
-import { ArchiveBlock } from '@/blocks/ArchiveBlock/Component'
 import { AIEcosystemMapBlockComponent } from '@/blocks/AIEcosystemMap/Component'
+import { ArchiveBlock } from '@/blocks/ArchiveBlock/Component'
 import { CallToActionBlock } from '@/blocks/CallToAction/Component'
 import { ContentBlock } from '@/blocks/Content/Component'
-import { FeaturedPostsSideMediaBlockComponentAsync } from '@/blocks/FeaturedPostsSideMedia/Component'
-import { HeroCarouselBlock } from '@/blocks/HeroCarousel/Component'
-import { MediaHubTriptychBlockComponent } from '@/blocks/MediaHubTriptych/Component'
-import { NewsletterSignupBlock } from '@/blocks/NewsletterSignup/Component'
-import { HumanitiesCornerBlockComponent } from '@/blocks/HumanitiesCorner/Component'
-import { PortalSplitLayoutBlockAsync } from '@/blocks/PortalSplitLayout/Component'
-import { FormBlock } from '@/blocks/Form/Component'
 import { EnhancedMediaBlock } from '@/blocks/EnhancedMediaBlock/Component'
-import { MediaBlock } from '@/blocks/MediaBlock/Component'
-import { YouTubeEmbedBlockComponent } from '@/blocks/YouTubeEmbed/Component'
+import { FeaturedPostsSideMediaBlockComponentAsync } from '@/blocks/FeaturedPostsSideMedia/Component'
+import { FormBlock } from '@/blocks/Form/Component'
+import { HeroCarouselBlock } from '@/blocks/HeroCarousel/Component'
+import { HumanitiesCornerBlockComponent } from '@/blocks/HumanitiesCorner/Component'
 import { ListingsCategoriesGridBlockComponent } from '@/blocks/ListingsCategoriesGrid/Component'
 import { ListingsCategoryItemBlockComponent } from '@/blocks/ListingsCategoryItem/Component'
+import { LivestreamPortalBlockComponent } from '@/blocks/LivestreamPortal/Component'
 import { MarketplaceStatsBlockComponent } from '@/blocks/MarketplaceStats/Component'
+import { MediaBlock } from '@/blocks/MediaBlock/Component'
+import { MediaHubTriptychBlockComponent } from '@/blocks/MediaHubTriptych/Component'
+import { NewsletterSignupBlock } from '@/blocks/NewsletterSignup/Component'
+import { PortalSplitLayoutBlockAsync } from '@/blocks/PortalSplitLayout/Component'
+import { YouTubeEmbedBlockComponent } from '@/blocks/YouTubeEmbed/Component'
 
 const blockComponents = {
   archive: ArchiveBlock,
@@ -38,6 +39,7 @@ const blockComponents = {
   listingsCategoriesGrid: ListingsCategoriesGridBlockComponent,
   listingsCategoryItem: ListingsCategoryItemBlockComponent,
   marketplaceStats: MarketplaceStatsBlockComponent,
+  livestreamPortal: LivestreamPortalBlockComponent,
 }
 
 export const RenderBlocks: React.FC<{

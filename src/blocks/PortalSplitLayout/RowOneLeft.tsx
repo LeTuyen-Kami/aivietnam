@@ -4,9 +4,9 @@ import { Media as MediaComponent } from '@/components/Media'
 
 import { cn } from '@/utilities/ui'
 
+import { SmartLink } from '@/components/SmartLink'
 import { accentHover, accentTextVarStyle, getAccentStyleWithCustomHex } from './accent'
 import RowOneCircularInfographic from './RowOneCircularInfographic'
-import { SmartLink } from '@/components/SmartLink'
 
 export function RowOneLeft({
   row1CenterGraphic,

@@ -24,7 +24,7 @@ export function LeftFeed({ posts }: { posts: Post[] }) {
                 size="(max-width: 1024px) 100vw, 33vw"
               />
             )}
-            <h3 className="font-serif text-lg font-bold leading-snug text-foreground transition-colors duration-200 underline-offset-2 group-hover:underline">
+            <h3 className="font-serif text-[15px] font-bold leading-snug text-foreground transition-colors duration-200 underline-offset-2 group-hover:underline">
               {post.title}
             </h3>
             <PostExcerpt post={post} />

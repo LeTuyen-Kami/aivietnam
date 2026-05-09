@@ -90,7 +90,7 @@ export default async function Post({ params: paramsPromise }: Args) {
 
   return (
     <>
-      <article className="container">
+      <article>
         <PageClient />
 
         {/* Allows redirects for valid pages too */}
@@ -102,7 +102,7 @@ export default async function Post({ params: paramsPromise }: Args) {
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div>
               <nav
-                className="mb-4 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground"
+                className="mb-4 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground whitespace-nowrap"
                 aria-label="Breadcrumb"
               >
                 <Link href="/" className="hover:underline">
@@ -125,7 +125,7 @@ export default async function Post({ params: paramsPromise }: Args) {
                 </span>
               </nav>
 
-              <h1 className="text-3xl font-semibold leading-tight md:text-4xl">{post.title}</h1>
+              <h1 className="text-lg font-semibold leading-tight md:text-[23px]">{post.title}</h1>
 
               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
                 <ViewCounter postId={String(post.id)} initialViews={post.views ?? 0} />
@@ -253,7 +253,7 @@ export default async function Post({ params: paramsPromise }: Args) {
               ) : null}
             </div>
 
-            <aside className="space-y-6 lg:sticky lg:top-24 lg:h-fit">
+            <aside className="space-y-6 lg:sticky lg:top-24 lg:h-fit w-[270px]">
               <section className="border border-border bg-card p-4">
                 <h2 className="mb-3 text-sm font-semibold uppercase">Danh mục</h2>
                 <div className="space-y-2 text-sm">

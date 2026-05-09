@@ -8,10 +8,11 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 
 import { Flag, Smile, ThumbsUp, X } from 'lucide-react'
 
-import { useAuth } from '@/providers/Auth'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { useAuth } from '@/providers/Auth'
 import { cn } from '@/utilities/ui'
+import { like, sad, supprise } from './ReactionIcon'
 
 /** Strong ease-out — responsive first frame (animations.dev / Emil-style UI) */
 const EASE_OUT = [0.23, 1, 0.32, 1] as const
@@ -40,9 +41,9 @@ type CommentsPage = {
 
 const PAGE_SIZE = 5
 const REACTIONS: Array<{ type: ReactionType; label: string; emoji: string; dataName: string }> = [
-  { type: 'like', label: 'Thích', emoji: '👍', dataName: 'like' },
-  { type: 'wow', label: 'Ngạc nhiên', emoji: '😮', dataName: 'surprised' },
-  { type: 'sad', label: 'Buồn', emoji: '😢', dataName: 'sad' },
+  { type: 'like', label: 'Thích', emoji: like, dataName: 'like' },
+  { type: 'wow', label: 'Ngạc nhiên', emoji: supprise, dataName: 'surprised' },
+  { type: 'sad', label: 'Buồn', emoji: sad, dataName: 'sad' },
 ]
 
 export type CommentSort = 'newest' | 'popular'
@@ -284,21 +285,39 @@ function CommentActionRow({
         onFocus={openPicker}
         onBlur={closePickerWithDelay}
       >
-        <button
-          type="button"
-          className={cn(
-            pressable,
-            'inline-flex items-center gap-1.5 text-[#777] hover:text-[#c72a55] cursor-pointer',
-            myReaction && 'font-medium text-[#c72a55]',
-          )}
-          onClick={() => {
-            if (!user) return openAuthModal()
-            onReact('like')
-          }}
-        >
-          <ThumbsUp className="h-3.5 w-3.5" />
-          <span>{activeReaction?.label ?? 'Thích'}</span>
-        </button>
+        {totalReactions > 0 ? (
+          <span className="-ml-3 inline-flex items-center gap-1 tabular-nums text-[#777]">
+            <span className="flex -space-x-1">
+              {reactionBadges.map((reaction) => (
+                <img
+                  key={`${comment.id}-${reaction.type}-badge`}
+                  className="h-[17px] w-[17px] rounded-full border border-white"
+                  src={reaction.emoji}
+                  alt={reaction.label}
+                  title={reaction.label}
+                />
+              ))}
+            </span>
+            <span>{totalReactions}</span>
+          </span>
+        ) : (
+          <button
+            type="button"
+            className={cn(
+              pressable,
+              'inline-flex items-center gap-1.5 text-[#777] hover:text-[#c72a55] cursor-pointer',
+              myReaction && 'font-medium text-[#c72a55]',
+            )}
+            onClick={() => {
+              if (!user) return openAuthModal()
+              onReact('like')
+            }}
+          >
+            <ThumbsUp className="h-3.5 w-3.5" />
+            {/*<span>{activeReaction?.label ?? 'Thích'}</span>*/}
+          </button>
+        )}
+
         <AnimatePresence>
           {pickerOpen && (
             <motion.div
@@ -307,22 +326,17 @@ function CommentActionRow({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, y: 4, scale: 0.98 }}
               transition={{ duration: 0.12 }}
-              className="reactions-container absolute bottom-full left-0 z-20 mb-2 w-[236px] border border-[#d7d7d7] bg-white px-3 py-2 shadow-sm"
+              className="absolute bottom-full left-0 z-20 mb-2 border border-[#d7d7d7] bg-white py-2 shadow-sm w-[140px] px-2 rounded-full"
             >
               <div
-                className="reactions-list reactions-menu grid grid-cols-3 gap-2"
+                className="reactions-menu grid grid-cols-3 gap-4"
                 data-selected={activeReaction?.dataName ?? ''}
               >
                 {REACTIONS.map(({ type, label, emoji, dataName }) => (
-                  <div key={`${comment.id}-${type}`} className="reaction-item text-center">
+                  <div key={`${comment.id}-${type}`} className="text-center size-8">
                     <button
                       type="button"
                       disabled={reactionPending}
-                      className={cn(
-                        pressable,
-                        'reaction mx-auto flex h-8 w-8 items-center justify-center rounded-full text-[18px] hover:bg-[#f3f3f3] disabled:opacity-50 cursor-pointer',
-                        myReaction === type && 'bg-[#fbe4eb]',
-                      )}
                       aria-label={label}
                       title={label}
                       data-name={dataName}
@@ -332,11 +346,8 @@ function CommentActionRow({
                         onReact(type)
                       }}
                     >
-                      {emoji}
+                      <img className="size-8" src={emoji} alt={label} />
                     </button>
-                    <span className="label mt-1 block text-[11px] leading-tight text-[#666]">
-                      {label}
-                    </span>
                   </div>
                 ))}
               </div>
@@ -344,22 +355,6 @@ function CommentActionRow({
           )}
         </AnimatePresence>
       </div>
-
-      {totalReactions > 0 ? (
-        <span className="-ml-3 inline-flex items-center gap-1 tabular-nums text-[#777]">
-          <span className="flex -space-x-1">
-            {reactionBadges.map((reaction) => (
-              <span
-                key={`${comment.id}-${reaction.type}-badge`}
-                className="flex h-[17px] w-[17px] items-center justify-center rounded-full border border-white bg-[#f8d9e2] text-[10px]"
-              >
-                {reaction.emoji}
-              </span>
-            ))}
-          </span>
-          <span>{totalReactions}</span>
-        </span>
-      ) : null}
 
       {onReply ? (
         <button
@@ -736,7 +731,7 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
         {body.trim() ? (
           <div className="flex flex-wrap items-center gap-2">
             <Button
-              className={pressable}
+              className={cn(pressable, 'bg-[#C92452]')}
               disabled={submitMutation.isPending || !body.trim()}
               size="sm"
               type="submit"
@@ -945,7 +940,7 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
                         />
                         <div className="flex items-center gap-2">
                           <Button
-                            className={pressable}
+                            className={cn(pressable, 'bg-[#C92452]')}
                             size="sm"
                             type="submit"
                             disabled={submitMutation.isPending || !replyBody.trim()}
@@ -969,8 +964,27 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
                     ) : null}
 
                     {(c.replies?.length ?? 0) > 0 ? (
-                      <div className="mt-2 ml-12 text-[13px] leading-none text-[#777]">
-                        ↪ {c.replies?.length ?? 0} trả lời
+                      <div className="mt-3 ml-12 space-y-4 border-l border-[#ececec] pl-4">
+                        {c.replies?.map((reply) => (
+                          <div key={reply.id} className="min-w-0">
+                            <CommentBody c={reply} />
+                            <CommentActionRow
+                              comment={reply}
+                              openAuthModal={openAuthModal}
+                              reactionPending={reactionMutation.isPending}
+                              user={user}
+                              onReact={(reaction) => reactToComment(reply.id, reaction)}
+                              onReport={() => {
+                                if (!user) return openAuthModal()
+                                setReportingId(reply.id)
+                                setReportReason('spam')
+                                setReportDetails('')
+                                setReportFeedback(null)
+                                setReplyingToId(null)
+                              }}
+                            />
+                          </div>
+                        ))}
                       </div>
                     ) : null}
                   </div>

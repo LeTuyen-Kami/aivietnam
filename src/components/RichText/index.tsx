@@ -113,7 +113,7 @@ export default function RichText(props: Props) {
     <ConvertRichText
       converters={jsxConverters}
       className={cn(
-        'payload-richtext',
+        'payload-richtext text-lg font-arial [&_p,&_span,&_h1,&_h2,&_h3,&_h4,&_h5,&_h6,&_li,&_ol,&_ul,&_a,&_em,&_strong]:font-arial!',
         {
           container: enableGutter,
           'max-w-none': !enableGutter,

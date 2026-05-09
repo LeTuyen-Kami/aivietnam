@@ -1,7 +1,7 @@
 import config from '@payload-config'
 import { headers } from 'next/headers'
-import { getPayload } from 'payload'
 import { NextResponse } from 'next/server'
+import { getPayload } from 'payload'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,17 +22,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const requestHeaders = await headers()
   const { user } = await payload.auth({ headers: requestHeaders })
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
   const result = await payload.find({
     collection: 'livestreams',
     depth: 0,
     limit: 1,
     pagination: false,
     overrideAccess: false,
-    user,
+    ...(user ? { user } : {}),
     where: {
       slug: {
         equals: decodedSlug,

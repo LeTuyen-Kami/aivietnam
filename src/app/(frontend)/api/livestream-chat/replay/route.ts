@@ -1,7 +1,7 @@
 import config from '@payload-config'
 import { headers } from 'next/headers'
-import { getPayload } from 'payload'
 import { NextRequest, NextResponse } from 'next/server'
+import { getPayload } from 'payload'
 
 import { getSiteMemberUser } from '@/access/siteMemberUser'
 
@@ -29,22 +29,22 @@ export async function GET(req: NextRequest) {
   }
 
   const limitParam = Number(req.nextUrl.searchParams.get('limit') ?? DEFAULT_LIMIT)
-  const limit = Math.min(MAX_LIMIT, Math.max(1, Number.isFinite(limitParam) ? limitParam : DEFAULT_LIMIT))
+  const limit = Math.min(
+    MAX_LIMIT,
+    Math.max(1, Number.isFinite(limitParam) ? limitParam : DEFAULT_LIMIT),
+  )
 
   const payload = await getPayload({ config })
   const requestHeaders = await headers()
   const { user } = await payload.auth({ headers: requestHeaders })
   const member = getSiteMemberUser(user)
-  if (!member) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
 
   const livestreamResult = await payload.find({
     collection: 'livestreams',
     depth: 0,
     limit: 1,
     pagination: false,
-    user: member,
+    ...(member ? { user: member } : {}),
     overrideAccess: false,
     where: {
       slug: {

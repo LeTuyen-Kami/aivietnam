@@ -264,6 +264,7 @@ export interface Page {
     | ListingsCategoriesGridBlock
     | ListingsCategoryItemBlock
     | MarketplaceStatsBlock
+    | LivestreamPortalBlock
   )[];
   meta?: {
     title?: string | null;
@@ -1440,6 +1441,19 @@ export interface MarketplaceStatsBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LivestreamPortalBlock".
+ */
+export interface LivestreamPortalBlock {
+  heading?: string | null;
+  description?: string | null;
+  emptyMessage?: string | null;
+  adminListLimit?: number | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'livestreamPortal';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "listings".
  */
 export interface Listing {
@@ -1577,6 +1591,10 @@ export interface Livestream {
   callId: string;
   callType: string;
   chatChannelCid?: string | null;
+  /**
+   * Ảnh cover dùng cho card ngoài trang và trạng thái chờ trước khi live.
+   */
+  coverImage?: (number | null) | Media;
   description?: string | null;
   scheduledAt?: string | null;
   updatedAt: string;
@@ -2157,6 +2175,7 @@ export interface PagesSelect<T extends boolean = true> {
         listingsCategoriesGrid?: T | ListingsCategoriesGridBlockSelect<T>;
         listingsCategoryItem?: T | ListingsCategoryItemBlockSelect<T>;
         marketplaceStats?: T | MarketplaceStatsBlockSelect<T>;
+        livestreamPortal?: T | LivestreamPortalBlockSelect<T>;
       };
   meta?:
     | T
@@ -2669,6 +2688,18 @@ export interface MarketplaceStatsBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LivestreamPortalBlock_select".
+ */
+export interface LivestreamPortalBlockSelect<T extends boolean = true> {
+  heading?: T;
+  description?: T;
+  emptyMessage?: T;
+  adminListLimit?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts_select".
  */
 export interface PostsSelect<T extends boolean = true> {
@@ -2893,6 +2924,7 @@ export interface LivestreamsSelect<T extends boolean = true> {
   callId?: T;
   callType?: T;
   chatChannelCid?: T;
+  coverImage?: T;
   description?: T;
   scheduledAt?: T;
   updatedAt?: T;

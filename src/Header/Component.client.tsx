@@ -18,9 +18,16 @@ import { HeaderNav } from './Nav'
 interface HeaderClientProps {
   data: Header
   generalSettings: GeneralSetting
+  bannerWidth?: number | null
+  bannerHeight?: number | null
 }
 
-export const HeaderClient: React.FC<HeaderClientProps> = ({ data, generalSettings }) => {
+export const HeaderClient: React.FC<HeaderClientProps> = ({
+  data,
+  generalSettings,
+  bannerWidth,
+  bannerHeight,
+}) => {
   /* Storing the value in a useState to avoid hydration errors */
   const [theme, setTheme] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
@@ -56,15 +63,20 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data, generalSetting
   // const themeProps = theme ? { 'data-theme': theme } : {}
   const themeProps = {}
   const navItems = data?.navItems || []
-  const bannerAspectClass = isMobile ? 'aspect-[1.8]' : 'aspect-[5]'
+  const bannerAspectRatio =
+    bannerWidth && bannerHeight && bannerWidth > 0 && bannerHeight > 0
+      ? `${bannerWidth} / ${bannerHeight}`
+      : isMobile
+        ? '1.8 / 1'
+        : '2524 / 452'
+  const bannerWrapperStyle = {
+    aspectRatio: bannerAspectRatio,
+  }
   const logo = logoMedia?.url ? (
-    <Image
+    <img
       alt={logoMedia.alt || generalSettings?.siteName || 'Site logo'}
       src={getMediaUrl(logoMedia.url, logoMedia.updatedAt)}
-      width={110}
-      height={30}
-      priority
-      className="h-7 w-auto object-contain"
+      className="w-[100px]"
     />
   ) : (
     <Logo
@@ -119,7 +131,8 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data, generalSetting
           {data?.bannerLink ? (
             <Link
               href={data.bannerLink}
-              className={`block relative overflow-hidden ${bannerAspectClass} w-full`}
+              className="relative block w-full overflow-hidden"
+              style={bannerWrapperStyle}
               aria-label="Header banner"
             >
               <Image
@@ -127,17 +140,17 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data, generalSetting
                 src={getMediaUrl(bannerMedia.url, bannerMedia.updatedAt)}
                 fill
                 priority
-                className="object-cover"
+                className="object-contain"
               />
             </Link>
           ) : (
-            <div className={`relative overflow-hidden ${bannerAspectClass} w-full`}>
+            <div className="relative w-full overflow-hidden" style={bannerWrapperStyle}>
               <Image
                 alt={bannerMedia.alt || 'Banner'}
                 src={getMediaUrl(bannerMedia.url, bannerMedia.updatedAt)}
                 fill
                 priority
-                className="object-cover"
+                className="object-contain"
               />
             </div>
           )}

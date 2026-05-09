@@ -27,4 +27,4 @@ COPY --from=builder /app/.next/standalone ./
 
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+CMD ["sh", "-c", "pnpm payload migrate && node server.js"]

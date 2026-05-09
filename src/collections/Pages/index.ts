@@ -1,30 +1,31 @@
 import type { CollectionConfig } from 'payload'
 
-import { authenticated } from '../../access/authenticated'
-import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
-import { Archive } from '../../blocks/ArchiveBlock/config'
-import { AIEcosystemMap } from '../../blocks/AIEcosystemMap/config'
-import { CallToAction } from '../../blocks/CallToAction/config'
-import { Content } from '../../blocks/Content/config'
-import { FormBlock } from '../../blocks/Form/config'
-import { EnhancedMediaBlock } from '../../blocks/EnhancedMediaBlock/config'
-import { MediaBlock } from '../../blocks/MediaBlock/config'
-import { FeaturedPostsSideMedia } from '../../blocks/FeaturedPostsSideMedia/config'
-import { HeroCarousel } from '../../blocks/HeroCarousel/config'
-import { MediaHubTriptych } from '../../blocks/MediaHubTriptych/config'
-import { NewsletterSignup } from '../../blocks/NewsletterSignup/config'
-import { HumanitiesCorner } from '../../blocks/HumanitiesCorner/config'
-import { PortalSplitLayout } from '../../blocks/PortalSplitLayout/config'
-import { YouTubeEmbed } from '../../blocks/YouTubeEmbed/config'
-import { ListingsCategoriesGrid } from '../../blocks/ListingsCategoriesGrid/config'
-import { ListingsCategoryItem } from '../../blocks/ListingsCategoryItem/config'
-import { MarketplaceStats } from '../../blocks/MarketplaceStats/config'
 import { hero } from '@/heros/config'
 import { slugField } from 'payload'
+import { authenticated } from '../../access/authenticated'
+import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
+import { AIEcosystemMap } from '../../blocks/AIEcosystemMap/config'
+import { Archive } from '../../blocks/ArchiveBlock/config'
+import { CallToAction } from '../../blocks/CallToAction/config'
+import { Content } from '../../blocks/Content/config'
+import { EnhancedMediaBlock } from '../../blocks/EnhancedMediaBlock/config'
+import { FeaturedPostsSideMedia } from '../../blocks/FeaturedPostsSideMedia/config'
+import { FormBlock } from '../../blocks/Form/config'
+import { HeroCarousel } from '../../blocks/HeroCarousel/config'
+import { HumanitiesCorner } from '../../blocks/HumanitiesCorner/config'
+import { ListingsCategoriesGrid } from '../../blocks/ListingsCategoriesGrid/config'
+import { ListingsCategoryItem } from '../../blocks/ListingsCategoryItem/config'
+import { LivestreamPortal } from '../../blocks/LivestreamPortal/config'
+import { MarketplaceStats } from '../../blocks/MarketplaceStats/config'
+import { MediaBlock } from '../../blocks/MediaBlock/config'
+import { MediaHubTriptych } from '../../blocks/MediaHubTriptych/config'
+import { NewsletterSignup } from '../../blocks/NewsletterSignup/config'
+import { PortalSplitLayout } from '../../blocks/PortalSplitLayout/config'
+import { YouTubeEmbed } from '../../blocks/YouTubeEmbed/config'
 
-import { slugifyTitle } from '../../utilities/slugify'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
+import { slugifyTitle } from '../../utilities/slugify'
 import { revalidateDelete, revalidatePage } from './hooks/revalidatePage'
 
 import {
@@ -104,6 +105,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 ListingsCategoriesGrid,
                 ListingsCategoryItem,
                 MarketplaceStats,
+                LivestreamPortal,
               ],
               required: true,
               admin: {

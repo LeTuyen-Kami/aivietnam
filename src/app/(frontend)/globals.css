@@ -41,18 +41,19 @@
   --breakpoint-sm: 40rem;
   --breakpoint-md: 48rem;
   --breakpoint-lg: 64rem;
-  --breakpoint-xl: 80rem;
-  --breakpoint-2xl: 86rem;
+  --breakpoint-xl: 1100px;
+  --breakpoint-2xl: 1100px;
   --font-serif: 'Merriweather', sans-serif;
   --font-dancing: 'Dancing Script', cursive;
   --font-mono: var(--font-geist-mono);
+  --font-arial: Arial, sans-serif;
 }
 
 @layer utilities {
   .container {
     width: 100%;
     margin-inline: auto;
-    padding-inline: 1rem;
+    /*padding-inline: 1rem;*/
   }
 
   @variant sm {
