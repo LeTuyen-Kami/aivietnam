@@ -300,7 +300,7 @@ export const HeaderWeatherBar: React.FC<{ isMobile: boolean }> = ({ isMobile }) 
       role="status"
       aria-live="polite"
     >
-      <span className="truncate font-medium">{label}t</span>
+      <span className="truncate font-medium">{label}</span>
       <div className="flex shrink-0 items-center gap-4 text-muted-foreground">
         <span className="inline-flex items-center gap-1">
           <ThermometerIcon className="shrink-0 text-foreground/70" />
