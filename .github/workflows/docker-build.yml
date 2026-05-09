@@ -93,6 +93,8 @@ jobs:
 
             curl -f http://localhost:3000 || exit 1
 
+            docker image prune -f
+
       - name: Discord Success
         if: success()
         run: |
