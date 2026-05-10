@@ -14,6 +14,7 @@ export function RowOneLeft({
   row1LeftAccent,
   row1LeftAccentCustomHex,
   row1LeftTitle,
+  row1LeftTitleHref,
   row1OrbitRadiusMaxPct,
   row1OrbitRadiusMinPct,
   row1TagItems,
@@ -24,6 +25,7 @@ export function RowOneLeft({
   | 'row1LeftAccent'
   | 'row1LeftAccentCustomHex'
   | 'row1LeftTitle'
+  | 'row1LeftTitleHref'
   | 'row1OrbitRadiusMaxPct'
   | 'row1OrbitRadiusMinPct'
   | 'row1TagItems'
@@ -33,16 +35,28 @@ export function RowOneLeft({
   return (
     <div style={accentTextVarStyle(palette.text)}>
       <div className="mb-3 h-0.5 w-full rounded-sm" style={{ backgroundColor: palette.bar }} />
-      {row1LeftTitle && (
-        <h2
-          className="font-serif text-lg font-bold uppercase tracking-wide text-foreground text-center"
-          style={{
-            color: palette.text,
-          }}
-        >
-          {row1LeftTitle}
-        </h2>
-      )}
+      {row1LeftTitle &&
+        (row1LeftTitleHref?.trim() ? (
+          <SmartLink className="block text-center" href={row1LeftTitleHref.trim()}>
+            <h2
+              className="font-serif text-lg font-bold uppercase tracking-wide text-foreground underline-offset-2 hover:underline"
+              style={{
+                color: palette.text,
+              }}
+            >
+              {row1LeftTitle}
+            </h2>
+          </SmartLink>
+        ) : (
+          <h2
+            className="font-serif text-lg font-bold uppercase tracking-wide text-foreground text-center"
+            style={{
+              color: palette.text,
+            }}
+          >
+            {row1LeftTitle}
+          </h2>
+        ))}
       <RowOneCircularInfographic
         row1CenterGraphic={row1CenterGraphic}
         row1OrbitRadiusMaxPct={row1OrbitRadiusMaxPct}

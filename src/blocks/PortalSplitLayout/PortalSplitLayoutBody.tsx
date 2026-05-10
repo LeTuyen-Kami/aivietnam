@@ -21,12 +21,14 @@ export const PortalSplitLayoutBody: React.FC<
     row1LeftAccent,
     row1LeftAccentCustomHex,
     row1LeftTitle,
+    row1LeftTitleHref,
     row1OrbitRadiusMaxPct,
     row1OrbitRadiusMinPct,
     row1RightAccent,
     row1RightAccentCustomHex,
     row1RightCards,
     row1RightTitle,
+    row1RightTitleHref,
     row1TagItems,
     standardSectionsResolved,
   } = props
@@ -55,6 +57,7 @@ export const PortalSplitLayoutBody: React.FC<
                 row1LeftAccent={row1LeftAccent}
                 row1LeftAccentCustomHex={row1LeftAccentCustomHex}
                 row1LeftTitle={row1LeftTitle}
+                row1LeftTitleHref={row1LeftTitleHref}
                 row1OrbitRadiusMaxPct={row1OrbitRadiusMaxPct}
                 row1OrbitRadiusMinPct={row1OrbitRadiusMinPct}
                 row1TagItems={row1TagItems}
@@ -64,6 +67,7 @@ export const PortalSplitLayoutBody: React.FC<
                 row1RightAccentCustomHex={row1RightAccentCustomHex}
                 row1RightCards={row1RightCards}
                 row1RightTitle={row1RightTitle}
+                row1RightTitleHref={row1RightTitleHref}
               />
             </div>
           )}
@@ -76,6 +80,7 @@ export const PortalSplitLayoutBody: React.FC<
               footerPosts={section.footerPosts}
               key={section.id ?? `${section.sectionTitle}-${index}`}
               sectionTitle={section.sectionTitle}
+              sectionTitleHref={section.sectionTitleHref}
               subPosts={section.subPosts}
             />
           ))}

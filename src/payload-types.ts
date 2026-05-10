@@ -562,14 +562,25 @@ export interface AIEcosystemMapBlock {
   centerTopLeftLabel: string;
   centerTopMiddleLabel: string;
   centerTopRightLabel: string;
+  centerTopLeftLabelHref?: string | null;
+  centerTopMiddleLabelHref?: string | null;
+  centerTopRightLabelHref?: string | null;
   centerMiddleLeftLabel: string;
   centerMiddleRightLabel: string;
   centerRightUpperLabel: string;
+  centerMiddleLeftLabelHref?: string | null;
+  centerMiddleRightLabelHref?: string | null;
+  centerRightUpperLabelHref?: string | null;
   centerBottomLeftLabel: string;
   centerBottomMiddleLabel: string;
   centerBottomRightLabel: string;
+  centerBottomLeftLabelHref?: string | null;
+  centerBottomMiddleLabelHref?: string | null;
+  centerBottomRightLabelHref?: string | null;
   centerBottomFarLeftLabel: string;
   centerBottomFarRightLabel: string;
+  centerBottomFarLeftLabelHref?: string | null;
+  centerBottomFarRightLabelHref?: string | null;
   forumCard: {
     title: string;
     image: number | Media;
@@ -1139,6 +1150,10 @@ export interface PortalSplitLayoutBlock {
    */
   leftLatestTo?: number | null;
   row1LeftTitle?: string | null;
+  /**
+   * Optional URL for left column title.
+   */
+  row1LeftTitleHref?: string | null;
   row1LeftAccent?: ('gold' | 'yellow' | 'green' | 'purple' | 'blue' | 'red' | 'teal') | null;
   row1LeftAccentCustomHex?: string | null;
   /**
@@ -1178,6 +1193,10 @@ export interface PortalSplitLayoutBlock {
       }[]
     | null;
   row1RightTitle?: string | null;
+  /**
+   * Optional URL for right column title.
+   */
+  row1RightTitleHref?: string | null;
   row1RightAccent?: ('gold' | 'yellow' | 'green' | 'purple' | 'blue' | 'red' | 'teal') | null;
   row1RightAccentCustomHex?: string | null;
   row1RightCards?:
@@ -1194,6 +1213,10 @@ export interface PortalSplitLayoutBlock {
   standardSections?:
     | {
         sectionTitle: string;
+        /**
+         * Optional URL for section title.
+         */
+        sectionTitleHref?: string | null;
         accent: 'gold' | 'yellow' | 'green' | 'purple' | 'blue' | 'red' | 'teal';
         /**
          * Optional HEX override for accent (e.g. #005C5C). Keeps preset when empty.
@@ -2226,14 +2249,25 @@ export interface AIEcosystemMapBlockSelect<T extends boolean = true> {
   centerTopLeftLabel?: T;
   centerTopMiddleLabel?: T;
   centerTopRightLabel?: T;
+  centerTopLeftLabelHref?: T;
+  centerTopMiddleLabelHref?: T;
+  centerTopRightLabelHref?: T;
   centerMiddleLeftLabel?: T;
   centerMiddleRightLabel?: T;
   centerRightUpperLabel?: T;
+  centerMiddleLeftLabelHref?: T;
+  centerMiddleRightLabelHref?: T;
+  centerRightUpperLabelHref?: T;
   centerBottomLeftLabel?: T;
   centerBottomMiddleLabel?: T;
   centerBottomRightLabel?: T;
+  centerBottomLeftLabelHref?: T;
+  centerBottomMiddleLabelHref?: T;
+  centerBottomRightLabelHref?: T;
   centerBottomFarLeftLabel?: T;
   centerBottomFarRightLabel?: T;
+  centerBottomFarLeftLabelHref?: T;
+  centerBottomFarRightLabelHref?: T;
   forumCard?:
     | T
     | {
@@ -2484,6 +2518,7 @@ export interface PortalSplitLayoutBlockSelect<T extends boolean = true> {
   leftLatestFrom?: T;
   leftLatestTo?: T;
   row1LeftTitle?: T;
+  row1LeftTitleHref?: T;
   row1LeftAccent?: T;
   row1LeftAccentCustomHex?: T;
   row1CenterGraphic?: T;
@@ -2505,6 +2540,7 @@ export interface PortalSplitLayoutBlockSelect<T extends boolean = true> {
         id?: T;
       };
   row1RightTitle?: T;
+  row1RightTitleHref?: T;
   row1RightAccent?: T;
   row1RightAccentCustomHex?: T;
   row1RightCards?:
@@ -2519,6 +2555,7 @@ export interface PortalSplitLayoutBlockSelect<T extends boolean = true> {
     | T
     | {
         sectionTitle?: T;
+        sectionTitleHref?: T;
         accent?: T;
         accentCustomHex?: T;
         featuredPost?: T;
@@ -3483,6 +3520,10 @@ export interface GeneralSetting {
   siteName?: string | null;
   siteDescription?: string | null;
   logo?: (number | null) | Media;
+  /**
+   * Destination when clicking the logo. Defaults to /.
+   */
+  logoLink?: string | null;
   favicon?: (number | null) | Media;
   contact?: {
     email?: string | null;
@@ -3655,6 +3696,7 @@ export interface GeneralSettingsSelect<T extends boolean = true> {
   siteName?: T;
   siteDescription?: T;
   logo?: T;
+  logoLink?: T;
   favicon?: T;
   contact?:
     | T

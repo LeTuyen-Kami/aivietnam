@@ -44,6 +44,7 @@ export const PortalSplitLayoutBlockAsync = async (
       footerPosts,
       id: section.id,
       sectionTitle: section.sectionTitle,
+      sectionTitleHref: section.sectionTitleHref,
       subPosts,
     })
   }

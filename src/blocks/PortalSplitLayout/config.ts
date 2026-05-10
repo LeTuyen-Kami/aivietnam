@@ -206,6 +206,20 @@ export const PortalSplitLayout: Block = {
               },
             },
             {
+              name: 'row1LeftTitleHref',
+              type: 'text',
+              label: {
+                en: 'Left column title link',
+                vi: 'Link tiêu đề cột trái',
+              },
+              admin: {
+                description: {
+                  en: 'Optional URL for left column title.',
+                  vi: 'URL tùy chọn cho tiêu đề cột trái.',
+                },
+              },
+            },
+            {
               name: 'row1LeftAccent',
               type: 'select',
               defaultValue: 'teal',
@@ -346,6 +360,20 @@ export const PortalSplitLayout: Block = {
               },
             },
             {
+              name: 'row1RightTitleHref',
+              type: 'text',
+              label: {
+                en: 'Right column title link',
+                vi: 'Link tiêu đề cột phải',
+              },
+              admin: {
+                description: {
+                  en: 'Optional URL for right column title.',
+                  vi: 'URL tùy chọn cho tiêu đề cột phải.',
+                },
+              },
+            },
+            {
               name: 'row1RightAccent',
               type: 'select',
               defaultValue: 'purple',
@@ -417,6 +445,20 @@ export const PortalSplitLayout: Block = {
               label: {
                 en: 'Section title',
                 vi: 'Tiêu đề mục',
+              },
+            },
+            {
+              name: 'sectionTitleHref',
+              type: 'text',
+              label: {
+                en: 'Section title link',
+                vi: 'Link tiêu đề mục',
+              },
+              admin: {
+                description: {
+                  en: 'Optional URL for section title.',
+                  vi: 'URL tùy chọn cho tiêu đề mục.',
+                },
               },
             },
             portalAccentField,

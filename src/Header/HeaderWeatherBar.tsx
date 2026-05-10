@@ -278,7 +278,7 @@ export const HeaderWeatherBar: React.FC<{ isMobile: boolean }> = ({ isMobile }) 
   const renderLabel = () => {
     return (
       <div className="flex shrink-0 items-center gap-4 text-muted-foreground">
-        <span className="block truncate font-medium">{label}</span>
+        <span className="block truncate font-medium text-black">{label}</span>
         <span className="inline-flex items-center gap-1.5">
           <Thermometer className="h-4 w-4 shrink-0 text-orange-500" strokeWidth={2} />
           <span className="tabular-nums text-foreground">{showPlaceholders ? '—' : temp}</span>
@@ -304,7 +304,7 @@ export const HeaderWeatherBar: React.FC<{ isMobile: boolean }> = ({ isMobile }) 
         <AnimatePresence mode="wait" initial={false}>
           <motion.span
             key={showDate ? 'date' : 'location'}
-            className="block truncate font-medium"
+            className="block truncate font-medium text-black"
             initial={{ rotateX: 90, opacity: 0, y: 8 }}
             animate={{ rotateX: 0, opacity: 1, y: 0 }}
             exit={{ rotateX: -90, opacity: 0, y: -8 }}

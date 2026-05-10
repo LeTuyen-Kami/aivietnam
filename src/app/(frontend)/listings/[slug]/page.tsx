@@ -406,7 +406,18 @@ const queryNearbyListings = cache(
 
     const payload = await getPayload({ config: configPromise })
 
-    const areaFilters = normalizedDistrict
+    const areaFilters: Array<
+      | {
+          district: {
+            equals: string
+          }
+        }
+      | {
+          city: {
+            equals: string
+          }
+        }
+    > = normalizedDistrict
       ? [
           {
             district: {

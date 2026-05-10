@@ -40,6 +40,35 @@ type LabelKey =
   | 'centerBottomFarLeftLabel'
   | 'centerBottomFarRightLabel'
 
+type ResolvedLabel = {
+  text: string
+  href: string
+}
+
+type CenterLabelValue =
+  | string
+  | {
+      text?: string | null
+      href?: string | null
+    }
+  | null
+  | undefined
+
+type CenterLabelHrefFieldKey =
+  | 'centerTopLeftLabelHref'
+  | 'centerTopMiddleLabelHref'
+  | 'centerTopRightLabelHref'
+  | 'centerMiddleLeftLabelHref'
+  | 'centerMiddleRightLabelHref'
+  | 'centerRightUpperLabelHref'
+  | 'centerBottomLeftLabelHref'
+  | 'centerBottomMiddleLabelHref'
+  | 'centerBottomRightLabelHref'
+  | 'centerBottomFarLeftLabelHref'
+  | 'centerBottomFarRightLabelHref'
+
+type CenterLabelRestFields = Partial<Record<LabelKey | CenterLabelHrefFieldKey, unknown>>
+
 type ResolvedCard = {
   key: CardKey
   title: string
@@ -102,6 +131,29 @@ function resolveCard(
   return { key, title, href, image }
 }
 
+function resolveLabel(
+  labelValue: CenterLabelValue,
+  hrefValue?: string | null | undefined,
+): ResolvedLabel | null {
+  const text =
+    typeof labelValue === 'string'
+      ? labelValue.trim()
+      : typeof labelValue?.text === 'string'
+        ? labelValue.text.trim()
+        : ''
+
+  const hrefFromLabel =
+    typeof labelValue === 'object' && labelValue && typeof labelValue.href === 'string'
+      ? labelValue.href.trim()
+      : ''
+
+  const href = typeof hrefValue === 'string' ? hrefValue.trim() : hrefFromLabel
+
+  if (!text) return null
+
+  return { text, href }
+}
+
 function OrbitCard({
   card,
   className,
@@ -146,6 +198,34 @@ function OrbitCard({
       )}
     </div>
   )
+}
+
+function CenterLabel({ label }: { label: ResolvedLabel }) {
+  const content = label.text
+
+  if (label.href) {
+    return (
+      <SmartLink className="block" href={label.href}>
+        {content}
+      </SmartLink>
+    )
+  }
+
+  return <>{content}</>
+}
+
+function renderCenterLabel(label: ResolvedLabel | null) {
+  if (!label) return null
+
+  return <CenterLabel label={label} />
+}
+
+function asCenterLabelValue(value: unknown): CenterLabelValue {
+  return value as CenterLabelValue
+}
+
+function asCenterLabelHrefValue(value: unknown): string | null | undefined {
+  return value as string | null | undefined
 }
 
 function CenterImage({ image, href }: { image: MediaType; href?: string | null }) {
@@ -197,22 +277,57 @@ export const AIEcosystemMapBlockComponent: React.FC<Props> = ({
   const labelOrbitRadiusX = 20
   const labelOrbitRadiusY = 22
 
-  const labelMap: Record<LabelKey, string> = {
-    centerTopLeftLabel: rest.centerTopLeftLabel,
-    centerTopMiddleLabel: rest.centerTopMiddleLabel,
-    centerTopRightLabel: rest.centerTopRightLabel,
-    centerMiddleLeftLabel: rest.centerMiddleLeftLabel,
-    centerMiddleRightLabel: rest.centerMiddleRightLabel,
-    centerRightUpperLabel: rest.centerRightUpperLabel,
-    centerBottomLeftLabel: rest.centerBottomLeftLabel,
-    centerBottomMiddleLabel: rest.centerBottomMiddleLabel,
-    centerBottomRightLabel: rest.centerBottomRightLabel,
-    centerBottomFarLeftLabel: rest.centerBottomFarLeftLabel,
-    centerBottomFarRightLabel: rest.centerBottomFarRightLabel,
+  const centerLabelFields = rest as CenterLabelRestFields
+
+  const labelMap: Record<LabelKey, ResolvedLabel | null> = {
+    centerTopLeftLabel: resolveLabel(
+      asCenterLabelValue(centerLabelFields.centerTopLeftLabel),
+      asCenterLabelHrefValue(centerLabelFields.centerTopLeftLabelHref),
+    ),
+    centerTopMiddleLabel: resolveLabel(
+      asCenterLabelValue(centerLabelFields.centerTopMiddleLabel),
+      asCenterLabelHrefValue(centerLabelFields.centerTopMiddleLabelHref),
+    ),
+    centerTopRightLabel: resolveLabel(
+      asCenterLabelValue(centerLabelFields.centerTopRightLabel),
+      asCenterLabelHrefValue(centerLabelFields.centerTopRightLabelHref),
+    ),
+    centerMiddleLeftLabel: resolveLabel(
+      asCenterLabelValue(centerLabelFields.centerMiddleLeftLabel),
+      asCenterLabelHrefValue(centerLabelFields.centerMiddleLeftLabelHref),
+    ),
+    centerMiddleRightLabel: resolveLabel(
+      asCenterLabelValue(centerLabelFields.centerMiddleRightLabel),
+      asCenterLabelHrefValue(centerLabelFields.centerMiddleRightLabelHref),
+    ),
+    centerRightUpperLabel: resolveLabel(
+      asCenterLabelValue(centerLabelFields.centerRightUpperLabel),
+      asCenterLabelHrefValue(centerLabelFields.centerRightUpperLabelHref),
+    ),
+    centerBottomLeftLabel: resolveLabel(
+      asCenterLabelValue(centerLabelFields.centerBottomLeftLabel),
+      asCenterLabelHrefValue(centerLabelFields.centerBottomLeftLabelHref),
+    ),
+    centerBottomMiddleLabel: resolveLabel(
+      asCenterLabelValue(centerLabelFields.centerBottomMiddleLabel),
+      asCenterLabelHrefValue(centerLabelFields.centerBottomMiddleLabelHref),
+    ),
+    centerBottomRightLabel: resolveLabel(
+      asCenterLabelValue(centerLabelFields.centerBottomRightLabel),
+      asCenterLabelHrefValue(centerLabelFields.centerBottomRightLabelHref),
+    ),
+    centerBottomFarLeftLabel: resolveLabel(
+      asCenterLabelValue(centerLabelFields.centerBottomFarLeftLabel),
+      asCenterLabelHrefValue(centerLabelFields.centerBottomFarLeftLabelHref),
+    ),
+    centerBottomFarRightLabel: resolveLabel(
+      asCenterLabelValue(centerLabelFields.centerBottomFarRightLabel),
+      asCenterLabelHrefValue(centerLabelFields.centerBottomFarRightLabelHref),
+    ),
   }
 
   return (
-    <section className={cn(!disableInnerContainer && 'container ')}>
+    <section className={cn(!disableInnerContainer && 'container -mb-10')}>
       <div className="mx-auto max-w-[1180px]">
         <div className="hidden lg:block">
           <h2 className="text-center font-serif text-2xl font-semibold uppercase tracking-[0.08em] text-teal-800 mb-4">
@@ -243,7 +358,7 @@ export const AIEcosystemMapBlockComponent: React.FC<Props> = ({
             })}
 
             {desktopLabelPlacements.map((placement, labelIndex) => {
-              const label = labelMap[placement.key]?.trim()
+              const label = labelMap[placement.key]
               if (!label) return null
 
               const angle =
@@ -260,7 +375,7 @@ export const AIEcosystemMapBlockComponent: React.FC<Props> = ({
                     top: `${top}%`,
                   }}
                 >
-                  {label}
+                  <CenterLabel label={label} />
                 </div>
               )
             })}
@@ -279,40 +394,40 @@ export const AIEcosystemMapBlockComponent: React.FC<Props> = ({
 
             <div className="mx-auto mb-6 grid max-w-[460px] grid-cols-3 gap-x-4 gap-y-3 text-center">
               <div className="text-xl font-medium leading-tight text-foreground sm:text-2xl">
-                {labelMap.centerTopLeftLabel}
+                {renderCenterLabel(labelMap.centerTopLeftLabel)}
               </div>
               <div className="text-xl font-medium leading-tight text-foreground sm:text-2xl">
-                {labelMap.centerTopMiddleLabel}
+                {renderCenterLabel(labelMap.centerTopMiddleLabel)}
               </div>
               <div className="text-xl font-medium leading-tight text-foreground sm:text-2xl">
-                {labelMap.centerTopRightLabel}
+                {renderCenterLabel(labelMap.centerTopRightLabel)}
               </div>
               <div className="text-xl font-medium leading-tight text-foreground sm:text-2xl">
-                {labelMap.centerMiddleLeftLabel}
+                {renderCenterLabel(labelMap.centerMiddleLeftLabel)}
               </div>
               <div className="row-span-2 flex items-center justify-center">
                 <CenterImage href={centerImageHref} image={centerMedia} />
               </div>
               <div className="text-xl font-medium leading-tight text-foreground sm:text-2xl">
-                {labelMap.centerMiddleRightLabel}
+                {renderCenterLabel(labelMap.centerMiddleRightLabel)}
               </div>
               <div className="text-xl font-medium leading-tight text-foreground sm:text-2xl">
-                {labelMap.centerBottomLeftLabel}
+                {renderCenterLabel(labelMap.centerBottomLeftLabel)}
               </div>
               <div className="text-xl font-medium leading-tight text-foreground sm:text-2xl">
-                {labelMap.centerRightUpperLabel}
+                {renderCenterLabel(labelMap.centerRightUpperLabel)}
               </div>
               <div className="text-xl font-medium leading-tight text-foreground sm:text-2xl">
-                {labelMap.centerBottomFarLeftLabel}
+                {renderCenterLabel(labelMap.centerBottomFarLeftLabel)}
               </div>
               <div className="text-xl font-medium leading-tight text-foreground sm:text-2xl">
-                {labelMap.centerBottomMiddleLabel}
+                {renderCenterLabel(labelMap.centerBottomMiddleLabel)}
               </div>
               <div className="text-xl font-medium leading-tight text-foreground sm:text-2xl">
-                {labelMap.centerBottomRightLabel}
+                {renderCenterLabel(labelMap.centerBottomRightLabel)}
               </div>
               <div className="col-start-3 text-xl font-medium leading-tight text-foreground sm:text-2xl">
-                {labelMap.centerBottomFarRightLabel}
+                {renderCenterLabel(labelMap.centerBottomFarRightLabel)}
               </div>
             </div>
 

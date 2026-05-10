@@ -9,6 +9,7 @@ import type { GeneralSetting, Header, Media } from '@/payload-types'
 
 import { CMSLink } from '@/components/Link'
 import { Logo } from '@/components/Logo/Logo'
+import { SmartLink } from '@/components/SmartLink'
 import { useAuth } from '@/providers/Auth'
 import { getMediaUrl } from '@/utilities/getMediaUrl'
 import { MenuIcon, SearchIcon, UserIcon } from 'lucide-react'
@@ -69,6 +70,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
       : isMobile
         ? '1.8 / 1'
         : '2524 / 452'
+  const logoHref = generalSettings?.logoLink?.trim() || '/'
   const bannerWrapperStyle = {
     aspectRatio: bannerAspectRatio,
   }
@@ -177,9 +179,12 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
                   <SearchIcon className="h-5 w-5" />
                 </Link>
               </div>
-              <Link href="/" className="flex min-w-0 flex-1 items-center justify-center px-2">
+              <SmartLink
+                href={logoHref}
+                className="flex min-w-0 flex-1 items-center justify-center px-2"
+              >
                 {logo}
-              </Link>
+              </SmartLink>
               <div className="flex min-w-[88px] justify-end">{mobileAccountControl}</div>
             </div>
           </header>
@@ -215,7 +220,9 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
               <div className="w-1/3 min-w-0 pr-2">
                 <HeaderWeatherBar isMobile={false} />
               </div>
-              <div className="flex flex-1 items-center justify-center">{logo}</div>
+              <div className="flex flex-1 items-center justify-center">
+                <SmartLink href={logoHref}>{logo}</SmartLink>
+              </div>
               <div className="flex w-1/3 items-center justify-end gap-2">
                 <Link href="/search">
                   <div className="flex items-center rounded-full border border-border px-4 py-2">
@@ -231,7 +238,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
             </div>
 
             <div className="bg-[#F1F1F1]">
-              <div className="container py-2">
+              <div className="container h-9 flex items-center justify-center">
                 <HeaderNav data={data} />
               </div>
             </div>

@@ -15,5 +15,6 @@ export type ResolvedSection = {
   footerPosts: Post[]
   id?: string | null
   sectionTitle: string
+  sectionTitleHref?: string | null
   subPosts: Post[]
 }

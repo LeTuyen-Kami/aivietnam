@@ -1,11 +1,11 @@
 import type { GlobalConfig } from 'payload'
 
-import { revalidateGeneralSettings } from './hooks/revalidateGeneralSettings'
 import {
   FixedToolbarFeature,
   InlineToolbarFeature,
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
+import { revalidateGeneralSettings } from './hooks/revalidateGeneralSettings'
 
 export const GeneralSettings: GlobalConfig = {
   slug: 'general-settings',
@@ -66,6 +66,22 @@ export const GeneralSettings: GlobalConfig = {
           },
           admin: {
             width: '50%',
+          },
+        },
+        {
+          name: 'logoLink',
+          type: 'text',
+          label: {
+            en: 'Logo link',
+            vi: 'Link logo',
+          },
+          defaultValue: '/',
+          admin: {
+            width: '50%',
+            description: {
+              en: 'Destination when clicking the logo. Defaults to /.',
+              vi: 'Đường dẫn khi nhấn vào logo. Mặc định là /.',
+            },
           },
         },
         {
@@ -237,10 +253,8 @@ export const GeneralSettings: GlobalConfig = {
       },
       admin: {
         description: {
-          en:
-            'Fallback when a post leaves footer or sidebar ad images empty. Per-post values always win.',
-          vi:
-            'Dùng khi bài viết không chọn ảnh footer hoặc quảng cáo sidebar. Ảnh/link trên từng bài luôn được ưu tiên.',
+          en: 'Fallback when a post leaves footer or sidebar ad images empty. Per-post values always win.',
+          vi: 'Dùng khi bài viết không chọn ảnh footer hoặc quảng cáo sidebar. Ảnh/link trên từng bài luôn được ưu tiên.',
         },
       },
       fields: [

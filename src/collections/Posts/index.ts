@@ -10,8 +10,8 @@ import {
   HorizontalRuleFeature,
   IndentFeature,
   InlineToolbarFeature,
-  LinkFeature,
   lexicalEditor,
+  LinkFeature,
   RelationshipFeature,
   TextStateFeature,
   UploadFeature,
@@ -188,6 +188,7 @@ export const Posts: CollectionConfig<'posts'> = {
               type: 'relationship',
               admin: {
                 position: 'sidebar',
+                sortOptions: '-updatedAt',
               },
               filterOptions: ({ id }) => {
                 return {

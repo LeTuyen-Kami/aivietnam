@@ -3,6 +3,7 @@ import Link from 'next/link'
 import type { Post } from '@/payload-types'
 
 import { Media as MediaComponent } from '@/components/Media'
+import { SmartLink } from '@/components/SmartLink'
 
 import { cn } from '@/utilities/ui'
 import { accentHover, accentTextVarStyle, getAccentStyleWithCustomHex } from './accent'
@@ -15,6 +16,7 @@ export function StandardSection({
   featuredPost,
   footerPosts,
   sectionTitle,
+  sectionTitleHref,
   subPosts,
 }: {
   accent: SectionAccent
@@ -22,6 +24,7 @@ export function StandardSection({
   featuredPost: Post | null
   footerPosts: Post[]
   sectionTitle: string
+  sectionTitleHref?: string | null
   subPosts: Post[]
 }) {
   const palette = getAccentStyleWithCustomHex(accent, accentCustomHex)
@@ -33,7 +36,27 @@ export function StandardSection({
   return (
     <section style={accentTextVarStyle(palette.text)}>
       <div className="mb-4 h-0.5 w-full rounded-sm" style={{ backgroundColor: palette.bar }} />
-      <h2 className="mb-6 font-serif text-xl font-bold text-foreground">{sectionTitle}</h2>
+      {sectionTitleHref?.trim() ? (
+        <SmartLink className="mb-6 block" href={sectionTitleHref.trim()}>
+          <h2
+            className="font-serif text-xl font-bold text-foreground underline-offset-2 hover:underline"
+            style={{
+              color: palette.bar,
+            }}
+          >
+            {sectionTitle}
+          </h2>
+        </SmartLink>
+      ) : (
+        <h2
+          className="mb-6 font-serif text-xl font-bold text-foreground"
+          style={{
+            color: palette.bar,
+          }}
+        >
+          {sectionTitle}
+        </h2>
+      )}
 
       <div className="group/feat mb-8 grid gap-4 md:grid-cols-2 md:gap-6">
         <Link className="block overflow-hidden md:col-span-1" href={`/posts/${featuredPost?.slug}`}>

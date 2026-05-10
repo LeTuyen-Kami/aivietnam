@@ -43,6 +43,12 @@ const makeCenterLabelField = (name: string, label: string, defaultValue: string)
   defaultValue,
 })
 
+const makeCenterLabelHrefField = (name: string, label: string): Field => ({
+  name,
+  type: 'text',
+  label,
+})
+
 export const AIEcosystemMap: Block = {
   slug: 'aiEcosystemMap',
   interfaceName: 'AIEcosystemMapBlock',
@@ -97,6 +103,14 @@ export const AIEcosystemMap: Block = {
         {
           type: 'row',
           fields: [
+            makeCenterLabelHrefField('centerTopLeftLabelHref', 'Top left label link'),
+            makeCenterLabelHrefField('centerTopMiddleLabelHref', 'Top middle label link'),
+            makeCenterLabelHrefField('centerTopRightLabelHref', 'Top right label link'),
+          ],
+        },
+        {
+          type: 'row',
+          fields: [
             makeCenterLabelField('centerMiddleLeftLabel', 'Middle left label', 'Ứng dụng'),
             makeCenterLabelField('centerMiddleRightLabel', 'Middle right label', 'Thương mại'),
             makeCenterLabelField('centerRightUpperLabel', 'Right upper label', 'Podcasts'),
@@ -105,9 +119,29 @@ export const AIEcosystemMap: Block = {
         {
           type: 'row',
           fields: [
+            makeCenterLabelHrefField('centerMiddleLeftLabelHref', 'Middle left label link'),
+            makeCenterLabelHrefField('centerMiddleRightLabelHref', 'Middle right label link'),
+            makeCenterLabelHrefField('centerRightUpperLabelHref', 'Right upper label link'),
+          ],
+        },
+        {
+          type: 'row',
+          fields: [
             makeCenterLabelField('centerBottomLeftLabel', 'Bottom left label', 'Hội thảo'),
-            makeCenterLabelField('centerBottomMiddleLabel', 'Bottom middle label', 'AI xoá đói tư duy'),
+            makeCenterLabelField(
+              'centerBottomMiddleLabel',
+              'Bottom middle label',
+              'AI xoá đói tư duy',
+            ),
             makeCenterLabelField('centerBottomRightLabel', 'Bottom right label', 'Video'),
+          ],
+        },
+        {
+          type: 'row',
+          fields: [
+            makeCenterLabelHrefField('centerBottomLeftLabelHref', 'Bottom left label link'),
+            makeCenterLabelHrefField('centerBottomMiddleLabelHref', 'Bottom middle label link'),
+            makeCenterLabelHrefField('centerBottomRightLabelHref', 'Bottom right label link'),
           ],
         },
         {
@@ -115,6 +149,16 @@ export const AIEcosystemMap: Block = {
           fields: [
             makeCenterLabelField('centerBottomFarLeftLabel', 'Bottom far left label', 'Sàn AI'),
             makeCenterLabelField('centerBottomFarRightLabel', 'Bottom far right label', 'Ảnh'),
+          ],
+        },
+        {
+          type: 'row',
+          fields: [
+            makeCenterLabelHrefField('centerBottomFarLeftLabelHref', 'Bottom far left label link'),
+            makeCenterLabelHrefField(
+              'centerBottomFarRightLabelHref',
+              'Bottom far right label link',
+            ),
           ],
         },
       ],
@@ -140,7 +184,11 @@ export const AIEcosystemMap: Block = {
         makeOrbitCardField('eventsCard', 'Events card', 'Lịch sự kiện AI Việt Nam'),
         makeOrbitCardField('startupCard', 'Startup card', 'Startup & Đầu tư'),
         makeOrbitCardField('cooperationCard', 'Cooperation card', 'Hợp tác Quốc tế'),
-        makeOrbitCardField('communityProjectsCard', 'Community projects card', 'Dự án AI cộng đồng'),
+        makeOrbitCardField(
+          'communityProjectsCard',
+          'Community projects card',
+          'Dự án AI cộng đồng',
+        ),
       ],
     },
   ],
