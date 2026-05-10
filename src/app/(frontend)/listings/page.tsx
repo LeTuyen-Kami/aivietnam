@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-import configPromise from '@payload-config'
 import type { Listing, ListingCategory } from '@/payload-types'
+import configPromise from '@payload-config'
 import type { Where } from 'payload'
 import { getPayload } from 'payload'
 
@@ -214,19 +214,17 @@ export default async function ListingsPage({ searchParams: searchParamsPromise }
   )
 
   return (
-    <div className="bg-slate-50/70 pb-20 pt-24">
+    <div className="bg-slate-50/70 pb-10 pt-10">
       <section className="container">
-        <h1 className="text-4xl font-semibold tracking-tight text-balance md:text-6xl">
-          {heading}
-        </h1>
-        <p className="mt-3 max-w-3xl text-base text-muted-foreground md:text-lg">
+        <h1 className="text-xl font-semibold tracking-tight text-balance">{heading}</h1>
+        <p className="mt-3 max-w-3xl text-sm text-muted-foreground">
           Lọc theo loại tin, chuyên môn và khu vực để tìm đúng nhu cầu nhanh hơn.
         </p>
       </section>
 
       <section className="container mt-8">
-        <div className="rounded-[28px] border border-border bg-background p-5 shadow-sm md:p-6">
-          <div className="flex flex-wrap gap-x-6 gap-y-4 text-[15px] leading-6">
+        <div className="rounded-lg border border-border bg-background p-4 shadow-sm">
+          <div className="flex flex-wrap gap-x-4 gap-y-0 text-sm leading-6">
             <FilterChip
               active={!listingType}
               count={totalListingsMatchingPrimaryFilters}
@@ -251,9 +249,9 @@ export default async function ListingsPage({ searchParams: searchParamsPromise }
             ))}
           </div>
 
-          <div className="my-5 border-t border-border" />
+          <div className="my-2 border-t border-border" />
 
-          <div className="flex flex-wrap gap-x-6 gap-y-4 text-[15px] leading-6">
+          <div className="flex flex-wrap gap-x-4 gap-y-4 text-sm leading-6">
             <FilterChip
               active={!category}
               count={Object.values(categoryCounts).reduce((sum, count) => sum + count, 0)}
@@ -278,7 +276,7 @@ export default async function ListingsPage({ searchParams: searchParamsPromise }
             ))}
           </div>
 
-          <div className="my-5 border-t border-border" />
+          <div className="my-2 border-t border-border" />
 
           <form
             className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto]"

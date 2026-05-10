@@ -65,7 +65,6 @@
   @variant md {
     .container {
       max-width: var(--breakpoint-md);
-      padding-inline: 2rem;
     }
   }
 

@@ -1,7 +1,9 @@
 'use client'
 
 import { cn } from '@/utilities/ui'
-import React, { useEffect, useState } from 'react'
+import { Droplets, Thermometer } from 'lucide-react'
+import { AnimatePresence, motion } from 'motion/react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 const DIVISIONS_URL = 'https://dbthoitiet.com/api/divisions?depth=1'
 /** Giống curl từ máy user — CDN nhìn đúng IP trình duyệt; DB VN thường khớp thực tế hơn ip-api. */
@@ -178,54 +180,36 @@ async function fetchCoordsFromGeoApiFallback(): Promise<{ lat: number; lng: numb
   return { lat: body.lat, lng: body.lng }
 }
 
-function ThermometerIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <path
-        d="M10 3v10.2a4 4 0 1 0 4 0V3a2 2 0 1 0-4 0Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-      <circle cx="12" cy="17" r="3.5" fill="#ef4444" />
-    </svg>
-  )
-}
+function formatVietnameseDate(date: Date): string {
+  const weekday = new Intl.DateTimeFormat('vi-VN', { weekday: 'long' }).format(date)
+  const dayMonthYear = new Intl.DateTimeFormat('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(date)
 
-function DropletIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <path
-        d="M12 21c-3.5 0-6-2.2-6-5.5C6 11.8 12 4 12 4s6 7.8 6 11.5C18 18.8 15.5 21 12 21Z"
-        fill="#38bdf8"
-        stroke="#0ea5e9"
-        strokeWidth="1"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
+  return `${weekday.charAt(0).toUpperCase()}${weekday.slice(1)}, ${dayMonthYear}`
 }
 
 export const HeaderWeatherBar: React.FC<{ isMobile: boolean }> = ({ isMobile }) => {
   const [label, setLabel] = useState('Đang tải địa điểm...')
   const [temp, setTemp] = useState<string | null>(null)
   const [humidity, setHumidity] = useState<string | null>(null)
+  const [showDate, setShowDate] = useState(false)
+  const [now, setNow] = useState(() => new Date())
+
+  const dateLabel = useMemo(() => formatVietnameseDate(now), [now])
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setShowDate((prev) => !prev)
+      setNow(new Date())
+    }, 5000)
+
+    return () => {
+      window.clearInterval(interval)
+    }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -291,6 +275,22 @@ export const HeaderWeatherBar: React.FC<{ isMobile: boolean }> = ({ isMobile }) 
 
   const showPlaceholders = temp === null || humidity === null
 
+  const renderLabel = () => {
+    return (
+      <div className="flex shrink-0 items-center gap-4 text-muted-foreground">
+        <span className="block truncate font-medium">{label}</span>
+        <span className="inline-flex items-center gap-1.5">
+          <Thermometer className="h-4 w-4 shrink-0 text-orange-500" strokeWidth={2} />
+          <span className="tabular-nums text-foreground">{showPlaceholders ? '—' : temp}</span>
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <Droplets className="h-4 w-4 shrink-0 text-sky-500" strokeWidth={2} />
+          <span className="tabular-nums text-foreground">{showPlaceholders ? '—%' : humidity}</span>
+        </span>
+      </div>
+    )
+  }
+
   return (
     <div
       className={cn(
@@ -300,16 +300,20 @@ export const HeaderWeatherBar: React.FC<{ isMobile: boolean }> = ({ isMobile }) 
       role="status"
       aria-live="polite"
     >
-      <span className="truncate font-medium">{label}</span>
-      <div className="flex shrink-0 items-center gap-4 text-muted-foreground">
-        <span className="inline-flex items-center gap-1">
-          <ThermometerIcon className="shrink-0 text-foreground/70" />
-          <span className="tabular-nums text-foreground">{showPlaceholders ? '—' : temp}</span>
-        </span>
-        <span className="inline-flex items-center gap-1">
-          <DropletIcon className="shrink-0" />
-          <span className="tabular-nums text-foreground">{showPlaceholders ? '—%' : humidity}</span>
-        </span>
+      <div className="min-w-0 overflow-hidden">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.span
+            key={showDate ? 'date' : 'location'}
+            className="block truncate font-medium"
+            initial={{ rotateX: 90, opacity: 0, y: 8 }}
+            animate={{ rotateX: 0, opacity: 1, y: 0 }}
+            exit={{ rotateX: -90, opacity: 0, y: -8 }}
+            transition={{ duration: 0.45, ease: 'easeInOut' }}
+            style={{ transformOrigin: 'center center', transformStyle: 'preserve-3d' }}
+          >
+            {showDate ? dateLabel : renderLabel()}
+          </motion.span>
+        </AnimatePresence>
       </div>
     </div>
   )

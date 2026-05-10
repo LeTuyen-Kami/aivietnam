@@ -114,12 +114,12 @@ export const FeaturedPostsSideMediaBlockComponent: React.FC<Props> = ({
             {!!featuredPost && (
               <article className="overflow-hidden sm:col-span-3">
                 <Link
-                  className="group grid grid-cols-1 md:grid-cols-2"
+                  className="group grid grid-cols-1 md:grid-cols-3"
                   href={`/posts/${featuredPost?.slug}`}
                 >
                   {typeof featuredPost?.meta?.image === 'object' && (
                     <Media
-                      className="h-full min-h-48 overflow-hidden md:min-h-0"
+                      className="h-full min-h-48 overflow-hidden md:min-h-0 md:col-span-2 aspect-video"
                       imgClassName="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
                       resource={featuredPost.meta.image}
                     />
@@ -167,8 +167,8 @@ export const FeaturedPostsSideMediaBlockComponent: React.FC<Props> = ({
             const raw = typeof sideMediaHref === 'string' ? sideMediaHref.trim() : ''
             const shellClass = 'group relative block overflow-hidden w-full h-full min-h-[320px]'
             const imgClass = raw
-              ? 'h-full w-full object-contain transition-transform duration-300 ease-out group-hover:scale-105'
-              : 'h-full w-full object-contain'
+              ? 'h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105'
+              : 'h-full w-full object-cover'
             const inner = (
               <Image
                 alt={_sideMedia?.alt || ''}

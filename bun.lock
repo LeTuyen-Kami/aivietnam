@@ -26,6 +26,7 @@
         "@radix-ui/react-select": "^2.2.6",
         "@radix-ui/react-slot": "^1.2.4",
         "@rumess/payload-audit-log": "^1.1.0",
+        "@stream-io/audio-filters-web": "^0.7.3",
         "@stream-io/node-sdk": "^0.7.54",
         "@stream-io/video-react-sdk": "^1.35.2",
         "@tanstack/react-query": "^5.99.1",
@@ -816,6 +817,8 @@
     "@smithy/uuid": ["@smithy/uuid@1.1.2", "", { "dependencies": { "tslib": "^2.6.2" } }, "sha512-O/IEdcCUKkubz60tFbGA7ceITTAJsty+lBjNoorP4Z6XRqaFb/OjQjZODophEcuq68nKm6/0r+6/lLQ+XVpk8g=="],
 
     "@standard-schema/spec": ["@standard-schema/spec@1.1.0", "", {}, "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="],
+
+    "@stream-io/audio-filters-web": ["@stream-io/audio-filters-web@0.7.3", "", { "dependencies": { "wasm-feature-detect": "^1.8.0" } }, "sha512-uoMZn3SRaAQDwFf4UozvKrVAFT9JA2F1VOxR7lOQIk3GTdXychZIXRGJf4927wrzdMvP+vAeSXRA1tu4c1Sx7A=="],
 
     "@stream-io/logger": ["@stream-io/logger@2.0.0", "", {}, "sha512-cH9Gi/lAeDjLWB2J9xhPtiNOyRNNO9M46uT7507wT3MCouZNdlXDu/vgiGVhu3I/Tg7sG4ePlG5aHefJ6xjgmw=="],
 

@@ -2,7 +2,7 @@
 
 import { CalendarDays, ExternalLink, Loader2, Radio, Video, WandSparkles, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { Media } from '@/components/Media'
@@ -89,6 +89,16 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
   const router = useRouter()
   const [isMounted, setIsMounted] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
+  const [buttonY, setButtonY] = useState(0)
+  const [scrollOffsetY, setScrollOffsetY] = useState(0)
+  const [magneticOffset, setMagneticOffset] = useState({ x: 0, y: 0 })
+  const [isDraggingButton, setIsDraggingButton] = useState(false)
+  const buttonRef = useRef<HTMLButtonElement | null>(null)
+  const dragStateRef = useRef<{ pointerId: number | null; startY: number; originY: number }>({
+    pointerId: null,
+    startY: 0,
+    originY: 0,
+  })
   const [title, setTitle] = useState('')
   const [slug, setSlug] = useState('')
   const [descriptionValue, setDescriptionValue] = useState('')
@@ -102,6 +112,114 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
   useEffect(() => {
     setIsMounted(true)
   }, [])
+
+  useEffect(() => {
+    if (!isMounted || typeof window === 'undefined') return
+
+    const updateButtonBounds = () => {
+      const viewportHeight = window.innerHeight
+      const defaultTop = Math.round(viewportHeight * 0.25 - 28)
+      const minY = 16
+      const maxY = Math.max(16, viewportHeight - 72)
+
+      setButtonY((current) => {
+        if (current === 0) {
+          return Math.min(Math.max(defaultTop, minY), maxY)
+        }
+
+        return Math.min(Math.max(current, minY), maxY)
+      })
+    }
+
+    let previousScrollY = window.scrollY
+    let animationFrame = 0
+
+    const handleScroll = () => {
+      const nextScrollY = window.scrollY
+      const delta = nextScrollY - previousScrollY
+      previousScrollY = nextScrollY
+
+      if (animationFrame) {
+        window.cancelAnimationFrame(animationFrame)
+      }
+
+      setScrollOffsetY((current) => current * 0.55)
+
+      animationFrame = window.requestAnimationFrame(() => {
+        setScrollOffsetY(Math.max(-18, Math.min(18, delta * 0.35)))
+      })
+    }
+
+    updateButtonBounds()
+    window.addEventListener('resize', updateButtonBounds)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+
+    return () => {
+      window.removeEventListener('resize', updateButtonBounds)
+      window.removeEventListener('scroll', handleScroll)
+      if (animationFrame) {
+        window.cancelAnimationFrame(animationFrame)
+      }
+    }
+  }, [isMounted])
+
+  useEffect(() => {
+    if (!scrollOffsetY) return
+
+    const timeout = window.setTimeout(() => {
+      setScrollOffsetY((current) => current * 0.45)
+    }, 120)
+
+    return () => window.clearTimeout(timeout)
+  }, [scrollOffsetY])
+
+  useEffect(() => {
+    if (!isMounted || typeof window === 'undefined') return
+
+    const magneticRadius = 160
+    const magneticStrength = 0.18
+    const maxOffset = 16
+
+    const handlePointerMove = (event: PointerEvent) => {
+      if (isDraggingButton || !buttonRef.current || event.pointerType === 'touch') return
+
+      const rect = buttonRef.current.getBoundingClientRect()
+      const centerX = rect.left + rect.width / 2
+      const centerY = rect.top + rect.height / 2
+      const deltaX = event.clientX - centerX
+      const deltaY = event.clientY - centerY
+      const distance = Math.hypot(deltaX, deltaY)
+
+      if (distance >= magneticRadius) {
+        setMagneticOffset((current) =>
+          Math.abs(current.x) < 0.5 && Math.abs(current.y) < 0.5 ? current : { x: 0, y: 0 },
+        )
+        return
+      }
+
+      const easedFalloff = Math.pow(1 - distance / magneticRadius, 1.6)
+      setMagneticOffset({
+        x: Math.max(-maxOffset, Math.min(maxOffset, deltaX * magneticStrength * easedFalloff)),
+        y: Math.max(-maxOffset, Math.min(maxOffset, deltaY * magneticStrength * easedFalloff)),
+      })
+    }
+
+    const resetMagneticOffset = () => {
+      setMagneticOffset({ x: 0, y: 0 })
+    }
+
+    window.addEventListener('pointermove', handlePointerMove, { passive: true })
+    window.addEventListener('pointerleave', resetMagneticOffset)
+    window.addEventListener('pointercancel', resetMagneticOffset)
+    window.addEventListener('blur', resetMagneticOffset)
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerleave', resetMagneticOffset)
+      window.removeEventListener('pointercancel', resetMagneticOffset)
+      window.removeEventListener('blur', resetMagneticOffset)
+    }
+  }, [isDraggingButton, isMounted])
 
   useEffect(() => {
     if (!isOpen) return
@@ -180,6 +298,82 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
       setIsSubmitting(false)
     }
   }
+
+  const minButtonY = 16
+  const maxButtonY = typeof window === 'undefined' ? 16 : Math.max(16, window.innerHeight - 72)
+
+  const handleButtonPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+    dragStateRef.current = {
+      pointerId: event.pointerId,
+      startY: event.clientY,
+      originY: buttonY,
+    }
+    setIsDraggingButton(false)
+    event.currentTarget.setPointerCapture(event.pointerId)
+  }
+
+  const handleButtonPointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (dragStateRef.current.pointerId !== event.pointerId) return
+
+    const deltaY = event.clientY - dragStateRef.current.startY
+    if (!isDraggingButton && Math.abs(deltaY) > 4) {
+      setIsDraggingButton(true)
+    }
+
+    setButtonY(Math.min(Math.max(dragStateRef.current.originY + deltaY, minButtonY), maxButtonY))
+  }
+
+  const handleButtonPointerEnd = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (dragStateRef.current.pointerId !== event.pointerId) return
+
+    dragStateRef.current = {
+      pointerId: null,
+      startY: 0,
+      originY: 0,
+    }
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+
+    setMagneticOffset({ x: 0, y: 0 })
+  }
+
+  const handleOpenButtonClick = () => {
+    if (isDraggingButton) {
+      setIsDraggingButton(false)
+      return
+    }
+
+    setIsOpen(true)
+  }
+
+  const floatingButton = isMounted
+    ? createPortal(
+        <Button
+          ref={buttonRef}
+          aria-controls="livestream-admin-panel-modal"
+          aria-expanded={isOpen}
+          aria-haspopup="dialog"
+          className="fixed right-6 z-[10000] h-14 w-14 rounded-full shadow-xl shadow-black/20 transition-transform duration-300 ease-out hover:scale-105 hover:cursor-pointer active:scale-95 touch-none"
+          onClick={handleOpenButtonClick}
+          onPointerDown={handleButtonPointerDown}
+          onPointerMove={handleButtonPointerMove}
+          onPointerUp={handleButtonPointerEnd}
+          onPointerCancel={handleButtonPointerEnd}
+          size="icon"
+          style={{
+            top: buttonY,
+            transform: `translate3d(${magneticOffset.x}px, ${scrollOffsetY + magneticOffset.y}px, 0)`,
+          }}
+          type="button"
+        >
+          <WandSparkles className="h-6 w-6" aria-hidden />
+          <span className="sr-only">Mở quản lý livestream</span>
+        </Button>,
+        document.body,
+      )
+    : null
 
   const modalContent =
     isMounted && isOpen
@@ -491,20 +685,8 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
 
   return (
     <>
-      <Button
-        aria-controls="livestream-admin-panel-modal"
-        aria-expanded={isOpen}
-        aria-haspopup="dialog"
-        className="fixed right-6 top-1/4 z-40 h-14 w-14 -translate-y-1/2 rounded-full shadow-xl shadow-black/20"
-        onClick={() => setIsOpen(true)}
-        size="icon"
-        type="button"
-      >
-        <WandSparkles className="h-6 w-6" aria-hidden />
-        <span className="sr-only">Mở quản lý livestream</span>
-      </Button>
-
       {modalContent}
+      {floatingButton}
     </>
   )
 }

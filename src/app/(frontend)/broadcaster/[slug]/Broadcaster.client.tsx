@@ -1,14 +1,30 @@
 'use client'
 
+import { NoiseCancellation } from '@stream-io/audio-filters-web'
 import {
   LivestreamLayout,
+  NoiseCancellationProvider,
   StreamCall,
   StreamVideo,
   StreamVideoClient,
+  useCallStateHooks,
+  useNoiseCancellation,
   type Call,
 } from '@stream-io/video-react-sdk'
 import '@stream-io/video-react-sdk/dist/css/styles.css'
-import { AlertCircle, Copy, ExternalLink, Radio, Square, Video, WandSparkles } from 'lucide-react'
+import {
+  AlertCircle,
+  Copy,
+  ExternalLink,
+  Mic,
+  MicOff,
+  Radio,
+  Shield,
+  Square,
+  Video,
+  VideoOff,
+  WandSparkles,
+} from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { LiveViewerEngagement } from '@/app/(frontend)/live/[slug]/LiveViewerEngagement.client'
@@ -90,6 +106,73 @@ function BroadcasterStatePanel({
   )
 }
 
+function StudioDeviceControls() {
+  const { useCameraState, useMicrophoneState } = useCallStateHooks()
+  const { camera, isMute: isCameraMute } = useCameraState()
+  const { microphone, isMute: isMicrophoneMute } = useMicrophoneState()
+  const {
+    isEnabled: isNoiseCancellationEnabled,
+    isSupported: isNoiseCancellationSupported,
+    setEnabled,
+  } = useNoiseCancellation()
+
+  return (
+    <div className="absolute bottom-3 left-3 right-3 z-20 flex flex-wrap items-center gap-2 sm:bottom-6 sm:left-6 sm:right-6">
+      <Button
+        className="gap-2 border-white/15 bg-black/55 text-white backdrop-blur"
+        onClick={() => {
+          void microphone.toggle()
+        }}
+        size="sm"
+        type="button"
+        variant="outline"
+      >
+        {isMicrophoneMute ? (
+          <MicOff className="h-4 w-4" aria-hidden />
+        ) : (
+          <Mic className="h-4 w-4" aria-hidden />
+        )}
+        {isMicrophoneMute ? 'Bật mic' : 'Tắt mic'}
+      </Button>
+
+      <Button
+        className="gap-2 border-white/15 bg-black/55 text-white backdrop-blur"
+        onClick={() => {
+          void camera.toggle()
+        }}
+        size="sm"
+        type="button"
+        variant="outline"
+      >
+        {isCameraMute ? (
+          <VideoOff className="h-4 w-4" aria-hidden />
+        ) : (
+          <Video className="h-4 w-4" aria-hidden />
+        )}
+        {isCameraMute ? 'Bật camera' : 'Tắt camera'}
+      </Button>
+
+      <Button
+        className="gap-2 border-white/15 bg-black/55 text-white backdrop-blur disabled:border-white/10 disabled:text-white/45"
+        disabled={isNoiseCancellationSupported !== true}
+        onClick={() => {
+          void setEnabled(!isNoiseCancellationEnabled)
+        }}
+        size="sm"
+        type="button"
+        variant="outline"
+      >
+        <Shield className="h-4 w-4" aria-hidden />
+        {isNoiseCancellationSupported !== true
+          ? 'Noise cancellation không hỗ trợ'
+          : isNoiseCancellationEnabled
+            ? 'Tắt noise cancellation'
+            : 'Bật noise cancellation'}
+      </Button>
+    </div>
+  )
+}
+
 export function BroadcasterClient({
   livestream,
   streamApiKey,
@@ -112,6 +195,7 @@ export function BroadcasterClient({
   })
   const [client, setClient] = useState<StreamVideoClient | null>(null)
   const [call, setCall] = useState<Call | null>(null)
+  const noiseCancellation = useMemo(() => new NoiseCancellation(), [])
 
   const tokenProvider = useCallback(async () => {
     const response = await fetch('/api/stream/broadcaster-token', {
@@ -152,6 +236,8 @@ export function BroadcasterClient({
           tokenProvider,
         })
         const nextCall = nextClient.call(callState.callType, callState.callId)
+        await nextCall.microphone.enable()
+        await nextCall.camera.enable()
         await nextCall.join({ create: false })
         if (typeof nextCall.goLive === 'function') {
           await nextCall.goLive()
@@ -231,10 +317,12 @@ export function BroadcasterClient({
       if (!response.ok) {
         throw new Error(body.error ?? 'Không thể kết thúc livestream')
       }
-      if (call) {
-        await call.endCall().catch(() => null)
-      }
+
       setCallState((prev) => ({ ...prev, status: 'ended' }))
+
+      if (call) {
+        void call.endCall().catch(() => null)
+      }
     } catch (endError) {
       setError(endError instanceof Error ? endError.message : 'Không thể kết thúc livestream')
     } finally {
@@ -264,7 +352,7 @@ export function BroadcasterClient({
   }
 
   return (
-    <section className="relative h-[100svh] w-full overflow-hidden bg-black text-white">
+    <section className="relative h-[100svh] w-full overflow-hidden bg-black text-white z-10">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_30%),linear-gradient(180deg,_rgba(0,0,0,0.18)_0%,_rgba(0,0,0,0.82)_100%)]" />
 
       <div className="relative grid h-[100svh] w-full lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_420px]">
@@ -370,7 +458,10 @@ export function BroadcasterClient({
               <div className="h-full w-full bg-black">
                 <StreamVideo client={client}>
                   <StreamCall call={call}>
-                    <LivestreamLayout />
+                    <NoiseCancellationProvider noiseCancellation={noiseCancellation}>
+                      <LivestreamLayout />
+                      <StudioDeviceControls />
+                    </NoiseCancellationProvider>
                   </StreamCall>
                 </StreamVideo>
               </div>

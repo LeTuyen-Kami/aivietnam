@@ -74,7 +74,7 @@ export function AnimatedStatValue({ value, durationMs = 1400 }: Props) {
   }, [durationMs, numericValue, suffix, value])
 
   return (
-    <p className="mt-5 text-2xl font-bold text-slate-800 md:text-3xl" ref={ref}>
+    <p className="mt-5 text-[14px] font-bold text-slate-800 md:text-[14px]" ref={ref}>
       {displayValue}
     </p>
   )

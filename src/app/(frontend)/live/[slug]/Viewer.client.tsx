@@ -93,6 +93,7 @@ function formatDate(value: string | null | undefined): string | null {
 function LiveCallContent() {
   const { useCallCallingState } = useCallStateHooks()
   const callingState = useCallCallingState()
+  const [hasUserEnabledAudio, setHasUserEnabledAudio] = useState(false)
 
   const showReconnecting =
     callingState === CallingState.RECONNECTING || callingState === CallingState.MIGRATING
@@ -108,7 +109,30 @@ function LiveCallContent() {
           Đang kết nối lại livestream…
         </div>
       ) : null}
-      <LivestreamLayout />
+
+      {!hasUserEnabledAudio ? (
+        <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/40 px-6">
+          <button
+            className="rounded-full bg-white px-5 py-3 text-sm font-semibold text-black shadow-lg transition hover:bg-white/90"
+            onClick={() => {
+              setHasUserEnabledAudio(true)
+            }}
+            type="button"
+          >
+            Bật tiếng livestream
+          </button>
+        </div>
+      ) : null}
+
+      <LivestreamLayout
+        key={hasUserEnabledAudio ? 'audio-on' : 'audio-off'}
+        muted={!hasUserEnabledAudio}
+        showMuteButton
+        showDuration
+        showLiveBadge
+        showParticipantCount
+        showSpeakerName
+      />
     </div>
   )
 }
@@ -273,7 +297,7 @@ export function ViewerClient({
   ])
 
   return (
-    <section className="relative h-[100svh] w-full overflow-hidden bg-black text-white">
+    <section className="relative h-[100svh] w-full overflow-hidden bg-black text-white z-10">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_30%),linear-gradient(180deg,_rgba(0,0,0,0.18)_0%,_rgba(0,0,0,0.78)_100%)]" />
 
       <div className="relative grid h-[100svh] w-full lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_420px]">

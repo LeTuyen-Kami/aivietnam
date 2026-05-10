@@ -31,7 +31,7 @@ export function ListingSidebarItem({ listing }: ListingSidebarItemProps) {
           {listing.title}
         </h3>
         <div className="mt-2 flex items-center justify-between gap-2">
-          <span className="text-sm font-semibold text-emerald-600">{listing.priceLabel}</span>
+          <span className="text-xs font-semibold text-emerald-600">{listing.priceLabel}</span>
           <time className="text-xs text-muted-foreground" dateTime={listing.createdAt}>
             {new Date(listing.createdAt).toLocaleDateString('vi-VN')}
           </time>

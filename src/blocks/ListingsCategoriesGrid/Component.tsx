@@ -3,12 +3,12 @@ import Link from 'next/link'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 
+import { Media } from '@/components/Media'
 import type {
-  ListingsCategoriesGridBlock,
   ListingCategory,
+  ListingsCategoriesGridBlock,
   Media as MediaDoc,
 } from '@/payload-types'
-import { Media } from '@/components/Media'
 
 type Props = ListingsCategoriesGridBlock
 
@@ -90,7 +90,7 @@ export async function ListingsCategoriesGridBlockComponent(props: Props) {
                     </div>
                   )}
                 </div>
-                <span className="line-clamp-2 text-base font-medium leading-7 text-slate-800 group-hover:text-slate-950">
+                <span className="line-clamp-2 text-[14px] font-medium leading-7 text-slate-800 group-hover:text-slate-950">
                   {category.title}
                 </span>
               </Link>

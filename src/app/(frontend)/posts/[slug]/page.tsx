@@ -99,7 +99,7 @@ export default async function Post({ params: paramsPromise }: Args) {
         {draft && <LivePreviewListener />}
 
         <div className="container pt-10 lg:pt-14">
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_270px]">
             <div>
               <nav
                 className="mb-4 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground whitespace-nowrap"
@@ -253,13 +253,15 @@ export default async function Post({ params: paramsPromise }: Args) {
               ) : null}
             </div>
 
-            <aside className="space-y-6 lg:sticky lg:top-24 lg:h-fit w-[270px]">
-              <section className="border border-border bg-card p-4">
-                <h2 className="mb-3 text-sm font-semibold uppercase">Danh mục</h2>
-                <div className="space-y-2 text-sm">
+            <aside className="w-full space-y-8 lg:sticky lg:top-24 lg:h-fit lg:w-[270px]">
+              <section>
+                <h2 className="mb-3 text-[15px] font-bold uppercase tracking-tight text-foreground">
+                  Danh mục
+                </h2>
+                <div className="border-t border-border/60">
                   {allCategories.map((category) => (
                     <Link
-                      className="block hover:underline"
+                      className="block border-b border-border/60 py-2 text-[15px] leading-6 text-foreground transition-colors hover:text-primary"
                       href={getCategoryHref(category.slug)}
                       key={`sidebar-category-${String(category.id)}`}
                     >
@@ -269,25 +271,27 @@ export default async function Post({ params: paramsPromise }: Args) {
                 </div>
               </section>
 
-              <section className="border border-border bg-card p-4">
-                <h2 className="mb-3 text-sm font-semibold uppercase">Tin xem nhiều</h2>
-                <div className="space-y-3">
+              <section>
+                <h2 className="mb-3 text-[15px] font-bold uppercase tracking-tight text-foreground">
+                  Tin xem nhiều
+                </h2>
+                <div className="space-y-4">
                   {sidebarItems.slice(0, 6).map((item) => (
                     <Link
-                      className="group flex items-start gap-2"
+                      className="group flex items-start gap-2.5"
                       href={`/posts/${item?.slug}`}
                       key={`side-${item.id}`}
                     >
                       {typeof item.meta?.image === 'object' ? (
-                        <div className="w-20 shrink-0 overflow-hidden">
+                        <div className="w-[84px] shrink-0 overflow-hidden bg-muted">
                           <Media
-                            imgClassName="aspect-video w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+                            imgClassName="aspect-[84/56] w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
                             resource={item.meta.image}
-                            size="80px"
+                            size="84px"
                           />
                         </div>
                       ) : null}
-                      <p className="line-clamp-3 text-xs leading-snug group-hover:underline">
+                      <p className="line-clamp-3 text-[15px] leading-6 text-foreground transition-colors group-hover:text-primary">
                         {item.title}
                       </p>
                     </Link>

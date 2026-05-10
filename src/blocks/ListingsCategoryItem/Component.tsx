@@ -1,16 +1,16 @@
-import Link from 'next/link'
 import { ChevronRight, Clock3, ImageIcon, MapPin } from 'lucide-react'
+import Link from 'next/link'
 
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 
+import { Media } from '@/components/Media'
 import type {
   Listing,
-  ListingsCategoryItemBlock,
   ListingCategory,
+  ListingsCategoryItemBlock,
   Media as MediaDoc,
 } from '@/payload-types'
-import { Media } from '@/components/Media'
 
 type Props = ListingsCategoryItemBlock
 
@@ -101,7 +101,7 @@ export async function ListingsCategoryItemBlockComponent(props: Props) {
   return (
     <section className="container">
       <div className="mb-5 flex items-center justify-between gap-4">
-        <h2 className="text-xl font-semibold tracking-tight text-slate-800 md:text-[2rem]">
+        <h2 className="text-xl font-semibold tracking-tight text-slate-800 md:text-xl">
           {sectionTitle}
         </h2>
         <Link
@@ -113,7 +113,7 @@ export async function ListingsCategoryItemBlockComponent(props: Props) {
         </Link>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-4 xl:grid-cols-4">
         {listings.map((listing) => {
           const thumbnail = isMediaDoc(listing.thumbnail) ? listing.thumbnail : null
           const location = [listing.district, listing.city].filter(Boolean).join(', ')
@@ -121,10 +121,10 @@ export async function ListingsCategoryItemBlockComponent(props: Props) {
 
           return (
             <article
-              className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)]"
+              className="h-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)]"
               key={listing.id}
             >
-              <Link className="group block" href={`/listings/${listing.slug}`}>
+              <Link className="group flex h-full flex-col" href={`/listings/${listing.slug}`}>
                 <div className="relative aspect-[1.55/1] overflow-hidden bg-slate-200">
                   {thumbnail ? (
                     <Media
@@ -156,17 +156,17 @@ export async function ListingsCategoryItemBlockComponent(props: Props) {
                   </div>
                 </div>
 
-                <div className="space-y-4 p-4">
+                <div className="flex flex-1 flex-col space-y-4 p-4">
                   <div className="space-y-3">
                     <h3 className="line-clamp-2 text-sm font-semibold leading-[1.45] text-[#0f4a8a] transition-colors group-hover:text-[#0c3b6e]">
                       {listing.title}
                     </h3>
-                    <p className="text-lg font-semibold leading-none text-emerald-500">
+                    <p className="text-base font-semibold leading-none text-emerald-500">
                       {listing.priceLabel}
                     </p>
                   </div>
 
-                  <p className="inline-flex line-clamp-1 items-center gap-1.5 text-xs text-slate-500">
+                  <p className="mt-auto inline-flex line-clamp-1 items-center gap-1.5 text-xs text-slate-500">
                     <MapPin className="h-4 w-4 shrink-0" />
                     <span>{location || 'Toàn quốc'}</span>
                   </p>

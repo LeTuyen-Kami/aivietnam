@@ -212,6 +212,8 @@ export const LivestreamPortalBlockComponent = async ({
   const resolvedDescription = description?.trim() || null
   const resolvedEmptyMessage = emptyMessage?.trim() || 'Hiện chưa có livestream nào đang phát.'
 
+  console.log('LivestreamPortalBlockComponent', { isAdmin })
+
   if (isAdmin) {
     const adminUser = user
     const limit = Math.min(24, Math.max(1, adminListLimit ?? 8))
