@@ -98,37 +98,40 @@ jobs:
       - name: Discord Success
         if: success()
         run: |
-          curl -H "Content-Type: application/json" \
-            -X POST \
-            -d '{
-              "embeds": [{
-                "title": "✅ Deploy Success",
-                "description": "AIVietnam deployed successfully",
-                "color": 5763719,
-                "fields": [
+          jq -n \
+            --arg branch "${{ github.ref_name }}" \
+            --arg commit "${{ github.event.head_commit.message || 'No commit message' }}" \
+            '{
+              embeds: [{
+                title: "✅ Deploy Success",
+                description: "AIVietnam deployed successfully",
+                color: 5763719,
+                fields: [
                   {
-                    "name": "Branch",
-                    "value": "${{ github.ref_name }}"
+                    name: "Branch",
+                    value: $branch
                   },
                   {
-                    "name": "Commit",
-                    "value": "${{ github.event.head_commit.message }}"
+                    name: "Commit",
+                    value: $commit
                   }
                 ]
               }]
-            }' \
-            ${{ secrets.DISCORD_WEBHOOK }}
+            }' | curl -H "Content-Type: application/json" \
+              -X POST \
+              -d @- \
+              "${{ secrets.DISCORD_WEBHOOK }}"
 
       - name: Discord Fail
         if: failure()
         run: |
-          curl -H "Content-Type: application/json" \
+          jq -n '{
+            embeds: [{
+              title: "❌ Deploy Failed",
+              description: "AIVietnam deploy failed",
+              color: 15548997
+            }]
+          }' | curl -H "Content-Type: application/json" \
             -X POST \
-            -d '{
-              "embeds": [{
-                "title": "❌ Deploy Failed",
-                "description": "AIVietnam deploy failed",
-                "color": 15548997
-              }]
-            }' \
-            ${{ secrets.DISCORD_WEBHOOK }}
+            -d @- \
+            "${{ secrets.DISCORD_WEBHOOK }}"
