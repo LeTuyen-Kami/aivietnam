@@ -15,6 +15,9 @@ import * as migration_20260510_000000_add_livestream_cover_image from './2026051
 import * as migration_20260510_175149 from './20260510_175149'
 import * as migration_20260510_180410 from './20260510_180410'
 import * as migration_20260511_010000_add_portal_split_title_hrefs from './20260511_010000_add_portal_split_title_hrefs'
+import * as migration_20260511_074420 from './20260511_074420'
+import * as migration_20260511_173500_media_hub_triptych_media_items from './20260511_173500_media_hub_triptych_media_items'
+import * as migration_20260511_174500_add_media_items_to_pages_rels from './20260511_174500_add_media_items_to_pages_rels'
 
 export const migrations = [
   {
@@ -101,5 +104,20 @@ export const migrations = [
     up: migration_20260511_010000_add_portal_split_title_hrefs.up,
     down: migration_20260511_010000_add_portal_split_title_hrefs.down,
     name: '20260511_010000_add_portal_split_title_hrefs',
+  },
+  {
+    up: migration_20260511_074420.up,
+    down: migration_20260511_074420.down,
+    name: '20260511_074420',
+  },
+  {
+    up: migration_20260511_173500_media_hub_triptych_media_items.up,
+    down: migration_20260511_173500_media_hub_triptych_media_items.down,
+    name: '20260511_173500_media_hub_triptych_media_items',
+  },
+  {
+    up: migration_20260511_174500_add_media_items_to_pages_rels.up,
+    down: migration_20260511_174500_add_media_items_to_pages_rels.down,
+    name: '20260511_174500_add_media_items_to_pages_rels',
   },
 ]

@@ -21,6 +21,7 @@
     "seed:listings": "bun run scripts/seed-listings.ts",
     "seed:footer": "bun run scripts/seed-footer.ts",
     "seed:media": "bun run scripts/seed-media.ts",
+    "seed:media-items": "bun run scripts/seed-media-items.ts",
     "migrate:admin-roles": "bun run scripts/migrate-users-to-admin.ts",
     "reinstall": "cross-env NODE_OPTIONS=--no-deprecation rm -rf node_modules && rm pnpm-lock.yaml && pnpm --ignore-workspace install",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",

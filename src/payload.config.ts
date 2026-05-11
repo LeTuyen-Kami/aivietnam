@@ -1,5 +1,4 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
-import { s3Storage } from '@payloadcms/storage-s3'
 import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
 import sharp from 'sharp'
@@ -18,6 +17,8 @@ import { LivestreamChatEventReceipts } from './collections/LivestreamChatEventRe
 import { LivestreamChatMessages } from './collections/LivestreamChatMessages'
 import { Livestreams } from './collections/Livestreams'
 import { Media } from './collections/Media'
+import { MediaCategories } from './collections/MediaCategories'
+import { MediaItems } from './collections/MediaItems'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
@@ -76,12 +77,14 @@ export default buildConfig({
     },
     // This project points at a shared remote Postgres instance.
     // Disable dev-time schema push so all shape changes go through explicit migrations.
-    push: true,
+    push: false,
   }),
   collections: [
     Pages,
     Posts,
     Media,
+    MediaCategories,
+    MediaItems,
     // MediaGifs,
     Categories,
     ListingCategories,

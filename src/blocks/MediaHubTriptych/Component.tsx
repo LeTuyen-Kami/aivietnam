@@ -1,6 +1,6 @@
 import React from 'react'
 
-import type { Media as MediaType, MediaHubTriptychBlock } from '@/payload-types'
+import type { MediaHubTriptychBlock, MediaItem, Media as MediaType } from '@/payload-types'
 
 import { Media } from '@/components/Media'
 import { SmartLink } from '@/components/SmartLink'
@@ -11,53 +11,38 @@ type Props = MediaHubTriptychBlock & {
   disableInnerContainer?: boolean
 }
 
-/** Normalize YouTube/Vimeo URLs to iframe-safe embed URLs (https only). */
 export function toIframeEmbedUrl(raw: string | null | undefined): string | null {
-  if (!raw || typeof raw !== 'string') {
-    return null
-  }
+  if (!raw || typeof raw !== 'string') return null
+
   const trimmed = raw.trim()
-  if (!trimmed) {
-    return null
-  }
+  if (!trimmed) return null
+
   try {
     const u = new URL(trimmed)
-    if (u.protocol !== 'https:') {
-      return null
-    }
+    if (u.protocol !== 'https:') return null
 
     if (u.hostname === 'youtu.be') {
       const id = u.pathname.replace(/^\//, '').split('/')[0]
-      if (id) {
-        return `https://www.youtube.com/embed/${id}`
-      }
+      if (id) return `https://www.youtube.com/embed/${id}`
     }
 
     if (u.hostname.includes('youtube.com')) {
-      if (u.pathname.startsWith('/embed/')) {
-        return trimmed
-      }
+      if (u.pathname.startsWith('/embed/')) return trimmed
+
       if (u.pathname === '/watch' || u.pathname === '/watch/') {
         const v = u.searchParams.get('v')
-        if (v) {
-          return `https://www.youtube.com/embed/${v}`
-        }
+        if (v) return `https://www.youtube.com/embed/${v}`
       }
+
       const shorts = u.pathname.match(/^\/shorts\/([^/]+)/)
-      if (shorts?.[1]) {
-        return `https://www.youtube.com/embed/${shorts[1]}`
-      }
+      if (shorts?.[1]) return `https://www.youtube.com/embed/${shorts[1]}`
     }
 
     if (u.hostname.includes('vimeo.com')) {
       const path = u.pathname.replace(/\/$/, '')
       const numeric = path.match(/\/(\d+)$/)
-      if (numeric?.[1]) {
-        return `https://player.vimeo.com/video/${numeric[1]}`
-      }
-      if (path.startsWith('/video/')) {
-        return `https://player.vimeo.com${path}`
-      }
+      if (numeric?.[1]) return `https://player.vimeo.com/video/${numeric[1]}`
+      if (path.startsWith('/video/')) return `https://player.vimeo.com${path}`
     }
 
     return trimmed
@@ -69,9 +54,7 @@ export function toIframeEmbedUrl(raw: string | null | undefined): string | null 
 function isDirectHttpsVideoUrl(url: string): boolean {
   try {
     const u = new URL(url.trim())
-    if (u.protocol !== 'https:') {
-      return false
-    }
+    if (u.protocol !== 'https:') return false
     const base = (u.pathname.split('?')[0] ?? '').toLowerCase()
     return /\.(mp4|webm|ogg)$/.test(base)
   } catch {
@@ -84,57 +67,98 @@ type GridPlayback =
   | { type: 'nativeVideo'; src: string }
   | { type: 'mediaFile'; resource: MediaType }
 
-function videoSrcFromMediaDoc(m: MediaType): string | null {
-  if (!m.url) {
-    return null
-  }
-  return getMediaUrl(m.url, m.updatedAt)
+function mediaDoc(value: MediaType | string | number | null | undefined): MediaType | null {
+  if (value && typeof value === 'object') return value as MediaType
+  return null
 }
 
-function resolveVideoPlayback(cell: {
-  source?: 'embed' | 'media' | null
-  embedUrl?: string | null
-  videoMedia?: number | MediaType | null
-  /** @deprecated old grid schema — thumbnail-only row */
-  thumbnail?: number | MediaType | null
-}): GridPlayback | 'legacyThumb' | null {
-  const mode = cell.source ?? 'embed'
+function mediaItemDoc(value: number | MediaItem | null | undefined): MediaItem | null {
+  if (value && typeof value === 'object') return value as MediaItem
+  return null
+}
 
-  if (mode === 'media') {
-    const m = mediaDoc(cell.videoMedia)
-    if (m) {
-      return { type: 'mediaFile', resource: m }
-    }
-    if (mediaDoc(cell.thumbnail)) {
-      return 'legacyThumb'
-    }
+function videoSrcFromMediaDoc(media: MediaType): string | null {
+  if (!media.url) return null
+  return getMediaUrl(media.url, media.updatedAt)
+}
+
+function resolveVideoPlayback(
+  item: MediaItem | null | undefined,
+): GridPlayback | 'legacyThumb' | null {
+  if (!item || item.type !== 'video') return null
+
+  const sourceType = item.video?.sourceType ?? 'youtube'
+
+  if (sourceType === 'upload') {
+    const media = mediaDoc(item.video?.videoMedia)
+    if (media) return { type: 'mediaFile', resource: media }
+    if (mediaDoc(item.thumbnail)) return 'legacyThumb'
     return null
   }
 
-  const raw = typeof cell.embedUrl === 'string' ? cell.embedUrl.trim() : ''
+  const raw =
+    sourceType === 'direct'
+      ? typeof item.video?.videoUrl === 'string'
+        ? item.video.videoUrl.trim()
+        : ''
+      : typeof item.video?.youtubeUrl === 'string'
+        ? item.video.youtubeUrl.trim()
+        : ''
+
   if (raw) {
-    if (isDirectHttpsVideoUrl(raw)) {
-      return { type: 'nativeVideo', src: raw }
-    }
+    if (isDirectHttpsVideoUrl(raw)) return { type: 'nativeVideo', src: raw }
+
     const iframe = toIframeEmbedUrl(raw)
-    if (iframe) {
-      return { type: 'iframe', src: iframe }
-    }
+    if (iframe) return { type: 'iframe', src: iframe }
   }
 
-  if (mediaDoc(cell.thumbnail)) {
-    return 'legacyThumb'
-  }
+  if (mediaDoc(item.thumbnail)) return 'legacyThumb'
 
   return null
 }
 
-function posterUrlFromMedia(m: MediaType | null | undefined): string | undefined {
-  const doc = mediaDoc(m)
-  if (!doc?.url) {
-    return undefined
-  }
+function posterUrlFromMedia(media: MediaType | null | undefined): string | undefined {
+  const doc = mediaDoc(media)
+  if (!doc?.url) return undefined
   return getMediaUrl(doc.url, doc.updatedAt) ?? undefined
+}
+
+function mediaItemHref(item: MediaItem | null | undefined): string {
+  const slug = typeof item?.slug === 'string' ? item.slug.trim() : ''
+  return slug ? `/media-items/${slug}` : ''
+}
+
+function podcastMeta(item: MediaItem | null | undefined): string {
+  if (!item) return ''
+
+  const parts = [
+    item.sourceName,
+    item.podcast?.speaker,
+    item.podcast?.narrator,
+    item.podcast?.channelName,
+    item.podcast?.seriesName,
+    item.podcast?.episodeNumber,
+    item.podcast?.audioDuration,
+  ]
+    .map((value) => (typeof value === 'string' ? value.trim() : ''))
+    .filter(Boolean)
+
+  return parts.join(' • ')
+}
+
+function photoDateLine(item: MediaItem | null | undefined): string {
+  if (!item?.publishedAt) return ''
+
+  const date = new Date(item.publishedAt)
+  if (Number.isNaN(date.getTime())) return ''
+
+  return new Intl.DateTimeFormat('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date)
 }
 
 const gridShell =
@@ -143,7 +167,6 @@ const gridShell =
 const VideoGridPlayer: React.FC<{
   playback: GridPlayback
   title: string
-  /** Poster / preview for native & uploaded video (ignored for iframe embeds). */
   poster?: MediaType | null
 }> = ({ playback, title, poster }) => {
   const posterAttr = posterUrlFromMedia(poster)
@@ -205,13 +228,6 @@ const VideoGridPlayer: React.FC<{
   )
 }
 
-function mediaDoc(m: MediaType | string | number | null | undefined): MediaType | null {
-  if (m && typeof m === 'object') {
-    return m as MediaType
-  }
-  return null
-}
-
 const PlayOverlay: React.FC = () => (
   <span
     aria-hidden
@@ -228,26 +244,23 @@ const PlayOverlay: React.FC = () => (
 export const MediaHubTriptychBlockComponent: React.FC<Props> = (props) => {
   const { disableInnerContainer, podcastColumn, videoColumn, photoColumn } = props
 
-  const podcastItems = podcastColumn?.items ?? []
-  const featuredRaw = videoColumn?.featured
-  const featuredPosterLegacy = (featuredRaw as { poster?: number | MediaType | null } | undefined)
-    ?.poster
-  const featuredForPlayback =
-    featuredRaw &&
-    ({
-      source: featuredRaw.source ?? 'embed',
-      embedUrl: featuredRaw.embedUrl,
-      videoMedia: featuredRaw.videoMedia,
-      thumbnail: featuredRaw.thumbnail ?? featuredPosterLegacy,
-    } as const)
-  const featuredPlayback = featuredForPlayback ? resolveVideoPlayback(featuredForPlayback) : null
-  const featuredThumb = mediaDoc(featuredRaw?.thumbnail ?? featuredPosterLegacy)
-  const gridItems = videoColumn?.gridItems ?? []
-  const bottomItems = photoColumn?.bottomItems ?? []
+  const podcastItems = (
+    (podcastColumn?.items ?? []).map(mediaItemDoc).filter(Boolean) as MediaItem[]
+  ).filter((item) => item.type === 'podcast')
+  const featuredItem = mediaItemDoc(videoColumn?.featured)
+  const featuredPlayback = resolveVideoPlayback(featuredItem)
+  const featuredThumb = mediaDoc(featuredItem?.thumbnail)
+  const gridItems = (
+    (videoColumn?.gridItems ?? []).map(mediaItemDoc).filter(Boolean) as MediaItem[]
+  ).filter((item) => item.type === 'video')
+  const featuredPhotoItem = mediaItemDoc(photoColumn?.featured)
+  const featuredPhotoImage = mediaDoc(featuredPhotoItem?.image)
+  const bottomItems = (
+    (photoColumn?.bottomItems ?? []).map(mediaItemDoc).filter(Boolean) as MediaItem[]
+  ).filter((item) => item.type === 'image')
 
   const inner = (
     <div className="grid gap-4 lg:grid-cols-3 lg:gap-5">
-      {/* Podcasts — cream / orange border */}
       <section
         className={cn(
           'flex flex-col rounded-xl border p-4 md:p-5',
@@ -260,16 +273,21 @@ export const MediaHubTriptychBlockComponent: React.FC<Props> = (props) => {
         <ul className="flex flex-col divide-y divide-[#E8C4A0]/80">
           {podcastItems.map((row, i) => {
             const thumb = mediaDoc(row.thumbnail)
-            const href = typeof row.link === 'string' ? row.link.trim() : ''
+            const href = mediaItemHref(row)
+            const meta = podcastMeta(row)
             const body = (
               <>
                 <div className="min-w-0 flex-1 pr-2">
                   <p className="font-serif text-sm font-bold leading-snug text-foreground md:text-base">
                     {row.title}
                   </p>
-                  {row.meta ? (
+                  {meta ? (
                     <p className="mt-1 text-xs leading-relaxed text-[#6B5344] md:text-[13px]">
-                      {row.meta}
+                      {meta}
+                    </p>
+                  ) : row.summary ? (
+                    <p className="mt-1 text-xs leading-relaxed text-[#6B5344] md:text-[13px]">
+                      {row.summary}
                     </p>
                   ) : null}
                 </div>
@@ -287,8 +305,9 @@ export const MediaHubTriptychBlockComponent: React.FC<Props> = (props) => {
                 ) : null}
               </>
             )
+
             return (
-              <li key={i} className="flex gap-2 py-3 first:pt-0 last:pb-0">
+              <li key={row.id ?? i} className="flex gap-2 py-3 first:pt-0 last:pb-0">
                 {href ? (
                   <SmartLink
                     className="group flex min-w-0 flex-1 gap-2 outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -305,7 +324,6 @@ export const MediaHubTriptychBlockComponent: React.FC<Props> = (props) => {
         </ul>
       </section>
 
-      {/* Video — mint / green border */}
       <section
         className={cn(
           'flex flex-col rounded-xl border p-4 md:p-5',
@@ -321,7 +339,7 @@ export const MediaHubTriptychBlockComponent: React.FC<Props> = (props) => {
             <VideoGridPlayer
               playback={featuredPlayback}
               poster={featuredThumb}
-              title={videoColumn?.featured?.caption ?? 'Video nổi bật'}
+              title={featuredItem?.title ?? 'Video nổi bật'}
             />
           ) : featuredThumb ? (
             <div className="relative aspect-video w-full">
@@ -336,20 +354,26 @@ export const MediaHubTriptychBlockComponent: React.FC<Props> = (props) => {
             </div>
           ) : (
             <div className="flex aspect-video items-center justify-center bg-muted px-3 text-center text-sm text-muted-foreground">
-              Chọn URL video hoặc file trong Media, hoặc thêm thumbnail
+              Chọn media item video có dữ liệu hợp lệ
             </div>
           )}
         </div>
-        {videoColumn?.featured?.caption ? (
-          <p className="mb-4 font-serif text-sm font-semibold leading-snug text-[#1a3d2e] md:text-base">
-            {videoColumn.featured.caption}
+
+        {featuredItem?.title ? (
+          <p className="mb-1 font-serif text-sm font-semibold leading-snug text-[#1a3d2e] md:text-base">
+            {featuredItem.title}
+          </p>
+        ) : null}
+        {featuredItem?.summary ? (
+          <p className="mb-4 text-xs leading-relaxed text-[#1a3d2e]/80 md:text-sm">
+            {featuredItem.summary}
           </p>
         ) : null}
 
         {gridItems.length > 0 ? (
           <div className="grid grid-cols-2 gap-3">
             {gridItems.map((cell, i) => {
-              const href = typeof cell.link === 'string' ? cell.link.trim() : ''
+              const href = mediaItemHref(cell)
               const playback = resolveVideoPlayback(cell)
               const titleEl = (
                 <p className="line-clamp-2 font-serif text-xs font-semibold leading-snug text-[#1a3d2e] md:text-sm">
@@ -370,7 +394,7 @@ export const MediaHubTriptychBlockComponent: React.FC<Props> = (props) => {
               if (playback === 'legacyThumb') {
                 const thumb = mediaDoc(cell.thumbnail)
                 return (
-                  <article key={i} className="flex flex-col gap-1.5">
+                  <article key={cell.id ?? i} className="flex flex-col gap-1.5">
                     {thumb ? (
                       <div className="relative aspect-video w-full overflow-hidden rounded-md border border-[#86C9A0]/40 bg-muted">
                         <Media
@@ -391,7 +415,7 @@ export const MediaHubTriptychBlockComponent: React.FC<Props> = (props) => {
               if (!playback) {
                 return (
                   <article
-                    key={i}
+                    key={cell.id ?? i}
                     className="flex flex-col gap-1.5 rounded-md border border-dashed border-[#86C9A0]/50 p-2 text-center text-xs text-muted-foreground"
                   >
                     Thiếu URL hoặc file video
@@ -401,7 +425,7 @@ export const MediaHubTriptychBlockComponent: React.FC<Props> = (props) => {
               }
 
               return (
-                <article key={i} className="flex flex-col gap-1.5">
+                <article key={cell.id ?? i} className="flex flex-col gap-1.5">
                   <VideoGridPlayer
                     playback={playback}
                     poster={mediaDoc(cell.thumbnail)}
@@ -415,7 +439,6 @@ export const MediaHubTriptychBlockComponent: React.FC<Props> = (props) => {
         ) : null}
       </section>
 
-      {/* Photo corner — lavender / purple border */}
       <section
         className={cn(
           'flex flex-col rounded-xl border p-4 md:p-5',
@@ -426,7 +449,7 @@ export const MediaHubTriptychBlockComponent: React.FC<Props> = (props) => {
           {photoColumn?.sectionTitle ?? 'Góc ảnh 📷'}
         </h2>
 
-        {photoColumn?.featured?.image && typeof photoColumn.featured.image === 'object' ? (
+        {featuredPhotoImage ? (
           <>
             <div className="mb-3 overflow-hidden rounded-lg border border-[#B8A9D9]/50">
               <div className="relative aspect-16/10 w-full">
@@ -434,17 +457,17 @@ export const MediaHubTriptychBlockComponent: React.FC<Props> = (props) => {
                   className="absolute inset-0"
                   fill
                   imgClassName="h-full w-full object-cover"
-                  resource={photoColumn.featured.image}
+                  resource={featuredPhotoImage}
                   size="(max-width: 768px) 100vw, 33vw"
                 />
               </div>
             </div>
             <h3 className="font-serif text-base font-bold leading-snug text-foreground md:text-lg">
-              {photoColumn.featured.title}
+              {featuredPhotoItem?.title}
             </h3>
-            {photoColumn.featured.dateLine ? (
+            {photoDateLine(featuredPhotoItem) ? (
               <p className="mt-1 text-xs text-muted-foreground md:text-sm">
-                {photoColumn.featured.dateLine}
+                {photoDateLine(featuredPhotoItem)}
               </p>
             ) : null}
           </>
@@ -459,7 +482,7 @@ export const MediaHubTriptychBlockComponent: React.FC<Props> = (props) => {
           >
             {bottomItems.map((item, i) => {
               const img = mediaDoc(item.image)
-              const href = typeof item.link === 'string' ? item.link.trim() : ''
+              const href = mediaItemHref(item)
               const tile = (
                 <article className="flex flex-col gap-1.5">
                   {img ? (
@@ -478,16 +501,17 @@ export const MediaHubTriptychBlockComponent: React.FC<Props> = (props) => {
                   </p>
                 </article>
               )
+
               return href ? (
                 <SmartLink
-                  key={i}
+                  key={item.id ?? i}
                   className="block outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   href={href}
                 >
                   {tile}
                 </SmartLink>
               ) : (
-                <div key={i}>{tile}</div>
+                <div key={item.id ?? i}>{tile}</div>
               )
             })}
           </div>

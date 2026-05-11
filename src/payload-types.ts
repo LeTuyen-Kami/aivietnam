@@ -71,6 +71,8 @@ export interface Config {
     pages: Page;
     posts: Post;
     media: Media;
+    'media-categories': MediaCategory;
+    'media-items': MediaItem;
     categories: Category;
     'listing-categories': ListingCategory;
     listings: Listing;
@@ -103,6 +105,8 @@ export interface Config {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    'media-categories': MediaCategoriesSelect<false> | MediaCategoriesSelect<true>;
+    'media-items': MediaItemsSelect<false> | MediaItemsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     'listing-categories': ListingCategoriesSelect<false> | ListingCategoriesSelect<true>;
     listings: ListingsSelect<false> | ListingsSelect<true>;
@@ -1275,85 +1279,102 @@ export interface HumanitiesCornerBlock {
  * via the `definition` "MediaHubTriptychBlock".
  */
 export interface MediaHubTriptychBlock {
-  podcastColumn?: {
+  podcastColumn: {
     sectionTitle?: string | null;
-    items?:
-      | {
-          title: string;
-          meta?: string | null;
-          thumbnail: number | Media;
-          /**
-           * Internal path or https://
-           */
-          link?: string | null;
-          id?: string | null;
-        }[]
-      | null;
+    items: (number | MediaItem)[];
   };
   videoColumn: {
     sectionTitle?: string | null;
-    featured: {
-      source: 'embed' | 'media';
-      /**
-       * https only. Supports YouTube/Vimeo watch links or a direct video file URL.
-       */
-      embedUrl?: string | null;
-      /**
-       * Uploaded video (MP4, WebM, etc.). Renders with native controls.
-       */
-      videoMedia?: (number | null) | Media;
-      /**
-       * Optional preview or poster image (e.g. before play, or when only thumbnail is set).
-       */
-      thumbnail?: (number | null) | Media;
-      caption?: string | null;
-    };
-    gridItems?:
-      | {
-          source: 'embed' | 'media';
-          /**
-           * https only. Supports YouTube/Vimeo watch links or a direct video file URL.
-           */
-          embedUrl?: string | null;
-          /**
-           * Uploaded video (MP4, WebM, etc.). Renders with native controls.
-           */
-          videoMedia?: (number | null) | Media;
-          /**
-           * Optional preview / poster for native or uploaded video; or static preview when no URL/file.
-           */
-          thumbnail?: (number | null) | Media;
-          title: string;
-          /**
-           * Wraps title in a link when set.
-           */
-          link?: string | null;
-          id?: string | null;
-        }[]
-      | null;
+    featured: number | MediaItem;
+    gridItems?: (number | MediaItem)[] | null;
   };
   photoColumn: {
     sectionTitle?: string | null;
-    featured: {
-      image: number | Media;
-      title: string;
-      /**
-       * e.g. Thứ 6, 25/05/2025 | 23:43
-       */
-      dateLine?: string | null;
-    };
-    bottomItems?:
-      | {
-          image: number | Media;
-          title: string;
-          link?: string | null;
-          id?: string | null;
-        }[]
-      | null;
+    featured: number | MediaItem;
+    bottomItems?: (number | MediaItem)[] | null;
   };
   id?: string | null;
   blockName?: string | null;
   blockType: 'mediaHubTriptych';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media-items".
+ */
+export interface MediaItem {
+  id: number;
+  title: string;
+  type: 'podcast' | 'video' | 'image';
+  summary?: string | null;
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Thumbnail tùy chọn cho card hoặc preview.
+   */
+  thumbnail?: (number | null) | Media;
+  /**
+   * Ảnh chính cho item loại image.
+   */
+  image?: (number | null) | Media;
+  podcast?: {
+    audioMedia?: (number | null) | Media;
+    /**
+     * Direct audio URL, ví dụ file .mp3.
+     */
+    audioUrl?: string | null;
+    speaker?: string | null;
+    narrator?: string | null;
+    channelName?: string | null;
+    seriesName?: string | null;
+    episodeNumber?: string | null;
+    audioDuration?: string | null;
+  };
+  video?: {
+    sourceType?: ('upload' | 'youtube' | 'direct') | null;
+    videoMedia?: (number | null) | Media;
+    youtubeUrl?: string | null;
+    videoUrl?: string | null;
+  };
+  categories?: (number | MediaCategory)[] | null;
+  sourceName?: string | null;
+  creatorName?: string | null;
+  publishedAt?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media-categories".
+ */
+export interface MediaCategory {
+  id: number;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2031,6 +2052,14 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
+        relationTo: 'media-categories';
+        value: number | MediaCategory;
+      } | null)
+    | ({
+        relationTo: 'media-items';
+        value: number | MediaItem;
+      } | null)
+    | ({
         relationTo: 'categories';
         value: number | Category;
       } | null)
@@ -2594,60 +2623,21 @@ export interface MediaHubTriptychBlockSelect<T extends boolean = true> {
     | T
     | {
         sectionTitle?: T;
-        items?:
-          | T
-          | {
-              title?: T;
-              meta?: T;
-              thumbnail?: T;
-              link?: T;
-              id?: T;
-            };
+        items?: T;
       };
   videoColumn?:
     | T
     | {
         sectionTitle?: T;
-        featured?:
-          | T
-          | {
-              source?: T;
-              embedUrl?: T;
-              videoMedia?: T;
-              thumbnail?: T;
-              caption?: T;
-            };
-        gridItems?:
-          | T
-          | {
-              source?: T;
-              embedUrl?: T;
-              videoMedia?: T;
-              thumbnail?: T;
-              title?: T;
-              link?: T;
-              id?: T;
-            };
+        featured?: T;
+        gridItems?: T;
       };
   photoColumn?:
     | T
     | {
         sectionTitle?: T;
-        featured?:
-          | T
-          | {
-              image?: T;
-              title?: T;
-              dateLine?: T;
-            };
-        bottomItems?:
-          | T
-          | {
-              image?: T;
-              title?: T;
-              link?: T;
-              id?: T;
-            };
+        featured?: T;
+        bottomItems?: T;
       };
   id?: T;
   blockName?: T;
@@ -2824,6 +2814,58 @@ export interface MediaSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media-categories_select".
+ */
+export interface MediaCategoriesSelect<T extends boolean = true> {
+  title?: T;
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media-items_select".
+ */
+export interface MediaItemsSelect<T extends boolean = true> {
+  title?: T;
+  type?: T;
+  summary?: T;
+  content?: T;
+  thumbnail?: T;
+  image?: T;
+  podcast?:
+    | T
+    | {
+        audioMedia?: T;
+        audioUrl?: T;
+        speaker?: T;
+        narrator?: T;
+        channelName?: T;
+        seriesName?: T;
+        episodeNumber?: T;
+        audioDuration?: T;
+      };
+  video?:
+    | T
+    | {
+        sourceType?: T;
+        videoMedia?: T;
+        youtubeUrl?: T;
+        videoUrl?: T;
+      };
+  categories?: T;
+  sourceName?: T;
+  creatorName?: T;
+  publishedAt?: T;
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3758,6 +3800,10 @@ export interface TaskSchedulePublish {
       | ({
           relationTo: 'posts';
           value: number | Post;
+        } | null)
+      | ({
+          relationTo: 'media-items';
+          value: number | MediaItem;
         } | null);
     global?: string | null;
     user?: (number | null) | User;
