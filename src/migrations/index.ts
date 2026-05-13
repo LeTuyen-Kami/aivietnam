@@ -18,6 +18,7 @@ import * as migration_20260511_010000_add_portal_split_title_hrefs from './20260
 import * as migration_20260511_074420 from './20260511_074420'
 import * as migration_20260511_173500_media_hub_triptych_media_items from './20260511_173500_media_hub_triptych_media_items'
 import * as migration_20260511_174500_add_media_items_to_pages_rels from './20260511_174500_add_media_items_to_pages_rels'
+import * as migration_20260512_000000_listing_create_block from './20260512_000000_listing_create_block'
 
 export const migrations = [
   {
@@ -119,5 +120,10 @@ export const migrations = [
     up: migration_20260511_174500_add_media_items_to_pages_rels.up,
     down: migration_20260511_174500_add_media_items_to_pages_rels.down,
     name: '20260511_174500_add_media_items_to_pages_rels',
+  },
+  {
+    up: migration_20260512_000000_listing_create_block.up,
+    down: migration_20260512_000000_listing_create_block.down,
+    name: '20260512_000000_listing_create_block',
   },
 ]

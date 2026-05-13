@@ -6,6 +6,8 @@ const NEXT_PUBLIC_SERVER_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
   ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
   : undefined || process.env.__NEXT_PRIVATE_ORIGIN || 'http://localhost:3000'
 
+const VIETNAM_PROVINCES_API_ORIGIN = 'https://provinces.open-api.vn'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
@@ -31,6 +33,14 @@ const nextConfig = {
     return webpackConfig
   },
   reactStrictMode: true,
+  async rewrites() {
+    return [
+      {
+        source: '/api/v2/:path*',
+        destination: `${VIETNAM_PROVINCES_API_ORIGIN}/api/v2/:path*`,
+      },
+    ]
+  },
   redirects,
   typescript: {
     ignoreBuildErrors: true,

@@ -13,6 +13,7 @@ import { FeaturedPostsSideMedia } from '../../blocks/FeaturedPostsSideMedia/conf
 import { FormBlock } from '../../blocks/Form/config'
 import { HeroCarousel } from '../../blocks/HeroCarousel/config'
 import { HumanitiesCorner } from '../../blocks/HumanitiesCorner/config'
+import { ListingCreate } from '../../blocks/ListingCreate/config'
 import { ListingsCategoriesGrid } from '../../blocks/ListingsCategoriesGrid/config'
 import { ListingsCategoryItem } from '../../blocks/ListingsCategoryItem/config'
 import { LivestreamPortal } from '../../blocks/LivestreamPortal/config'
@@ -102,6 +103,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 MediaHubTriptych,
                 NewsletterSignup,
                 YouTubeEmbed,
+                ListingCreate,
                 ListingsCategoriesGrid,
                 ListingsCategoryItem,
                 MarketplaceStats,

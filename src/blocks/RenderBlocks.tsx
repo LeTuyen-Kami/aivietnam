@@ -11,6 +11,7 @@ import { FeaturedPostsSideMediaBlockComponentAsync } from '@/blocks/FeaturedPost
 import { FormBlock } from '@/blocks/Form/Component'
 import { HeroCarouselBlock } from '@/blocks/HeroCarousel/Component'
 import { HumanitiesCornerBlockComponent } from '@/blocks/HumanitiesCorner/Component'
+import { ListingCreateBlockComponent } from '@/blocks/ListingCreate/Component'
 import { ListingsCategoriesGridBlockComponent } from '@/blocks/ListingsCategoriesGrid/Component'
 import { ListingsCategoryItemBlockComponent } from '@/blocks/ListingsCategoryItem/Component'
 import { LivestreamPortalBlockComponent } from '@/blocks/LivestreamPortal/Component'
@@ -36,6 +37,7 @@ const blockComponents = {
   mediaBlock: MediaBlock,
   enhancedMediaBlock: EnhancedMediaBlock,
   youtubeEmbed: YouTubeEmbedBlockComponent,
+  listingCreate: ListingCreateBlockComponent,
   listingsCategoriesGrid: ListingsCategoriesGridBlockComponent,
   listingsCategoryItem: ListingsCategoryItemBlockComponent,
   marketplaceStats: MarketplaceStatsBlockComponent,

@@ -265,6 +265,7 @@ export interface Page {
     | MediaHubTriptychBlock
     | NewsletterSignupBlock
     | YouTubeEmbedBlock
+    | ListingCreateBlock
     | ListingsCategoriesGridBlock
     | ListingsCategoryItemBlock
     | MarketplaceStatsBlock
@@ -1413,6 +1414,19 @@ export interface YouTubeEmbedBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ListingCreateBlock".
+ */
+export interface ListingCreateBlock {
+  buttonLabel: string;
+  modalTitle: string;
+  modalDescription?: string | null;
+  successMessage?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'listingCreate';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ListingsCategoriesGridBlock".
  */
 export interface ListingsCategoriesGridBlock {
@@ -2224,6 +2238,7 @@ export interface PagesSelect<T extends boolean = true> {
         mediaHubTriptych?: T | MediaHubTriptychBlockSelect<T>;
         newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
         youtubeEmbed?: T | YouTubeEmbedBlockSelect<T>;
+        listingCreate?: T | ListingCreateBlockSelect<T>;
         listingsCategoriesGrid?: T | ListingsCategoriesGridBlockSelect<T>;
         listingsCategoryItem?: T | ListingsCategoryItemBlockSelect<T>;
         marketplaceStats?: T | MarketplaceStatsBlockSelect<T>;
@@ -2666,6 +2681,18 @@ export interface YouTubeEmbedBlockSelect<T extends boolean = true> {
   title?: T;
   videoTitle?: T;
   youtubeUrl?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ListingCreateBlock_select".
+ */
+export interface ListingCreateBlockSelect<T extends boolean = true> {
+  buttonLabel?: T;
+  modalTitle?: T;
+  modalDescription?: T;
+  successMessage?: T;
   id?: T;
   blockName?: T;
 }

@@ -1,4 +1,5 @@
 import React from 'react'
+import { Toaster } from 'sonner'
 
 import { AuthProvider } from './Auth'
 import { HeaderThemeProvider } from './HeaderTheme'
@@ -12,7 +13,10 @@ export const Providers: React.FC<{
     <ThemeProvider>
       <HeaderThemeProvider>
         <QueryProvider>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            {children}
+            <Toaster closeButton richColors position="top-right" />
+          </AuthProvider>
         </QueryProvider>
       </HeaderThemeProvider>
     </ThemeProvider>
