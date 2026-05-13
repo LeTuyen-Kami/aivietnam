@@ -333,7 +333,7 @@ export const AIEcosystemMapBlockComponent: React.FC<Props> = ({
           <h2 className="text-center font-serif text-2xl font-semibold uppercase tracking-[0.08em] text-teal-800 mb-4">
             {heading}
           </h2>
-          <div className="relative px-6 pb-8 pt-2 min-h-[calc(100vh-81px)]">
+          <div className="relative px-6 pb-8 pt-2 min-h-[calc(100vh-81px)] aspect-1100/882">
             {desktopCardPlacements.map((placement, cardIndex) => {
               const card = cards.find((item) => item.key === placement.key)
               if (!card) return null
