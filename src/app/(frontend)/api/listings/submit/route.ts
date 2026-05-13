@@ -9,19 +9,23 @@ import { getSiteMemberUser } from '@/access/siteMemberUser'
 type ListingType = 'job-seeking' | 'job-offer' | 'service' | 'other'
 
 const listingTypes = new Set<ListingType>(['job-seeking', 'job-offer', 'service', 'other'])
+const MAX_GALLERY_FILES = 8
 
 type ListingSubmission = {
   address?: unknown
+  avatarId?: unknown
   categoryId?: unknown
   city?: unknown
   contactName?: unknown
   contactPhone?: unknown
   description?: unknown
   district?: unknown
+  galleryIds?: unknown
   listingType?: unknown
   priceLabel?: unknown
   summary?: unknown
   supportPhone?: unknown
+  thumbnailId?: unknown
   title?: unknown
   zaloUrl?: unknown
 }
@@ -45,46 +49,71 @@ function optionalUrl(value: unknown): string {
   return ''
 }
 
-function lexicalFromText(
-  value: string,
-): NonNullable<DataFromCollectionSlug<'listings'>['description']> {
-  return {
-    root: {
-      type: 'root',
-      direction: null,
-      format: '',
-      indent: 0,
-      version: 1,
-      children: value
-        .split(/\n{2,}/)
-        .map((paragraph) => paragraph.trim())
-        .filter(Boolean)
-        .map((paragraph) => ({
-          type: 'paragraph',
-          direction: null,
-          format: '',
-          indent: 0,
-          version: 1,
-          children: [
-            {
-              type: 'text',
-              detail: 0,
-              format: 0,
-              mode: 'normal',
-              style: '',
-              text: paragraph,
-              version: 1,
-            },
-          ],
-        })),
-    },
-  }
-}
-
 function parseCategoryId(value: unknown): number | null {
   if (value == null || value === '') return null
   const id = typeof value === 'number' ? value : Number(value)
   return Number.isInteger(id) && id > 0 ? id : null
+}
+
+function parseMediaId(value: unknown): number | null {
+  if (value == null || value === '') return null
+  const id = typeof value === 'number' ? value : Number(value)
+  return Number.isInteger(id) && id > 0 ? id : null
+}
+
+function parseGalleryIds(value: unknown): number[] {
+  if (!Array.isArray(value)) return []
+
+  const ids = value
+    .map((item) => parseMediaId(item))
+    .filter((item): item is number => item !== null)
+
+  return Array.from(new Set(ids)).slice(0, MAX_GALLERY_FILES)
+}
+
+function hasLexicalContent(value: unknown): boolean {
+  if (!value || typeof value !== 'object') return false
+
+  const root = (value as { root?: unknown }).root
+  if (!root || typeof root !== 'object') return false
+
+  const children = (root as { children?: unknown }).children
+  if (!Array.isArray(children)) return false
+
+  const walk = (node: unknown): boolean => {
+    if (!node || typeof node !== 'object') return false
+
+    const textNode = (node as { text?: unknown }).text
+    if (typeof textNode === 'string' && textNode.trim()) return true
+
+    const childNodes = (node as { children?: unknown }).children
+    if (Array.isArray(childNodes)) return childNodes.some(walk)
+
+    return false
+  }
+
+  return children.some(walk)
+}
+
+async function ensureMediaExists(payload: Awaited<ReturnType<typeof getPayload>>, ids: number[]) {
+  if (!ids.length) return
+
+  const result = await payload.find({
+    collection: 'media',
+    depth: 0,
+    limit: ids.length,
+    overrideAccess: true,
+    pagination: false,
+    where: {
+      id: {
+        in: ids,
+      },
+    },
+  })
+
+  if (result.docs.length !== ids.length) {
+    throw new APIError('Ảnh tải lên không hợp lệ', 400)
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -101,7 +130,6 @@ export async function POST(req: NextRequest) {
     : 'job-seeking'
   const priceLabel = text(json.priceLabel, 80) || 'Thỏa thuận'
   const summary = text(json.summary, 260)
-  const descriptionText = text(json.description, 5000)
   const city = text(json.city, 80)
   const district = text(json.district, 80)
   const address = text(json.address, 180)
@@ -110,9 +138,13 @@ export async function POST(req: NextRequest) {
   const supportPhone = text(json.supportPhone, 32)
   const zaloUrl = optionalUrl(json.zaloUrl)
   const categoryId = parseCategoryId(json.categoryId)
+  const avatarId = parseMediaId(json.avatarId)
+  const thumbnailId = parseMediaId(json.thumbnailId)
+  const galleryIds = parseGalleryIds(json.galleryIds)
+  const description = json.description
 
   if (!title) return NextResponse.json({ error: 'Tiêu đề là bắt buộc' }, { status: 400 })
-  if (!descriptionText) {
+  if (!hasLexicalContent(description)) {
     return NextResponse.json({ error: 'Nội dung mô tả là bắt buộc' }, { status: 400 })
   }
   if (!city) return NextResponse.json({ error: 'Tỉnh / thành là bắt buộc' }, { status: 400 })
@@ -145,6 +177,19 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  try {
+    await ensureMediaExists(
+      payload,
+      [avatarId, thumbnailId, ...galleryIds].filter((item): item is number => item !== null),
+    )
+  } catch (error) {
+    if (error instanceof APIError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
+
+    return NextResponse.json({ error: 'Ảnh tải lên không hợp lệ' }, { status: 400 })
+  }
+
   const payloadReq = await createLocalReq({ user: member }, payload)
 
   try {
@@ -155,7 +200,7 @@ export async function POST(req: NextRequest) {
         listingType,
         priceLabel,
         summary,
-        description: lexicalFromText(descriptionText),
+        description: description as DataFromCollectionSlug<'listings'>['description'],
         city,
         district,
         address,
@@ -166,6 +211,9 @@ export async function POST(req: NextRequest) {
         packageName: 'Miễn phí',
         statusLabel: 'available',
         ...(categoryId ? { categories: [categoryId] } : {}),
+        ...(avatarId ? { avatar: avatarId } : {}),
+        ...(thumbnailId ? { thumbnail: thumbnailId } : {}),
+        ...(galleryIds.length ? { gallery: galleryIds } : {}),
       } as DataFromCollectionSlug<'listings'>,
       depth: 0,
       draft: true,

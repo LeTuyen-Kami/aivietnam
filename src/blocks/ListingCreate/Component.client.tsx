@@ -1,10 +1,56 @@
 'use client'
 
-import { Plus, Send, X } from 'lucide-react'
+import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
+import { buildDefaultEditorState } from '@payloadcms/richtext-lexical/client'
+import { LinkNode } from '@lexical/link'
+import { ListItemNode, ListNode } from '@lexical/list'
+import { $createHeadingNode, $createQuoteNode, HeadingNode, QuoteNode } from '@lexical/rich-text'
+import { LexicalComposer } from '@lexical/react/LexicalComposer'
+import { ContentEditable } from '@lexical/react/LexicalContentEditable'
+import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin'
+import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary'
+import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin'
+import { ListPlugin } from '@lexical/react/LexicalListPlugin'
+import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin'
+import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
+import {
+  $createParagraphNode,
+  $createTextNode,
+  $getRoot,
+  $getSelection,
+  $isRangeSelection,
+  FORMAT_TEXT_COMMAND,
+  type EditorState,
+  type LexicalEditor,
+} from 'lexical'
+import {
+  INSERT_ORDERED_LIST_COMMAND,
+  INSERT_UNORDERED_LIST_COMMAND,
+  REMOVE_LIST_COMMAND,
+} from '@lexical/list'
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
+import {
+  Bold,
+  Heading1,
+  ImagePlus,
+  Italic,
+  List,
+  ListOrdered,
+  Loader2,
+  Plus,
+  Quote,
+  Send,
+  Trash2,
+  Underline,
+  X,
+} from 'lucide-react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import React, { useEffect, useId, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
+
+import { useAuth } from '@/providers/Auth'
+import { cn } from '@/utilities/ui'
 
 type ProvinceOption = {
   code: number
@@ -17,14 +63,16 @@ type WardOption = {
   province_code: number
 }
 
-import { useAuth } from '@/providers/Auth'
-import { cn } from '@/utilities/ui'
-
-const EASE_OUT = [0.23, 1, 0.32, 1] as const
-
 type CategoryOption = {
   id: number
   title: string
+}
+
+type UploadedMedia = {
+  alt?: string | null
+  id: number
+  mimeType?: string | null
+  url?: string | null
 }
 
 type Props = {
@@ -37,7 +85,29 @@ type Props = {
 
 type ListingType = 'job-seeking' | 'job-offer' | 'service' | 'other'
 
+type ListingCreateForm = {
+  address: string
+  categoryId: string
+  city: string
+  contactName: string
+  contactPhone: string
+  description: DefaultTypedEditorState
+  district: string
+  listingType: ListingType
+  priceLabel: string
+  provinceCode: string
+  summary: string
+  supportPhone: string
+  title: string
+  wardCode: string
+  zaloUrl: string
+}
+
 const VIETNAM_DIVISIONS_API_BASE = '/api/v2'
+const MAX_GALLERY_FILES = 8
+const MAX_UPLOAD_SIZE = 10 * 1024 * 1024
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'] as const
+const EASE_OUT = [0.23, 1, 0.32, 1] as const
 
 const listingTypeOptions: Array<{ label: string; value: ListingType }> = [
   { label: 'Cần việc', value: 'job-seeking' },
@@ -46,13 +116,15 @@ const listingTypeOptions: Array<{ label: string; value: ListingType }> = [
   { label: 'Khác', value: 'other' },
 ]
 
-const initialForm = {
+const initialDescription = buildDefaultEditorState({ text: '' })
+
+const initialForm: ListingCreateForm = {
   title: '',
-  listingType: 'job-seeking' as ListingType,
+  listingType: 'job-seeking',
   categoryId: '',
   priceLabel: 'Thỏa thuận',
   summary: '',
-  description: '',
+  description: initialDescription,
   city: '',
   district: '',
   provinceCode: '',
@@ -62,6 +134,259 @@ const initialForm = {
   contactPhone: '',
   supportPhone: '',
   zaloUrl: '',
+}
+
+function hasLexicalContent(value: DefaultTypedEditorState | undefined): boolean {
+  const children = value?.root?.children
+  if (!Array.isArray(children)) return false
+
+  const walk = (node: unknown): boolean => {
+    if (!node || typeof node !== 'object') return false
+
+    const text = (node as { text?: unknown }).text
+    if (typeof text === 'string' && text.trim()) return true
+
+    const childNodes = (node as { children?: unknown }).children
+    if (Array.isArray(childNodes)) return childNodes.some(walk)
+
+    return false
+  }
+
+  return children.some(walk)
+}
+
+function getUploadError(file: File): string | null {
+  if (!ACCEPTED_IMAGE_TYPES.includes(file.type as (typeof ACCEPTED_IMAGE_TYPES)[number])) {
+    return 'Chỉ hỗ trợ JPG, PNG, WEBP hoặc GIF'
+  }
+
+  if (file.size > MAX_UPLOAD_SIZE) {
+    return 'Mỗi ảnh tối đa 10MB'
+  }
+
+  return null
+}
+
+function pickFileName(file: File): string {
+  return file.name?.trim() || `upload-${Date.now()}`
+}
+
+function createEditorStateFromValue(
+  value: DefaultTypedEditorState | undefined,
+): string | undefined {
+  if (!value?.root?.children?.length) return undefined
+  return JSON.stringify(value)
+}
+
+function MediaPreview({ item, onRemove }: { item: UploadedMedia; onRemove: () => void }) {
+  return (
+    <div className="relative overflow-hidden rounded-xl border border-border bg-muted/20">
+      {item.url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          alt={item.alt || 'Uploaded image'}
+          className="aspect-4/3 w-full object-cover"
+          src={item.url}
+        />
+      ) : (
+        <div className="flex aspect-4/3 items-center justify-center text-xs text-muted-foreground">
+          Không xem trước được ảnh
+        </div>
+      )}
+      <button
+        className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-black/65 text-white transition-opacity hover:opacity-90"
+        onClick={onRemove}
+        type="button"
+      >
+        <Trash2 className="h-4 w-4" />
+        <span className="sr-only">Xóa ảnh</span>
+      </button>
+    </div>
+  )
+}
+
+function ToolbarButton({
+  active,
+  children,
+  onClick,
+}: {
+  active?: boolean
+  children: React.ReactNode
+  onClick: () => void
+}) {
+  return (
+    <button
+      className={cn(
+        'inline-flex h-9 w-9 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
+        active && 'bg-muted text-foreground',
+      )}
+      onClick={onClick}
+      type="button"
+    >
+      {children}
+    </button>
+  )
+}
+
+function EditorToolbar() {
+  const [editor] = useLexicalComposerContext()
+  const [formats, setFormats] = useState({
+    bold: false,
+    italic: false,
+    underline: false,
+  })
+
+  useEffect(() => {
+    return editor.registerUpdateListener(({ editorState }) => {
+      editorState.read(() => {
+        const selection = $getSelection()
+        if (!$isRangeSelection(selection)) {
+          setFormats({ bold: false, italic: false, underline: false })
+          return
+        }
+
+        setFormats({
+          bold: selection.hasFormat('bold'),
+          italic: selection.hasFormat('italic'),
+          underline: selection.hasFormat('underline'),
+        })
+      })
+    })
+  }, [editor])
+
+  return (
+    <div className="flex flex-wrap gap-2 border-b border-border bg-muted/20 p-3">
+      <ToolbarButton
+        active={formats.bold}
+        onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold')}
+      >
+        <Bold className="h-4 w-4" />
+      </ToolbarButton>
+      <ToolbarButton
+        active={formats.italic}
+        onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic')}
+      >
+        <Italic className="h-4 w-4" />
+      </ToolbarButton>
+      <ToolbarButton
+        active={formats.underline}
+        onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline')}
+      >
+        <Underline className="h-4 w-4" />
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined)}
+      >
+        <List className="h-4 w-4" />
+      </ToolbarButton>
+      <ToolbarButton onClick={() => editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined)}>
+        <ListOrdered className="h-4 w-4" />
+      </ToolbarButton>
+      <ToolbarButton onClick={() => editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined)}>
+        <X className="h-4 w-4" />
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => {
+          editor.update(() => {
+            const selection = $getSelection()
+            if (!$isRangeSelection(selection)) return
+            selection.insertNodes([$createHeadingNode('h1')])
+          })
+        }}
+      >
+        <Heading1 className="h-4 w-4" />
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => {
+          editor.update(() => {
+            const selection = $getSelection()
+            if (!$isRangeSelection(selection)) return
+            selection.insertNodes([$createQuoteNode()])
+          })
+        }}
+      >
+        <Quote className="h-4 w-4" />
+      </ToolbarButton>
+    </div>
+  )
+}
+
+function ensureEditorHasParagraph(editor: LexicalEditor) {
+  editor.update(() => {
+    const root = $getRoot()
+    if (root.getChildrenSize() > 0) return
+
+    const paragraph = $createParagraphNode()
+    paragraph.append($createTextNode(''))
+    root.append(paragraph)
+  })
+}
+
+function ListingDescriptionEditor({
+  value,
+  onChange,
+}: {
+  onChange: (value: DefaultTypedEditorState) => void
+  value: DefaultTypedEditorState
+}) {
+  const initialConfig = useMemo(
+    () => ({
+      namespace: 'listing-create-description',
+      theme: {
+        paragraph: 'mb-3',
+        quote: 'border-l-4 border-border pl-4 italic text-muted-foreground',
+        heading: {
+          h1: 'text-2xl font-bold mb-3',
+        },
+        list: {
+          ul: 'list-disc pl-6 mb-3',
+          ol: 'list-decimal pl-6 mb-3',
+          listitem: 'mb-1',
+        },
+        text: {
+          bold: 'font-bold',
+          italic: 'italic',
+          underline: 'underline',
+        },
+      },
+      nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode],
+      editorState: createEditorStateFromValue(value),
+      onError: (error: Error) => {
+        throw error
+      },
+    }),
+    [],
+  )
+
+  return (
+    <LexicalComposer initialConfig={initialConfig}>
+      <div className="min-h-56">
+        <EditorToolbar />
+        <div className="px-4 py-3">
+          <RichTextPlugin
+            ErrorBoundary={LexicalErrorBoundary}
+            contentEditable={
+              <ContentEditable className="min-h-40 outline-none [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6" />
+            }
+            placeholder={
+              <div className="pointer-events-none absolute text-sm text-muted-foreground">
+                Nhập chi tiết công việc, dịch vụ hoặc nhu cầu của bạn
+              </div>
+            }
+          />
+          <HistoryPlugin />
+          <ListPlugin />
+          <LinkPlugin />
+          <OnChangePlugin
+            onChange={(editorState: EditorState, editor: LexicalEditor) => {
+              ensureEditorHasParagraph(editor)
+              onChange(editorState.toJSON() as DefaultTypedEditorState)
+            }}
+          />
+        </div>
+      </div>
+    </LexicalComposer>
+  )
 }
 
 export function ListingCreateClient({
@@ -77,15 +402,20 @@ export function ListingCreateClient({
   const { loading, openAuthModal, user } = useAuth()
   const [mounted, setMounted] = useState(false)
   const [open, setOpen] = useState(false)
-  const [form, setForm] = useState(initialForm)
+  const [form, setForm] = useState<ListingCreateForm>(initialForm)
   const [error, setError] = useState<string | null>(null)
-  const [done, setDone] = useState(false)
   const [pending, setPending] = useState(false)
   const [provinces, setProvinces] = useState<ProvinceOption[]>([])
   const [wards, setWards] = useState<WardOption[]>([])
   const [loadingProvinces, setLoadingProvinces] = useState(false)
   const [loadingWards, setLoadingWards] = useState(false)
   const [locationError, setLocationError] = useState<string | null>(null)
+  const [avatar, setAvatar] = useState<UploadedMedia | null>(null)
+  const [thumbnail, setThumbnail] = useState<UploadedMedia | null>(null)
+  const [gallery, setGallery] = useState<UploadedMedia[]>([])
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [uploadingThumbnail, setUploadingThumbnail] = useState(false)
+  const [uploadingGallery, setUploadingGallery] = useState(false)
 
   const firstCategory = categories[0]?.id
   const categoryValue = form.categoryId || (firstCategory ? String(firstCategory) : '')
@@ -206,15 +536,34 @@ export function ListingCreateClient({
     }
   }, [provinceValue])
 
-  const descriptionText = useMemo(
+  const helperText = useMemo(
     () =>
       modalDescription?.trim() ||
       'Tin của bạn sẽ được gửi vào hàng chờ để admin duyệt trước khi hiển thị.',
     [modalDescription],
   )
 
-  function updateField(name: keyof typeof initialForm, value: string) {
+  function resetFormState() {
+    setForm({
+      ...initialForm,
+      categoryId: firstCategory ? String(firstCategory) : '',
+      description: buildDefaultEditorState({ text: '' }),
+    })
+    setAvatar(null)
+    setThumbnail(null)
+    setGallery([])
+    setError(null)
+  }
+
+  function updateField(name: keyof Omit<ListingCreateForm, 'description'>, value: string) {
     setForm((current) => ({ ...current, [name]: value }))
+  }
+
+  function updateDescription(value: DefaultTypedEditorState) {
+    setForm((current) => ({
+      ...current,
+      description: value,
+    }))
   }
 
   function updateProvince(provinceCode: string) {
@@ -244,15 +593,90 @@ export function ListingCreateClient({
       openAuthModal()
       return
     }
+
     setError(null)
-    setDone(false)
     setOpen(true)
+  }
+
+  async function uploadMedia(file: File): Promise<UploadedMedia> {
+    const uploadError = getUploadError(file)
+    if (uploadError) throw new Error(uploadError)
+
+    const body = new FormData()
+    body.append('file', file, pickFileName(file))
+    body.append('alt', file.name.replace(/\.[^.]+$/, ''))
+
+    const response = await fetch('/api/listings/media', {
+      method: 'POST',
+      credentials: 'include',
+      body,
+    })
+
+    const data = (await response.json().catch(() => ({}))) as {
+      error?: string
+      doc?: UploadedMedia
+    }
+    if (!response.ok || !data.doc) {
+      throw new Error(data.error || 'Không tải được ảnh lên')
+    }
+
+    return data.doc
+  }
+
+  async function handleSingleImageUpload(
+    file: File | null,
+    setUploading: React.Dispatch<React.SetStateAction<boolean>>,
+    setValue: React.Dispatch<React.SetStateAction<UploadedMedia | null>>,
+  ) {
+    if (!file) return
+
+    setUploading(true)
+    try {
+      const uploaded = await uploadMedia(file)
+      setValue(uploaded)
+      toast.success('Tải ảnh lên thành công')
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Không tải được ảnh lên'
+      toast.error(message)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  async function handleGalleryUpload(files: FileList | null) {
+    if (!files?.length) return
+
+    const available = MAX_GALLERY_FILES - gallery.length
+    if (available <= 0) {
+      toast.error(`Tối đa ${MAX_GALLERY_FILES} ảnh thư viện`)
+      return
+    }
+
+    setUploadingGallery(true)
+    try {
+      const selected = Array.from(files).slice(0, available)
+      const uploaded = await Promise.all(selected.map((file) => uploadMedia(file)))
+      setGallery((current) => [...current, ...uploaded])
+      toast.success(`Đã tải lên ${uploaded.length} ảnh`)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Không tải được ảnh thư viện'
+      toast.error(message)
+    } finally {
+      setUploadingGallery(false)
+    }
   }
 
   async function submitListing(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError(null)
-    setDone(false)
+
+    if (!hasLexicalContent(form.description)) {
+      const message = 'Nội dung mô tả là bắt buộc'
+      setError(message)
+      toast.error(message)
+      return
+    }
+
     setPending(true)
 
     try {
@@ -264,7 +688,10 @@ export function ListingCreateClient({
         },
         body: JSON.stringify({
           ...form,
+          avatarId: avatar?.id ?? null,
           categoryId: categoryValue,
+          galleryIds: gallery.map((item) => item.id),
+          thumbnailId: thumbnail?.id ?? null,
         }),
       })
       const data = (await response.json().catch(() => ({}))) as { error?: string }
@@ -277,8 +704,7 @@ export function ListingCreateClient({
       }
 
       toast.success(successMessage || 'Đã gửi tin đăng. Admin sẽ duyệt trước khi tin xuất hiện.')
-      setDone(true)
-      setForm(initialForm)
+      resetFormState()
       setOpen(false)
     } finally {
       setPending(false)
@@ -291,7 +717,7 @@ export function ListingCreateClient({
       <>
         <motion.button
           aria-label={buttonLabel}
-          className="fixed bottom-5 right-5 z-[70] inline-flex h-14 items-center justify-center gap-2 rounded-full bg-[#1d9bf0] px-5 text-sm font-bold text-white shadow-[0_14px_30px_rgba(29,155,240,0.35)] transition-colors hover:bg-[#1686d9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#1d9bf0] active:scale-[0.97] md:bottom-8 md:right-8 cursor-pointer"
+          className="fixed bottom-5 right-5 z-70 inline-flex h-14 items-center justify-center gap-2 rounded-full bg-[#1d9bf0] px-5 text-sm font-bold text-white shadow-[0_14px_30px_rgba(29,155,240,0.35)] transition-colors hover:bg-[#1686d9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#1d9bf0] active:scale-[0.97] md:bottom-8 md:right-8 cursor-pointer"
           initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.94, y: 10 }}
           animate={shouldReduceMotion ? undefined : { opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.2, ease: EASE_OUT }}
@@ -308,7 +734,7 @@ export function ListingCreateClient({
               aria-describedby={descriptionId}
               aria-labelledby={titleId}
               aria-modal="true"
-              className="fixed inset-0 z-[80]"
+              className="fixed inset-0 z-80"
               role="dialog"
             >
               <motion.button
@@ -324,7 +750,7 @@ export function ListingCreateClient({
 
               <div className="pointer-events-none absolute inset-0 flex items-end justify-center p-0 sm:items-center sm:p-4">
                 <motion.div
-                  className="pointer-events-auto max-h-[92vh] w-full overflow-hidden rounded-t-2xl border border-border bg-background shadow-2xl sm:max-w-2xl sm:rounded-2xl"
+                  className="pointer-events-auto max-h-[92vh] w-full overflow-hidden rounded-t-2xl border border-border bg-background shadow-2xl sm:max-w-5xl sm:rounded-2xl"
                   initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.97, y: 24 }}
                   animate={shouldReduceMotion ? undefined : { opacity: 1, scale: 1, y: 0 }}
                   exit={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.98, y: 18 }}
@@ -339,7 +765,7 @@ export function ListingCreateClient({
                         className="mt-1 text-sm leading-6 text-muted-foreground"
                         id={descriptionId}
                       >
-                        {descriptionText}
+                        {helperText}
                       </p>
                     </div>
                     <button
@@ -368,170 +794,238 @@ export function ListingCreateClient({
                       </div>
                     ) : null}
 
-                    <div className="grid gap-4 md:grid-cols-2 pb-15">
-                      <Field label="Tiêu đề" required>
-                        <input
-                          className={inputClassName}
-                          maxLength={140}
-                          onChange={(event) => updateField('title', event.currentTarget.value)}
-                          required
-                          value={form.title}
-                          placeholder="Vui lòng nhập tiêu đề"
-                        />
-                      </Field>
-                      <Field label="Loại tin">
-                        <select
-                          className={inputClassName}
-                          onChange={(event) =>
-                            updateField('listingType', event.currentTarget.value as ListingType)
-                          }
-                          value={form.listingType}
-                        >
-                          {listingTypeOptions.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      </Field>
-                      <Field label="Danh mục">
-                        <select
-                          className={inputClassName}
-                          disabled={!categories.length}
-                          onChange={(event) => updateField('categoryId', event.currentTarget.value)}
-                          value={categoryValue}
-                        >
-                          {categories.length ? (
-                            categories.map((category) => (
-                              <option key={category.id} value={category.id}>
-                                {category.title}
+                    <div className="grid gap-4 pb-15 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <Field label="Tiêu đề" required>
+                          <input
+                            className={inputClassName}
+                            maxLength={140}
+                            onChange={(event) => updateField('title', event.currentTarget.value)}
+                            required
+                            value={form.title}
+                            placeholder="Vui lòng nhập tiêu đề"
+                          />
+                        </Field>
+                        <Field label="Loại tin">
+                          <select
+                            className={inputClassName}
+                            onChange={(event) =>
+                              updateField('listingType', event.currentTarget.value as ListingType)
+                            }
+                            value={form.listingType}
+                          >
+                            {listingTypeOptions.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
                               </option>
-                            ))
-                          ) : (
-                            <option value="">Chưa có danh mục</option>
-                          )}
-                        </select>
-                      </Field>
-                      <Field label="Giá / ngân sách" required>
-                        <input
-                          className={inputClassName}
-                          maxLength={80}
-                          onChange={(event) => updateField('priceLabel', event.currentTarget.value)}
-                          placeholder="Ví dụ: 10 triệu / Thỏa thuận"
-                          required
-                          value={form.priceLabel}
-                        />
-                      </Field>
-                      <Field label="Tỉnh / thành" required>
-                        <select
-                          className={inputClassName}
-                          disabled={loadingProvinces || !provinces.length}
-                          onChange={(event) => updateProvince(event.currentTarget.value)}
-                          required
-                          value={provinceValue}
-                        >
-                          <option value="">
-                            {loadingProvinces ? 'Đang tải tỉnh / thành...' : 'Chọn tỉnh / thành'}
-                          </option>
-                          {provinces.map((province) => (
-                            <option key={province.code} value={province.code}>
-                              {province.name}
+                            ))}
+                          </select>
+                        </Field>
+                        <Field label="Danh mục">
+                          <select
+                            className={inputClassName}
+                            disabled={!categories.length}
+                            onChange={(event) =>
+                              updateField('categoryId', event.currentTarget.value)
+                            }
+                            value={categoryValue}
+                          >
+                            {categories.length ? (
+                              categories.map((category) => (
+                                <option key={category.id} value={category.id}>
+                                  {category.title}
+                                </option>
+                              ))
+                            ) : (
+                              <option value="">Chưa có danh mục</option>
+                            )}
+                          </select>
+                        </Field>
+                        <Field label="Giá / ngân sách" required>
+                          <input
+                            className={inputClassName}
+                            maxLength={80}
+                            onChange={(event) =>
+                              updateField('priceLabel', event.currentTarget.value)
+                            }
+                            placeholder="Ví dụ: 10 triệu / Thỏa thuận"
+                            required
+                            value={form.priceLabel}
+                          />
+                        </Field>
+                        <Field label="Tỉnh / thành" required>
+                          <select
+                            className={inputClassName}
+                            disabled={loadingProvinces || !provinces.length}
+                            onChange={(event) => updateProvince(event.currentTarget.value)}
+                            required
+                            value={provinceValue}
+                          >
+                            <option value="">
+                              {loadingProvinces ? 'Đang tải tỉnh / thành...' : 'Chọn tỉnh / thành'}
                             </option>
-                          ))}
-                        </select>
-                      </Field>
-                      <Field label="Xã / phường" required>
-                        <select
-                          className={inputClassName}
-                          disabled={!provinceValue || loadingWards || !wards.length}
-                          onChange={(event) => updateWard(event.currentTarget.value)}
-                          required
-                          value={wardValue}
-                        >
-                          <option value="">
-                            {!provinceValue
-                              ? 'Chọn tỉnh / thành trước'
-                              : loadingWards
-                                ? 'Đang tải xã / phường...'
-                                : 'Chọn xã / phường'}
-                          </option>
-                          {wards.map((ward) => (
-                            <option key={ward.code} value={ward.code}>
-                              {ward.name}
+                            {provinces.map((province) => (
+                              <option key={province.code} value={province.code}>
+                                {province.name}
+                              </option>
+                            ))}
+                          </select>
+                        </Field>
+                        <Field label="Xã / phường" required>
+                          <select
+                            className={inputClassName}
+                            disabled={!provinceValue || loadingWards || !wards.length}
+                            onChange={(event) => updateWard(event.currentTarget.value)}
+                            required
+                            value={wardValue}
+                          >
+                            <option value="">
+                              {!provinceValue
+                                ? 'Chọn tỉnh / thành trước'
+                                : loadingWards
+                                  ? 'Đang tải xã / phường...'
+                                  : 'Chọn xã / phường'}
                             </option>
-                          ))}
-                        </select>
-                      </Field>
-                      <Field className="md:col-span-2" label="Địa chỉ">
-                        <input
-                          className={inputClassName}
-                          onChange={(event) => updateField('address', event.currentTarget.value)}
-                          placeholder="Ví dụ: 123 Nguyễn Văn Linh"
-                          value={form.address}
+                            {wards.map((ward) => (
+                              <option key={ward.code} value={ward.code}>
+                                {ward.name}
+                              </option>
+                            ))}
+                          </select>
+                        </Field>
+                        <Field className="md:col-span-2" label="Địa chỉ">
+                          <input
+                            className={inputClassName}
+                            onChange={(event) => updateField('address', event.currentTarget.value)}
+                            placeholder="Ví dụ: 123 Nguyễn Văn Linh"
+                            value={form.address}
+                          />
+                        </Field>
+                        <Field className="md:col-span-2" label="Mô tả ngắn">
+                          <textarea
+                            className={cn(inputClassName, 'min-h-20 resize-y py-3')}
+                            maxLength={260}
+                            onChange={(event) => updateField('summary', event.currentTarget.value)}
+                            placeholder="Mô tả ngắn gọn nội dung tin đăng"
+                            value={form.summary}
+                          />
+                        </Field>
+                        <Field className="md:col-span-2" label="Nội dung mô tả" required>
+                          <div className="overflow-hidden rounded-xl border border-border bg-background">
+                            <ListingDescriptionEditor
+                              onChange={updateDescription}
+                              value={form.description}
+                            />
+                          </div>
+                        </Field>
+                        <Field label="Tên liên hệ" required>
+                          <input
+                            className={inputClassName}
+                            onChange={(event) =>
+                              updateField('contactName', event.currentTarget.value)
+                            }
+                            placeholder="Ví dụ: Nguyễn Văn A"
+                            required
+                            value={form.contactName}
+                          />
+                        </Field>
+                        <Field label="Số điện thoại" required>
+                          <input
+                            className={inputClassName}
+                            inputMode="tel"
+                            onChange={(event) =>
+                              updateField('contactPhone', event.currentTarget.value)
+                            }
+                            placeholder="Ví dụ: 0901234567"
+                            required
+                            value={form.contactPhone}
+                          />
+                        </Field>
+                        <Field label="SĐT hỗ trợ">
+                          <input
+                            className={inputClassName}
+                            inputMode="tel"
+                            onChange={(event) =>
+                              updateField('supportPhone', event.currentTarget.value)
+                            }
+                            placeholder="Ví dụ: 0912345678"
+                            value={form.supportPhone}
+                          />
+                        </Field>
+                        <Field label="Zalo URL">
+                          <input
+                            className={inputClassName}
+                            onChange={(event) => updateField('zaloUrl', event.currentTarget.value)}
+                            placeholder="https://zalo.me/..."
+                            value={form.zaloUrl}
+                          />
+                        </Field>
+                      </div>
+
+                      <div className="space-y-5">
+                        <UploadField
+                          accept="image/png,image/jpeg,image/webp,image/gif"
+                          description="Ảnh đại diện người đăng. Tùy chọn."
+                          label="Avatar"
+                          loading={uploadingAvatar}
+                          onChange={(event) => {
+                            void handleSingleImageUpload(
+                              event.currentTarget.files?.[0] ?? null,
+                              setUploadingAvatar,
+                              setAvatar,
+                            )
+                            event.currentTarget.value = ''
+                          }}
                         />
-                      </Field>
-                      <Field className="md:col-span-2" label="Mô tả ngắn">
-                        <textarea
-                          className={cn(inputClassName, 'min-h-20 resize-y py-3')}
-                          maxLength={260}
-                          onChange={(event) => updateField('summary', event.currentTarget.value)}
-                          placeholder="Mô tả ngắn gọn nội dung tin đăng"
-                          value={form.summary}
+                        {avatar ? (
+                          <MediaPreview item={avatar} onRemove={() => setAvatar(null)} />
+                        ) : null}
+
+                        <UploadField
+                          accept="image/png,image/jpeg,image/webp,image/gif"
+                          description="Ảnh thumbnail hiển thị ngoài danh sách. Tùy chọn."
+                          label="Thumbnail"
+                          loading={uploadingThumbnail}
+                          onChange={(event) => {
+                            void handleSingleImageUpload(
+                              event.currentTarget.files?.[0] ?? null,
+                              setUploadingThumbnail,
+                              setThumbnail,
+                            )
+                            event.currentTarget.value = ''
+                          }}
                         />
-                      </Field>
-                      <Field className="md:col-span-2" label="Nội dung mô tả" required>
-                        <textarea
-                          className={cn(inputClassName, 'min-h-32 resize-y py-3')}
-                          onChange={(event) =>
-                            updateField('description', event.currentTarget.value)
-                          }
-                          placeholder="Nhập chi tiết công việc, dịch vụ hoặc nhu cầu của bạn"
-                          required
-                          value={form.description}
+                        {thumbnail ? (
+                          <MediaPreview item={thumbnail} onRemove={() => setThumbnail(null)} />
+                        ) : null}
+
+                        <UploadField
+                          accept="image/png,image/jpeg,image/webp,image/gif"
+                          description={`Tối đa ${MAX_GALLERY_FILES} ảnh. Có thể chọn nhiều ảnh cùng lúc.`}
+                          label="Thư viện ảnh"
+                          loading={uploadingGallery}
+                          multiple
+                          onChange={(event) => {
+                            void handleGalleryUpload(event.currentTarget.files)
+                            event.currentTarget.value = ''
+                          }}
                         />
-                      </Field>
-                      <Field label="Tên liên hệ" required>
-                        <input
-                          className={inputClassName}
-                          onChange={(event) =>
-                            updateField('contactName', event.currentTarget.value)
-                          }
-                          placeholder="Ví dụ: Nguyễn Văn A"
-                          required
-                          value={form.contactName}
-                        />
-                      </Field>
-                      <Field label="Số điện thoại" required>
-                        <input
-                          className={inputClassName}
-                          inputMode="tel"
-                          onChange={(event) =>
-                            updateField('contactPhone', event.currentTarget.value)
-                          }
-                          placeholder="Ví dụ: 0901234567"
-                          required
-                          value={form.contactPhone}
-                        />
-                      </Field>
-                      <Field label="SĐT hỗ trợ">
-                        <input
-                          className={inputClassName}
-                          inputMode="tel"
-                          onChange={(event) =>
-                            updateField('supportPhone', event.currentTarget.value)
-                          }
-                          placeholder="Ví dụ: 0912345678"
-                          value={form.supportPhone}
-                        />
-                      </Field>
-                      <Field label="Zalo URL">
-                        <input
-                          className={inputClassName}
-                          onChange={(event) => updateField('zaloUrl', event.currentTarget.value)}
-                          placeholder="https://zalo.me/..."
-                          value={form.zaloUrl}
-                        />
-                      </Field>
+                        {gallery.length ? (
+                          <div className="grid grid-cols-2 gap-3">
+                            {gallery.map((item) => (
+                              <MediaPreview
+                                key={item.id}
+                                item={item}
+                                onRemove={() =>
+                                  setGallery((current) =>
+                                    current.filter((entry) => entry.id !== item.id),
+                                  )
+                                }
+                              />
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
                     </div>
                   </form>
                   <div className="sticky bottom-0 mt-5 flex items-center justify-end gap-3 border-t border-border bg-background px-5 py-4">
@@ -545,7 +1039,9 @@ export function ListingCreateClient({
                     <button
                       form="listing-create-form"
                       className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[#1d9bf0] px-5 text-sm font-bold text-white transition-colors hover:bg-[#1686d9] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-                      disabled={pending}
+                      disabled={
+                        pending || uploadingAvatar || uploadingThumbnail || uploadingGallery
+                      }
                       type="submit"
                     >
                       <Send className="h-4 w-4" />
@@ -585,6 +1081,48 @@ function Field({
         {required ? <span className="text-destructive"> *</span> : null}
       </span>
       {children}
+    </label>
+  )
+}
+
+function UploadField({
+  accept,
+  description,
+  label,
+  loading,
+  multiple,
+  onChange,
+}: {
+  accept: string
+  description?: string
+  label: string
+  loading?: boolean
+  multiple?: boolean
+  onChange: React.ChangeEventHandler<HTMLInputElement>
+}) {
+  return (
+    <label className="grid gap-2 text-sm font-semibold text-foreground">
+      <span>{label}</span>
+      <div className="rounded-xl border border-dashed border-border bg-muted/20 p-4">
+        <div className="flex items-center gap-3 text-muted-foreground">
+          {loading ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <ImagePlus className="h-5 w-5" />
+          )}
+          <div>
+            <p className="text-sm font-medium text-foreground">Chọn ảnh để tải lên</p>
+            {description ? <p className="text-xs leading-5">{description}</p> : null}
+          </div>
+        </div>
+        <input
+          accept={accept}
+          className="mt-3 block w-full text-sm text-muted-foreground file:mr-4 file:rounded-full file:border-0 file:bg-[#1d9bf0] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-[#1686d9]"
+          multiple={multiple}
+          onChange={onChange}
+          type="file"
+        />
+      </div>
     </label>
   )
 }
