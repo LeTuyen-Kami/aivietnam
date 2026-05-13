@@ -11,7 +11,7 @@ type Props = MediaHubTriptychBlock & {
   disableInnerContainer?: boolean
 }
 
-export function toIframeEmbedUrl(raw: string | null | undefined): string | null {
+function toIframeEmbedUrl(raw: string | null | undefined): string | null {
   if (!raw || typeof raw !== 'string') return null
 
   const trimmed = raw.trim()
@@ -334,41 +334,59 @@ export const MediaHubTriptychBlockComponent: React.FC<Props> = (props) => {
           {videoColumn?.sectionTitle ?? 'Video'}
         </h2>
 
-        <div className="mb-4 overflow-hidden rounded-lg border border-[#86C9A0]/50 bg-black/5">
-          {featuredPlayback && featuredPlayback !== 'legacyThumb' ? (
-            <VideoGridPlayer
-              playback={featuredPlayback}
-              poster={featuredThumb}
-              title={featuredItem?.title ?? 'Video nổi bật'}
-            />
-          ) : featuredThumb ? (
-            <div className="relative aspect-video w-full">
-              <Media
-                className="absolute inset-0"
-                fill
-                imgClassName="h-full w-full object-cover"
-                resource={featuredThumb}
-                size="(max-width: 768px) 100vw, 33vw"
-              />
-              <PlayOverlay />
-            </div>
-          ) : (
-            <div className="flex aspect-video items-center justify-center bg-muted px-3 text-center text-sm text-muted-foreground">
-              Chọn media item video có dữ liệu hợp lệ
-            </div>
-          )}
-        </div>
+        {(() => {
+          const href = featuredItem ? mediaItemHref(featuredItem) : null
 
-        {featuredItem?.title ? (
-          <p className="mb-1 font-serif text-sm font-semibold leading-snug text-[#1a3d2e] md:text-base">
-            {featuredItem.title}
-          </p>
-        ) : null}
-        {featuredItem?.summary ? (
-          <p className="mb-4 text-xs leading-relaxed text-[#1a3d2e]/80 md:text-sm">
-            {featuredItem.summary}
-          </p>
-        ) : null}
+          return (
+            <div className="relative rounded-lg">
+              <div className="mb-4 overflow-hidden rounded-lg border border-[#86C9A0]/50 bg-black/5">
+                {featuredPlayback && featuredPlayback !== 'legacyThumb' ? (
+                  <VideoGridPlayer
+                    playback={featuredPlayback}
+                    poster={featuredThumb}
+                    title={featuredItem?.title ?? 'Video nổi bật'}
+                  />
+                ) : featuredThumb ? (
+                  <div className="relative aspect-video w-full">
+                    <Media
+                      className="absolute inset-0"
+                      fill
+                      imgClassName="h-full w-full object-cover"
+                      resource={featuredThumb}
+                      size="(max-width: 768px) 100vw, 33vw"
+                    />
+                    <PlayOverlay />
+                  </div>
+                ) : (
+                  <div className="flex aspect-video items-center justify-center bg-muted px-3 text-center text-sm text-muted-foreground">
+                    Chọn media item video có dữ liệu hợp lệ
+                  </div>
+                )}
+              </div>
+
+              {featuredItem?.title ? (
+                <p className="mb-1 font-serif text-sm font-semibold leading-snug text-[#1a3d2e] md:text-base">
+                  {featuredItem.title}
+                </p>
+              ) : null}
+              {featuredItem?.summary ? (
+                <p className="mb-4 text-xs leading-relaxed text-[#1a3d2e]/80 md:text-sm">
+                  {featuredItem.summary}
+                </p>
+              ) : null}
+
+              {href ? (
+                <SmartLink
+                  aria-label={featuredItem?.title ?? 'Video nổi bật'}
+                  className="absolute inset-0 z-10 block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  href={href}
+                >
+                  <span className="sr-only">{featuredItem?.title ?? 'Video nổi bật'}</span>
+                </SmartLink>
+              ) : null}
+            </div>
+          )
+        })()}
 
         {gridItems.length > 0 ? (
           <div className="grid grid-cols-2 gap-3">
@@ -380,59 +398,79 @@ export const MediaHubTriptychBlockComponent: React.FC<Props> = (props) => {
                   {cell.title}
                 </p>
               )
-              const titleBlock = href ? (
-                <SmartLink
-                  className="block outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  href={href}
-                >
-                  {titleEl}
-                </SmartLink>
-              ) : (
-                titleEl
-              )
 
               if (playback === 'legacyThumb') {
                 const thumb = mediaDoc(cell.thumbnail)
                 return (
-                  <article key={cell.id ?? i} className="flex flex-col gap-1.5">
-                    {thumb ? (
-                      <div className="relative aspect-video w-full overflow-hidden rounded-md border border-[#86C9A0]/40 bg-muted">
-                        <Media
-                          className="absolute inset-0"
-                          fill
-                          imgClassName="h-full w-full object-cover"
-                          resource={thumb}
-                          size="(max-width: 768px) 50vw, 16vw"
-                        />
-                        <PlayOverlay />
-                      </div>
+                  <div key={cell.id ?? i} className="relative rounded-md">
+                    <article className="flex flex-col gap-1.5">
+                      {thumb ? (
+                        <div className="relative aspect-video w-full overflow-hidden rounded-md border border-[#86C9A0]/40 bg-muted">
+                          <Media
+                            className="absolute inset-0"
+                            fill
+                            imgClassName="h-full w-full object-cover"
+                            resource={thumb}
+                            size="(max-width: 768px) 50vw, 16vw"
+                          />
+                          <PlayOverlay />
+                        </div>
+                      ) : null}
+                      {titleEl}
+                    </article>
+                    {href ? (
+                      <SmartLink
+                        aria-label={cell.title}
+                        className="absolute inset-0 z-10 block rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        href={href}
+                      >
+                        <span className="sr-only">{cell.title}</span>
+                      </SmartLink>
                     ) : null}
-                    {titleBlock}
-                  </article>
+                  </div>
                 )
               }
 
               if (!playback) {
                 return (
-                  <article
-                    key={cell.id ?? i}
-                    className="flex flex-col gap-1.5 rounded-md border border-dashed border-[#86C9A0]/50 p-2 text-center text-xs text-muted-foreground"
-                  >
-                    Thiếu URL hoặc file video
-                    {titleBlock}
-                  </article>
+                  <div key={cell.id ?? i} className="relative rounded-md">
+                    <article className="flex flex-col gap-1.5 rounded-md border border-dashed border-[#86C9A0]/50 p-2 text-center text-xs text-muted-foreground">
+                      Thiếu URL hoặc file video
+                      {titleEl}
+                    </article>
+                    {href ? (
+                      <SmartLink
+                        aria-label={cell.title}
+                        className="absolute inset-0 z-10 block rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        href={href}
+                      >
+                        <span className="sr-only">{cell.title}</span>
+                      </SmartLink>
+                    ) : null}
+                  </div>
                 )
               }
 
               return (
-                <article key={cell.id ?? i} className="flex flex-col gap-1.5">
-                  <VideoGridPlayer
-                    playback={playback}
-                    poster={mediaDoc(cell.thumbnail)}
-                    title={cell.title}
-                  />
-                  {titleBlock}
-                </article>
+                <div key={cell.id ?? i} className="relative rounded-md">
+                  <article className="flex flex-col gap-1.5">
+                    <VideoGridPlayer
+                      playback={playback}
+                      poster={mediaDoc(cell.thumbnail)}
+                      title={cell.title}
+                    />
+                    {titleEl}
+                  </article>
+                  {href ? (
+                    <SmartLink
+                      aria-label={cell.title}
+                      className="absolute inset-0 z-10 block rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      href={href}
+                    >
+                      <span className="sr-only">{cell.title}</span>
+                    </SmartLink>
+                  ) : null}
+                </div>
               )
             })}
           </div>
@@ -449,29 +487,46 @@ export const MediaHubTriptychBlockComponent: React.FC<Props> = (props) => {
           {photoColumn?.sectionTitle ?? 'Góc ảnh 📷'}
         </h2>
 
-        {featuredPhotoImage ? (
-          <>
-            <div className="mb-3 overflow-hidden rounded-lg border border-[#B8A9D9]/50">
-              <div className="relative aspect-16/10 w-full">
-                <Media
-                  className="absolute inset-0"
-                  fill
-                  imgClassName="h-full w-full object-cover"
-                  resource={featuredPhotoImage}
-                  size="(max-width: 768px) 100vw, 33vw"
-                />
-              </div>
-            </div>
-            <h3 className="font-serif text-base font-bold leading-snug text-foreground md:text-lg">
-              {featuredPhotoItem?.title}
-            </h3>
-            {photoDateLine(featuredPhotoItem) ? (
-              <p className="mt-1 text-xs text-muted-foreground md:text-sm">
-                {photoDateLine(featuredPhotoItem)}
-              </p>
-            ) : null}
-          </>
-        ) : null}
+        {featuredPhotoImage
+          ? (() => {
+              const href = featuredPhotoItem ? mediaItemHref(featuredPhotoItem) : null
+
+              return (
+                <div className="relative rounded-lg">
+                  <div className="mb-3 overflow-hidden rounded-lg border border-[#B8A9D9]/50">
+                    <div className="relative aspect-16/10 w-full">
+                      <Media
+                        className="absolute inset-0"
+                        fill
+                        imgClassName="h-full w-full object-cover"
+                        resource={featuredPhotoImage}
+                        size="(max-width: 768px) 100vw, 33vw"
+                      />
+                    </div>
+                  </div>
+                  <h3 className="font-serif text-base font-bold leading-snug text-foreground md:text-lg">
+                    {featuredPhotoItem?.title}
+                  </h3>
+                  {photoDateLine(featuredPhotoItem) ? (
+                    <p className="mt-1 text-xs text-muted-foreground md:text-sm">
+                      {photoDateLine(featuredPhotoItem)}
+                    </p>
+                  ) : null}
+                  {href ? (
+                    <SmartLink
+                      aria-label={featuredPhotoItem?.title ?? 'Góc ảnh nổi bật'}
+                      className="absolute inset-0 z-10 block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      href={href}
+                    >
+                      <span className="sr-only">
+                        {featuredPhotoItem?.title ?? 'Góc ảnh nổi bật'}
+                      </span>
+                    </SmartLink>
+                  ) : null}
+                </div>
+              )
+            })()
+          : null}
 
         {bottomItems.length > 0 ? (
           <div
