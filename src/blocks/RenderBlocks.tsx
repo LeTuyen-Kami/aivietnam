@@ -62,7 +62,7 @@ export const RenderBlocks: React.FC<{
 
             if (Block) {
               return (
-                <div className="my-8 relative z-0" key={index}>
+                <div className="md:my-8 my-0 relative z-0" key={index}>
                   {/* @ts-expect-error block union props are resolved at runtime by blockType */}
                   <Block {...block} />
                 </div>

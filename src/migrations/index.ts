@@ -19,6 +19,9 @@ import * as migration_20260511_074420 from './20260511_074420'
 import * as migration_20260511_173500_media_hub_triptych_media_items from './20260511_173500_media_hub_triptych_media_items'
 import * as migration_20260511_174500_add_media_items_to_pages_rels from './20260511_174500_add_media_items_to_pages_rels'
 import * as migration_20260512_000000_listing_create_block from './20260512_000000_listing_create_block'
+import * as migration_20260516_223553_add_mobile_header_banner from './20260516_223553_add_mobile_header_banner'
+import * as migration_20260516_235700_portal_split_humanitarian_items from './20260516_235700_portal_split_humanitarian_items'
+import * as migration_20260517_120000_portal_split_mobile_ad_fields from './20260517_120000_portal_split_mobile_ad_fields'
 
 export const migrations = [
   {
@@ -125,5 +128,20 @@ export const migrations = [
     up: migration_20260512_000000_listing_create_block.up,
     down: migration_20260512_000000_listing_create_block.down,
     name: '20260512_000000_listing_create_block',
+  },
+  {
+    up: migration_20260516_223553_add_mobile_header_banner.up,
+    down: migration_20260516_223553_add_mobile_header_banner.down,
+    name: '20260516_223553_add_mobile_header_banner',
+  },
+  {
+    up: migration_20260516_235700_portal_split_humanitarian_items.up,
+    down: migration_20260516_235700_portal_split_humanitarian_items.down,
+    name: '20260516_235700_portal_split_humanitarian_items',
+  },
+  {
+    up: migration_20260517_120000_portal_split_mobile_ad_fields.up,
+    down: migration_20260517_120000_portal_split_mobile_ad_fields.down,
+    name: '20260517_120000_portal_split_mobile_ad_fields',
   },
 ]

@@ -12,9 +12,12 @@ export function LeftFeed({ posts }: { posts: Post[] }) {
   }
 
   return (
-    <div className="space-y-10">
+    <div className="md:space-y-10 space-y-4 px-4 md:px-0">
       {posts.map((post) => (
-        <article className="last:pb-0" key={post.id}>
+        <article
+          className="border-t border-border pt-4 md:pt-0 md:border-none last:border-b last:border-border md:last:border-none last:pb-4 md:last:pb-0"
+          key={post.id}
+        >
           <Link className="group block" href={`/posts/${post?.slug}`}>
             {typeof post.meta?.image === 'object' && post.meta.image && (
               <MediaComponent
@@ -24,7 +27,7 @@ export function LeftFeed({ posts }: { posts: Post[] }) {
                 size="(max-width: 1024px) 100vw, 33vw"
               />
             )}
-            <h3 className="font-serif text-[15px] font-bold leading-snug text-foreground transition-colors duration-200 underline-offset-2 group-hover:underline">
+            <h3 className="font-serif text-lg md:text-[15px] font-bold leading-snug text-foreground transition-colors duration-200 underline-offset-2 group-hover:underline">
               {post.title}
             </h3>
             <PostExcerpt post={post} />

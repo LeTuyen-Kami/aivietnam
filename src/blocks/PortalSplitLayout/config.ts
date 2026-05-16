@@ -425,6 +425,10 @@ export const PortalSplitLayout: Block = {
       ],
     },
     {
+      label: {
+        en: 'Standard sections',
+        vi: 'Các mục chuẩn',
+      },
       name: 'standardSections',
       type: 'array',
       dbName: 'std',
@@ -512,6 +516,152 @@ export const PortalSplitLayout: Block = {
             }
             return true
           }) as RelationshipFieldManyValidation,
+        },
+      ],
+    },
+    {
+      type: 'collapsible',
+      label: {
+        en: 'Humanitarian corner (Góc nhân văn)',
+        vi: 'Góc nhân văn',
+      },
+      admin: {
+        initCollapsed: true,
+      },
+      fields: [
+        {
+          name: 'humanitarianItems',
+          type: 'array',
+          dbName: 'hnv_items',
+          labels: {
+            singular: { en: 'Image + link', vi: 'Ảnh + link' },
+            plural: {
+              en: 'Humanitarian — images & links',
+              vi: 'Góc nhân văn — ảnh & liên kết',
+            },
+          },
+          admin: {
+            description: {
+              en: 'Each row: media and/or URL. Use SmartLink on the frontend for href.',
+              vi: 'Mỗi dòng: ảnh và/hoặc URL. Frontend nên dùng SmartLink cho href.',
+            },
+          },
+          fields: [
+            {
+              name: 'image',
+              type: 'upload',
+              relationTo: 'media',
+              admin: {
+                description: {
+                  en: 'Optional image or asset.',
+                  vi: 'Ảnh hoặc file (tuỳ chọn).',
+                },
+              },
+            },
+            {
+              name: 'href',
+              type: 'text',
+              admin: {
+                description: {
+                  en: 'Optional URL (in-app path, https:, mailto:, tel:).',
+                  vi: 'URL tuỳ chọn (đường dẫn app, https:, mailto:, tel:).',
+                },
+              },
+            },
+          ],
+        },
+        {
+          name: 'humanitarianArticles',
+          type: 'array',
+          dbName: 'hnv_art',
+          labels: {
+            singular: { en: 'Article', vi: 'Bài viết' },
+            plural: {
+              en: 'Article list (from posts)',
+              vi: 'Danh sách bài (chọn từ posts)',
+            },
+          },
+          admin: {
+            description: {
+              en: 'Ordered list: each row is one post; title and URL come from the post on the frontend.',
+              vi: 'Danh sách có thứ tự: mỗi dòng một bài; tiêu đề và URL lấy từ post khi render.',
+            },
+          },
+          fields: [
+            {
+              name: 'post',
+              type: 'relationship',
+              relationTo: 'posts',
+              required: true,
+              admin: {
+                description: {
+                  en: 'Pick a post; use its title and slug (or canonical URL) in the list UI.',
+                  vi: 'Chọn bài; dùng tiêu đề và slug (hoặc URL chuẩn) khi hiển thị danh sách.',
+                },
+              },
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: 'collapsible',
+      label: {
+        en: 'Mobile ad slot',
+        vi: 'Vị trí quảng cáo mobile',
+      },
+      admin: {
+        initCollapsed: true,
+        description: {
+          en: 'Optional embed for a mobile-only ad area. Frontend should render only on small viewports and sanitize or trust content according to your policy.',
+          vi: 'Tuỳ chọn: mã nhúng quảng cáo chỉ mobile. Frontend chỉ render ở màn nhỏ; cân nhắc tin cậy nội dung / sanitize theo chính sách của bạn.',
+        },
+      },
+      fields: [
+        {
+          name: 'mobileAdHtml',
+          type: 'textarea',
+          label: {
+            en: 'HTML',
+            vi: 'HTML',
+          },
+          admin: {
+            description: {
+              en: 'Markup for the ad container (e.g. wrapper divs, iframes, noscript fallbacks).',
+              vi: 'Đánh dấu HTML cho khung quảng cáo (div, iframe, noscript…).',
+            },
+            rows: 10,
+          },
+        },
+        {
+          name: 'mobileAdCss',
+          type: 'textarea',
+          label: {
+            en: 'CSS',
+            vi: 'CSS',
+          },
+          admin: {
+            description: {
+              en: 'Styles for this slot (raw rules or a full <style>…</style> block if you paste from an ad network).',
+              vi: 'CSS cho vùng này (rule thuần hoặc cả khối <style>…</style> nếu dán từ nhà quảng cáo).',
+            },
+            rows: 8,
+          },
+        },
+        {
+          name: 'mobileAdScript',
+          type: 'textarea',
+          label: {
+            en: 'Script',
+            vi: 'Script',
+          },
+          admin: {
+            description: {
+              en: 'JavaScript or third-party snippet (inline code or full <script>…</script> tags).',
+              vi: 'JavaScript hoặc snippet bên thứ ba (mã inline hoặc cả thẻ <script>…</script>).',
+            },
+            rows: 10,
+          },
         },
       ],
     },

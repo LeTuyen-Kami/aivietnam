@@ -2,7 +2,10 @@ import React from 'react'
 
 import type { PortalSplitLayoutBlock, Post } from '@/payload-types'
 
+import { HumanitarianArticlesList } from './HumanitarianArticlesList'
+import { HumanitarianCornerPanel } from './HumanitarianCornerPanel'
 import { LeftFeed } from './LeftFeed'
+import { PortalMobileAdSlot } from './PortalMobileAdSlot'
 import { RowOneLeft } from './RowOneLeft'
 import { RowOneRight } from './RowOneRight'
 import { StandardSection } from './StandardSection'
@@ -10,11 +13,14 @@ import type { ResolvedSection } from './types'
 
 export const PortalSplitLayoutBody: React.FC<
   PortalSplitLayoutBlock & {
+    humanitarianPostsResolved: Post[]
     leftPostsResolved: Post[]
     standardSectionsResolved: ResolvedSection[]
   }
 > = (props) => {
   const {
+    humanitarianItems,
+    humanitarianPostsResolved,
     leftPostsResolved,
     row1CenterGraphic,
     row1GridItems,
@@ -31,6 +37,9 @@ export const PortalSplitLayoutBody: React.FC<
     row1RightTitleHref,
     row1TagItems,
     standardSectionsResolved,
+    mobileAdCss,
+    mobileAdHtml,
+    mobileAdScript,
   } = props
 
   const hasRow1 =
@@ -43,10 +52,15 @@ export const PortalSplitLayoutBody: React.FC<
 
   return (
     <section className="container">
-      <div className="grid grid-cols-1 lg:grid-cols-12 lg:gap-12 gap-10 lg:gap-x-6 gap-x-5 divide-x divide-border/60">
-        <aside className="lg:col-span-4 pr-5 lg:pr-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 lg:gap-12 gap-4 lg:gap-x-6 gap-x-5 divide-x divide-border/60">
+        <aside className="lg:col-span-4 pr-0 lg:pr-6">
           <LeftFeed posts={leftPostsResolved} />
         </aside>
+
+        <HumanitarianCornerPanel items={humanitarianItems} />
+        <HumanitarianArticlesList posts={humanitarianPostsResolved} />
+
+        <PortalMobileAdSlot css={mobileAdCss} html={mobileAdHtml} script={mobileAdScript} />
 
         <div className="space-y-12 lg:col-span-8">
           {hasRow1 && (

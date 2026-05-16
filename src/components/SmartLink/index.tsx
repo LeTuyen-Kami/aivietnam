@@ -16,10 +16,11 @@ export type SmartLinkProps = {
   href: string
   className?: string
   children: React.ReactNode
+  style?: React.CSSProperties
 }
 
 /** Next `Link` for in-app paths; native `a` for http(s) (new tab), mailto, tel. */
-export function SmartLink({ href, className, children }: SmartLinkProps) {
+export function SmartLink({ href, className, children, style }: SmartLinkProps) {
   const trimmed = href.trim()
 
   if (isNativeHref(trimmed)) {
@@ -27,6 +28,7 @@ export function SmartLink({ href, className, children }: SmartLinkProps) {
     return (
       <a
         className={className}
+        style={style}
         href={trimmed}
         {...(isHttp ? { rel: 'noopener noreferrer', target: '_blank' } : {})}
       >
@@ -36,7 +38,7 @@ export function SmartLink({ href, className, children }: SmartLinkProps) {
   }
 
   return (
-    <Link className={className} href={trimmed}>
+    <Link className={className} href={trimmed} style={style}>
       {children}
     </Link>
   )

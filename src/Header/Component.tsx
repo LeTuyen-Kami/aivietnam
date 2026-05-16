@@ -11,8 +11,14 @@ export async function Header() {
 
   const bannerMedia =
     typeof headerData?.bannerImage === 'object' ? (headerData.bannerImage as Media) : null
+  const mobileBannerMedia =
+    typeof headerData?.mobileBannerImage === 'object'
+      ? (headerData.mobileBannerImage as Media)
+      : null
   const bannerWidth = bannerMedia?.width ?? null
   const bannerHeight = bannerMedia?.height ?? null
+  const mobileBannerWidth = mobileBannerMedia?.width ?? null
+  const mobileBannerHeight = mobileBannerMedia?.height ?? null
 
   return (
     <HeaderClient
@@ -20,6 +26,8 @@ export async function Header() {
       generalSettings={generalSettings}
       bannerWidth={bannerWidth}
       bannerHeight={bannerHeight}
+      mobileBannerWidth={mobileBannerWidth}
+      mobileBannerHeight={mobileBannerHeight}
     />
   )
 }

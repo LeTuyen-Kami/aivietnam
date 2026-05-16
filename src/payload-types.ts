@@ -1239,6 +1239,46 @@ export interface PortalSplitLayoutBlock {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Each row: media and/or URL. Use SmartLink on the frontend for href.
+   */
+  humanitarianItems?:
+    | {
+        /**
+         * Optional image or asset.
+         */
+        image?: (number | null) | Media;
+        /**
+         * Optional URL (in-app path, https:, mailto:, tel:).
+         */
+        href?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Ordered list: each row is one post; title and URL come from the post on the frontend.
+   */
+  humanitarianArticles?:
+    | {
+        /**
+         * Pick a post; use its title and slug (or canonical URL) in the list UI.
+         */
+        post: number | Post;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Markup for the ad container (e.g. wrapper divs, iframes, noscript fallbacks).
+   */
+  mobileAdHtml?: string | null;
+  /**
+   * Styles for this slot (raw rules or a full <style>…</style> block if you paste from an ad network).
+   */
+  mobileAdCss?: string | null;
+  /**
+   * JavaScript or third-party snippet (inline code or full <script>…</script> tags).
+   */
+  mobileAdScript?: string | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'portalSplitLayout';
@@ -2607,6 +2647,22 @@ export interface PortalSplitLayoutBlockSelect<T extends boolean = true> {
         footerPosts?: T;
         id?: T;
       };
+  humanitarianItems?:
+    | T
+    | {
+        image?: T;
+        href?: T;
+        id?: T;
+      };
+  humanitarianArticles?:
+    | T
+    | {
+        post?: T;
+        id?: T;
+      };
+  mobileAdHtml?: T;
+  mobileAdCss?: T;
+  mobileAdScript?: T;
   id?: T;
   blockName?: T;
 }
@@ -3441,7 +3497,11 @@ export interface Header {
   id: number;
   bannerImage?: (number | null) | Media;
   /**
-   * Optional URL when users click the banner image.
+   * Optional image shown on mobile. Falls back to desktop banner if empty.
+   */
+  mobileBannerImage?: (number | null) | Media;
+  /**
+   * Optional URL when users click banner images.
    */
   bannerLink?: string | null;
   navItems?:
@@ -3657,6 +3717,7 @@ export interface GeneralSetting {
  */
 export interface HeaderSelect<T extends boolean = true> {
   bannerImage?: T;
+  mobileBannerImage?: T;
   bannerLink?: T;
   navItems?:
     | T

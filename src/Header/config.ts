@@ -19,6 +19,21 @@ export const Header: GlobalConfig = {
       },
     },
     {
+      name: 'mobileBannerImage',
+      type: 'upload',
+      relationTo: 'media',
+      label: {
+        en: 'Mobile header banner image',
+        vi: 'Ảnh banner đầu trang mobile',
+      },
+      admin: {
+        description: {
+          en: 'Optional image shown on mobile. Falls back to desktop banner if empty.',
+          vi: 'Tuỳ chọn: ảnh hiển thị trên mobile. Nếu để trống sẽ dùng banner desktop.',
+        },
+      },
+    },
+    {
       name: 'bannerLink',
       type: 'text',
       label: {
@@ -27,8 +42,8 @@ export const Header: GlobalConfig = {
       },
       admin: {
         description: {
-          en: 'Optional URL when users click the banner image.',
-          vi: 'Tuỳ chọn: đường dẫn khi người dùng bấm vào banner.',
+          en: 'Optional URL when users click banner images.',
+          vi: 'Tuỳ chọn: đường dẫn khi người dùng bấm banner.',
         },
       },
     },

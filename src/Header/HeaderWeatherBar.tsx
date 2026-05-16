@@ -196,6 +196,7 @@ export const HeaderWeatherBar: React.FC<{ isMobile: boolean }> = ({ isMobile }) 
   const [temp, setTemp] = useState<string | null>(null)
   const [humidity, setHumidity] = useState<string | null>(null)
   const [showDate, setShowDate] = useState(false)
+
   const [now, setNow] = useState(() => new Date())
 
   const dateLabel = useMemo(() => formatVietnameseDate(now), [now])
@@ -205,7 +206,6 @@ export const HeaderWeatherBar: React.FC<{ isMobile: boolean }> = ({ isMobile }) 
       setShowDate((prev) => !prev)
       setNow(new Date())
     }, 5000)
-
     return () => {
       window.clearInterval(interval)
     }
@@ -277,16 +277,20 @@ export const HeaderWeatherBar: React.FC<{ isMobile: boolean }> = ({ isMobile }) 
 
   const renderLabel = () => {
     return (
-      <div className="flex shrink-0 items-center gap-4 text-muted-foreground">
+      <div className="flex shrink-0 items-center gap-4 text-muted-foreground justify-between md:justify-start w-full">
         <span className="block truncate font-medium text-black">{label}</span>
-        <span className="inline-flex items-center gap-1.5">
-          <Thermometer className="h-4 w-4 shrink-0 text-orange-500" strokeWidth={2} />
-          <span className="tabular-nums text-foreground">{showPlaceholders ? '—' : temp}</span>
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <Droplets className="h-4 w-4 shrink-0 text-sky-500" strokeWidth={2} />
-          <span className="tabular-nums text-foreground">{showPlaceholders ? '—%' : humidity}</span>
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1.5">
+            <Thermometer className="h-4 w-4 shrink-0 text-orange-500" strokeWidth={2} />
+            <span className="tabular-nums text-foreground">{showPlaceholders ? '—' : temp}</span>
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <Droplets className="h-4 w-4 shrink-0 text-sky-500" strokeWidth={2} />
+            <span className="tabular-nums text-foreground">
+              {showPlaceholders ? '—%' : humidity}
+            </span>
+          </span>
+        </div>
       </div>
     )
   }
@@ -300,7 +304,7 @@ export const HeaderWeatherBar: React.FC<{ isMobile: boolean }> = ({ isMobile }) 
       role="status"
       aria-live="polite"
     >
-      <div className="min-w-0 overflow-hidden">
+      <div className="min-w-0 overflow-hidden w-full md:w-fit">
         <AnimatePresence mode="wait" initial={false}>
           <motion.span
             key={showDate ? 'date' : 'location'}

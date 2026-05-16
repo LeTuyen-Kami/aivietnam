@@ -7,7 +7,6 @@ import React, { useEffect, useState } from 'react'
 
 import type { GeneralSetting, Header, Media } from '@/payload-types'
 
-import { CMSLink } from '@/components/Link'
 import { Logo } from '@/components/Logo/Logo'
 import { SmartLink } from '@/components/SmartLink'
 import { useAuth } from '@/providers/Auth'
@@ -21,6 +20,8 @@ interface HeaderClientProps {
   generalSettings: GeneralSetting
   bannerWidth?: number | null
   bannerHeight?: number | null
+  mobileBannerWidth?: number | null
+  mobileBannerHeight?: number | null
 }
 
 export const HeaderClient: React.FC<HeaderClientProps> = ({
@@ -28,16 +29,20 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
   generalSettings,
   bannerWidth,
   bannerHeight,
+  mobileBannerWidth,
+  mobileBannerHeight,
 }) => {
   /* Storing the value in a useState to avoid hydration errors */
   const [theme, setTheme] = useState<string | null>(null)
-  const [isMobile, setIsMobile] = useState(false)
+
   const { headerTheme, setHeaderTheme } = useHeaderTheme()
   const pathname = usePathname()
   const { user, loading: authLoading, openAuthModal, logout } = useAuth()
   const logoMedia =
     typeof generalSettings?.logo === 'object' ? (generalSettings.logo as Media) : null
   const bannerMedia = typeof data?.bannerImage === 'object' ? (data.bannerImage as Media) : null
+  const mobileBannerMedia =
+    typeof data?.mobileBannerImage === 'object' ? (data.mobileBannerImage as Media) : null
 
   useEffect(() => {
     setHeaderTheme(null)
@@ -49,31 +54,19 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [headerTheme])
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(max-width: 767px)')
-    const updateIsMobile = () => setIsMobile(mediaQuery.matches)
-
-    updateIsMobile()
-    mediaQuery.addEventListener('change', updateIsMobile)
-
-    return () => {
-      mediaQuery.removeEventListener('change', updateIsMobile)
-    }
-  }, [])
-
   // const themeProps = theme ? { 'data-theme': theme } : {}
   const themeProps = {}
-  const navItems = data?.navItems || []
-  const bannerAspectRatio =
+  const desktopBannerAspectRatio =
     bannerWidth && bannerHeight && bannerWidth > 0 && bannerHeight > 0
       ? `${bannerWidth} / ${bannerHeight}`
-      : isMobile
-        ? '1.8 / 1'
-        : '2524 / 452'
+      : '2524 / 452'
+  const mobileBannerAspectRatio =
+    mobileBannerWidth && mobileBannerHeight && mobileBannerWidth > 0 && mobileBannerHeight > 0
+      ? `${mobileBannerWidth} / ${mobileBannerHeight}`
+      : bannerWidth && bannerHeight && bannerWidth > 0 && bannerHeight > 0
+        ? `${bannerWidth} / ${bannerHeight}`
+        : '1.8 / 1'
   const logoHref = generalSettings?.logoLink?.trim() || '/'
-  const bannerWrapperStyle = {
-    aspectRatio: bannerAspectRatio,
-  }
   const logo = logoMedia?.url ? (
     <img
       alt={logoMedia.alt || generalSettings?.siteName || 'Site logo'}
@@ -128,123 +121,160 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
 
   return (
     <>
-      {bannerMedia?.url && (
+      {(bannerMedia?.url || mobileBannerMedia?.url) && (
         <div className="relative z-10 w-full" {...themeProps}>
           {data?.bannerLink ? (
-            <Link
-              href={data.bannerLink}
-              className="relative block w-full overflow-hidden"
-              style={bannerWrapperStyle}
-              aria-label="Header banner"
-            >
-              <Image
-                alt={bannerMedia.alt || 'Banner'}
-                src={getMediaUrl(bannerMedia.url, bannerMedia.updatedAt)}
-                fill
-                priority
-                className="object-contain"
-              />
-            </Link>
+            <>
+              {bannerMedia?.url && (
+                <SmartLink
+                  href={data.bannerLink}
+                  className="relative hidden w-full overflow-hidden md:block"
+                  style={{ aspectRatio: desktopBannerAspectRatio }}
+                  aria-label="Header banner"
+                >
+                  <Image
+                    alt={bannerMedia.alt || 'Banner'}
+                    src={getMediaUrl(bannerMedia.url, bannerMedia.updatedAt)}
+                    fill
+                    priority
+                    sizes="100vw"
+                    className="object-contain"
+                  />
+                </SmartLink>
+              )}
+
+              {(mobileBannerMedia?.url || bannerMedia?.url) && (
+                <SmartLink
+                  href={data.bannerLink}
+                  className="relative block w-full overflow-hidden md:hidden"
+                  style={{ aspectRatio: mobileBannerAspectRatio }}
+                  aria-label="Header banner"
+                >
+                  <Image
+                    alt={mobileBannerMedia?.alt || bannerMedia?.alt || 'Banner'}
+                    src={getMediaUrl(
+                      (mobileBannerMedia || bannerMedia)!.url,
+                      (mobileBannerMedia || bannerMedia)!.updatedAt,
+                    )}
+                    fill
+                    priority
+                    sizes="100vw"
+                    className="object-contain"
+                  />
+                </SmartLink>
+              )}
+            </>
           ) : (
-            <div className="relative w-full overflow-hidden" style={bannerWrapperStyle}>
-              <Image
-                alt={bannerMedia.alt || 'Banner'}
-                src={getMediaUrl(bannerMedia.url, bannerMedia.updatedAt)}
-                fill
-                priority
-                className="object-contain"
-              />
-            </div>
+            <>
+              {bannerMedia?.url && (
+                <div
+                  className="relative hidden w-full overflow-hidden md:block"
+                  style={{ aspectRatio: desktopBannerAspectRatio }}
+                >
+                  <Image
+                    alt={bannerMedia.alt || 'Banner'}
+                    src={getMediaUrl(bannerMedia.url, bannerMedia.updatedAt)}
+                    fill
+                    priority
+                    sizes="100vw"
+                    className="object-contain"
+                  />
+                </div>
+              )}
+
+              {(mobileBannerMedia?.url || bannerMedia?.url) && (
+                <div
+                  className="relative block w-full overflow-hidden md:hidden"
+                  style={{ aspectRatio: mobileBannerAspectRatio }}
+                >
+                  <Image
+                    alt={mobileBannerMedia?.alt || bannerMedia?.alt || 'Banner'}
+                    src={getMediaUrl(
+                      (mobileBannerMedia || bannerMedia)!.url,
+                      (mobileBannerMedia || bannerMedia)!.updatedAt,
+                    )}
+                    fill
+                    priority
+                    sizes="100vw"
+                    className="object-contain"
+                  />
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
 
-      {isMobile ? (
-        <>
-          <header className="w-full shadow-sm" {...themeProps}>
-            <div className="flex h-[61px] w-full items-center justify-between border-b border-border/60 bg-background px-4 supports-backdrop-filter:bg-background/90 supports-backdrop-filter:backdrop-blur-md">
-              <div className="flex min-w-[88px] items-center gap-2">
-                <button
-                  type="button"
-                  className="inline-flex h-10 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
-                  aria-label="Mở menu"
-                >
-                  <MenuIcon className="h-6 w-6" />
-                </button>
-                <Link
-                  href="/search"
-                  className="inline-flex h-10 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
-                  aria-label="Tìm kiếm"
-                >
-                  <SearchIcon className="h-5 w-5" />
-                </Link>
-              </div>
-              <SmartLink
-                href={logoHref}
-                className="flex min-w-0 flex-1 items-center justify-center px-2"
+      {/* Breakpoint split must be CSS (md:), not JS state — otherwise SSR/first paint shows desktop on phones until hydration. */}
+      <div className="md:hidden">
+        <header className="w-full shadow-sm" {...themeProps}>
+          <div className="flex h-[61px] w-full items-center justify-between border-b border-border/60 bg-background px-4 supports-backdrop-filter:bg-background/90 supports-backdrop-filter:backdrop-blur-md">
+            <div className="flex min-w-[88px] items-center gap-2">
+              <button
+                type="button"
+                className="inline-flex h-10 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+                aria-label="Mở menu"
               >
-                {logo}
-              </SmartLink>
-              <div className="flex min-w-[88px] justify-end">{mobileAccountControl}</div>
+                <MenuIcon className="h-6 w-6" />
+              </button>
+              <Link
+                href="/search"
+                className="inline-flex h-10 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+                aria-label="Tìm kiếm"
+              >
+                <SearchIcon className="h-5 w-5" />
+              </Link>
             </div>
-          </header>
-
-          <div className="sticky top-0 z-50 w-full border-b border-border/60 bg-[#F1F1F1] shadow-sm">
-            <nav
-              className="flex h-12 items-center gap-4 overflow-x-auto overflow-y-hidden whitespace-nowrap px-1 text-base leading-none text-muted-foreground"
-              style={{
-                scrollbarWidth: 'none',
-              }}
+            <SmartLink
+              href={logoHref}
+              className="flex min-w-0 flex-1 items-center justify-center px-2"
             >
-              {navItems.map(({ link }, i) => (
-                <div key={i} className="shrink-0">
-                  <CMSLink
-                    {...link}
-                    appearance="link"
-                    className="h-auto! px-0! text-base font-normal transition-colors hover:text-foreground"
-                  />
+              {logo}
+            </SmartLink>
+            <div className="flex min-w-[88px] justify-end">{mobileAccountControl}</div>
+          </div>
+        </header>
+
+        <div className="sticky top-0 z-50 w-full border-b border-border/60 bg-[#F1F1F1] shadow-sm">
+          <HeaderNav data={data} variant="mobile" />
+        </div>
+
+        <div className="w-full border-b border-border/60 bg-background px-2 py-2">
+          <HeaderWeatherBar isMobile={true} />
+        </div>
+      </div>
+
+      {/* Top-level sticky block (banner is a sibling so this still spans the whole scroll) */}
+      <div className="hidden md:block">
+        <header className="sticky top-0 z-1 w-full shadow-sm" {...themeProps}>
+          <div className="flex w-full items-center border-b border-border/60 bg-background px-4 py-2 supports-backdrop-filter:bg-background/90 supports-backdrop-filter:backdrop-blur-md">
+            <div className="w-1/3 min-w-0 pr-2">
+              <HeaderWeatherBar isMobile={false} />
+            </div>
+            <div className="flex flex-1 items-center justify-center">
+              <SmartLink href={logoHref}>{logo}</SmartLink>
+            </div>
+            <div className="flex w-1/3 items-center justify-end gap-2">
+              <Link href="/search">
+                <div className="flex items-center rounded-full border border-border px-4 py-2">
+                  <span className="mr-10 text-sm font-medium text-muted-foreground">
+                    Tìm kiếm
+                  </span>
+                  <SearchIcon className="h-4 w-4 text-muted-foreground transition-colors hover:text-foreground" />
                 </div>
-              ))}
-            </nav>
+              </Link>
+
+              {accountControl}
+            </div>
           </div>
 
-          <div className="w-full border-b border-border/60 bg-background px-2 py-2">
-            <HeaderWeatherBar isMobile={true} />
+          <div className="bg-[#F1F1F1]">
+            <div className="container h-9 flex items-center justify-center">
+              <HeaderNav data={data} />
+            </div>
           </div>
-        </>
-      ) : (
-        <>
-          {/* Top-level sticky block (banner is a sibling so this still spans the whole scroll) */}
-          <header className="sticky top-0 z-1 w-full shadow-sm" {...themeProps}>
-            <div className="flex w-full items-center border-b border-border/60 bg-background px-4 py-2 supports-backdrop-filter:bg-background/90 supports-backdrop-filter:backdrop-blur-md">
-              <div className="w-1/3 min-w-0 pr-2">
-                <HeaderWeatherBar isMobile={false} />
-              </div>
-              <div className="flex flex-1 items-center justify-center">
-                <SmartLink href={logoHref}>{logo}</SmartLink>
-              </div>
-              <div className="flex w-1/3 items-center justify-end gap-2">
-                <Link href="/search">
-                  <div className="flex items-center rounded-full border border-border px-4 py-2">
-                    <span className="mr-10 text-sm font-medium text-muted-foreground">
-                      Tìm kiếm
-                    </span>
-                    <SearchIcon className="h-4 w-4 text-muted-foreground transition-colors hover:text-foreground" />
-                  </div>
-                </Link>
-
-                {accountControl}
-              </div>
-            </div>
-
-            <div className="bg-[#F1F1F1]">
-              <div className="container h-9 flex items-center justify-center">
-                <HeaderNav data={data} />
-              </div>
-            </div>
-          </header>
-        </>
-      )}
+        </header>
+      </div>
     </>
   )
 }

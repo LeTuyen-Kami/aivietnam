@@ -70,7 +70,7 @@ const SmallRowPromo: React.FC<{
   )
 
   return (
-    <article className="relative flex min-h-[200px] overflow-hidden sm:min-h-0 sm:h-full sm:flex-col cursor-pointer">
+    <article className="relative flex min-h-[200px] overflow-hidden sm:min-h-0 sm:h-full sm:flex-col cursor-pointer order-2 md:order-last px-4 md:px-0">
       {!raw ? (
         <div className={shellClass}>{inner}</div>
       ) : (
@@ -82,7 +82,7 @@ const SmallRowPromo: React.FC<{
   )
 }
 
-export const FeaturedPostsSideMediaBlockComponent: React.FC<Props> = ({
+const FeaturedPostsSideMediaBlockComponent: React.FC<Props> = ({
   mainPost,
   sideMedia,
   sideMediaHref,
@@ -125,7 +125,7 @@ export const FeaturedPostsSideMediaBlockComponent: React.FC<Props> = ({
                     />
                   )}
                   <div className="p-4 lg:p-5">
-                    <h3 className="text-[20px] font-semibold leading-snug text-foreground transition-colors duration-200 underline-offset-2 group-hover:underline">
+                    <h3 className="text-lg md:text-[20px] font-semibold leading-snug text-foreground transition-colors duration-200 underline-offset-2 group-hover:underline">
                       {featuredPost.title}
                     </h3>
                     {featuredPost.meta?.description && (
@@ -139,12 +139,20 @@ export const FeaturedPostsSideMediaBlockComponent: React.FC<Props> = ({
             )}
 
             {smallPosts.map((post) => (
-              <article className="flex h-full min-h-0 flex-col overflow-hidden" key={post.id}>
+              <article
+                className="flex h-full min-h-0 flex-col overflow-hidden order-3 md:order-3 mx-4 md:px-0 border-t border-border pt-4 md:pt-0 md:border-none"
+                key={post.id}
+              >
                 <Link className="group flex h-full min-h-0 flex-col" href={`/posts/${post?.slug}`}>
                   <div className="pb-2">
-                    <h4 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground transition-colors duration-200 underline-offset-2 group-hover:underline">
+                    <h4 className="line-clamp-2 text-lg md:text-sm font-semibold leading-snug text-foreground transition-colors duration-200 underline-offset-2 group-hover:underline">
                       {post.title}
                     </h4>
+                    {post.meta?.description ? (
+                      <p className="mt-2 line-clamp-5 text-sm text-muted-foreground md:hidden">
+                        {post.meta.description}
+                      </p>
+                    ) : null}
                   </div>
                   {typeof post.meta?.image === 'object' && (
                     <div className="mt-auto overflow-hidden">
@@ -162,7 +170,7 @@ export const FeaturedPostsSideMediaBlockComponent: React.FC<Props> = ({
           </div>
         </div>
 
-        <aside className="lg:col-span-3 h-full">
+        <aside className="lg:col-span-3 h-full hidden md:block">
           {(() => {
             const raw = typeof sideMediaHref === 'string' ? sideMediaHref.trim() : ''
             const shellClass = 'group relative block overflow-hidden w-full h-full min-h-[320px]'

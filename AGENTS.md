@@ -19,11 +19,15 @@ You are an expert Payload CMS developer. When working with Payload projects, fol
 ### Postgres Migration Discipline (Critical)
 
 - This project uses Postgres with schema push disabled in shared environments. Treat migrations as the source of truth.
-- After any schema change (new collection/global/field/relation), always run:
-  1. `CI=true PAYLOAD_MIGRATING=true bunx payload migrate`
-  2. `bun run generate:types`
-  3. `bun run tsc --noEmit`
-- Prefer small, incremental, hand-authored migrations in `src/migrations/*.ts` over large auto-generated full-schema diffs.
+- After any schema change (new collection/global/field/relation), always:
+  1. Write small, hand-authored migration in `src/migrations/*.ts`
+  2. Register migration in `src/migrations/index.ts`
+  3. Run `CI=true PAYLOAD_MIGRATING=true bunx payload migrate`
+  4. Run `bun run generate:types`
+  5. Run `bun run tsc --noEmit`
+- Do not use `CI=true PAYLOAD_MIGRATING=true bunx payload migrate:create` in this project. It can generate unrelated drops/renames from schema drift.
+- Prefer small, incremental, hand-authored migrations in `src/migrations/*.ts` over auto-generated full-schema diffs.
+- After writing migration, review scope carefully. If migration contains unrelated tables, columns, drops, renames, or enum changes, do not use it.
 - Migration SQL must be idempotent:
   - `CREATE TABLE IF NOT EXISTS`
   - `ALTER TABLE ... ADD COLUMN IF NOT EXISTS`

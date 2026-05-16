@@ -30,6 +30,18 @@ export const PortalSplitLayoutBlockAsync = async (
     leftPostsResolved = await resolvePosts(payload, block.leftPosts ?? [])
   }
 
+  const humanitarianPostsResolved: Post[] = []
+
+  for (const row of block.humanitarianArticles ?? []) {
+    if (!row?.post) {
+      continue
+    }
+    const post = await resolvePost(payload, row.post)
+    if (post) {
+      humanitarianPostsResolved.push(post)
+    }
+  }
+
   const standardSectionsResolved: ResolvedSection[] = []
 
   for (const section of block.standardSections ?? []) {
@@ -52,6 +64,7 @@ export const PortalSplitLayoutBlockAsync = async (
   return (
     <PortalSplitLayoutBody
       {...block}
+      humanitarianPostsResolved={humanitarianPostsResolved}
       leftPostsResolved={leftPostsResolved}
       standardSectionsResolved={standardSectionsResolved}
     />
