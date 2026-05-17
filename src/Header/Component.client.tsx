@@ -122,7 +122,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
   return (
     <>
       {(bannerMedia?.url || mobileBannerMedia?.url) && (
-        <div className="relative z-10 w-full" {...themeProps}>
+        <div className="w-full" {...themeProps}>
           {data?.bannerLink ? (
             <>
               {bannerMedia?.url && (
@@ -206,7 +206,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
       )}
 
       {/* Breakpoint split must be CSS (md:), not JS state — otherwise SSR/first paint shows desktop on phones until hydration. */}
-      <div className="md:hidden">
+      <div className="md:hidden relative z-10">
         <header className="w-full shadow-sm" {...themeProps}>
           <div className="flex h-[61px] w-full items-center justify-between border-b border-border/60 bg-background px-4 supports-backdrop-filter:bg-background/90 supports-backdrop-filter:backdrop-blur-md">
             <div className="flex min-w-[88px] items-center gap-2">
@@ -234,18 +234,18 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
             <div className="flex min-w-[88px] justify-end">{mobileAccountControl}</div>
           </div>
         </header>
+      </div>
 
-        <div className="sticky top-0 z-50 w-full border-b border-border/60 bg-[#F1F1F1] shadow-sm">
-          <HeaderNav data={data} variant="mobile" />
-        </div>
+      <div className="sticky top-0 z-50 w-full border-b border-border/60 bg-[#F1F1F1] shadow-sm md:hidden">
+        <HeaderNav data={data} variant="mobile" />
+      </div>
 
-        <div className="w-full border-b border-border/60 bg-background px-2 py-2">
-          <HeaderWeatherBar isMobile={true} />
-        </div>
+      <div className="w-full border-b border-border/60 bg-background px-2 py-2 md:hidden">
+        <HeaderWeatherBar isMobile={true} />
       </div>
 
       {/* Top-level sticky block (banner is a sibling so this still spans the whole scroll) */}
-      <div className="hidden md:block">
+      <div className="hidden relative z-10 md:block">
         <header className="sticky top-0 z-1 w-full shadow-sm" {...themeProps}>
           <div className="flex w-full items-center border-b border-border/60 bg-background px-4 py-2 supports-backdrop-filter:bg-background/90 supports-backdrop-filter:backdrop-blur-md">
             <div className="w-1/3 min-w-0 pr-2">
@@ -257,9 +257,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
             <div className="flex w-1/3 items-center justify-end gap-2">
               <Link href="/search">
                 <div className="flex items-center rounded-full border border-border px-4 py-2">
-                  <span className="mr-10 text-sm font-medium text-muted-foreground">
-                    Tìm kiếm
-                  </span>
+                  <span className="mr-10 text-sm font-medium text-muted-foreground">Tìm kiếm</span>
                   <SearchIcon className="h-4 w-4 text-muted-foreground transition-colors hover:text-foreground" />
                 </div>
               </Link>

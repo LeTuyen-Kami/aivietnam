@@ -22,6 +22,7 @@ import { MediaBlock } from '../../blocks/MediaBlock/config'
 import { MediaHubTriptych } from '../../blocks/MediaHubTriptych/config'
 import { NewsletterSignup } from '../../blocks/NewsletterSignup/config'
 import { PortalSplitLayout } from '../../blocks/PortalSplitLayout/config'
+import { TargetedAdSlot } from '../../blocks/TargetedAdSlot/config'
 import { YouTubeEmbed } from '../../blocks/YouTubeEmbed/config'
 
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
@@ -108,6 +109,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 ListingsCategoryItem,
                 MarketplaceStats,
                 LivestreamPortal,
+                TargetedAdSlot,
               ],
               required: true,
               admin: {

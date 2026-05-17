@@ -47,8 +47,8 @@ export default async function CategoryPage({
 
   if (!category) {
     return (
-      <div className="container py-24">
-        <h1 className="text-2xl font-semibold">Không tìm thấy danh mục</h1>
+      <div className="container px-4 py-16 sm:px-6 sm:py-24">
+        <h1 className="text-xl font-semibold sm:text-2xl">Không tìm thấy danh mục</h1>
       </div>
     )
   }
@@ -128,20 +128,20 @@ export default async function CategoryPage({
   const currentPage = Math.min(listPosts.page ?? page, totalPages)
 
   return (
-    <article className="container pt-10 lg:pt-14">
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div>
-          <h1 className="mb-1 text-center text-2xl font-semibold uppercase tracking-wide">
+    <article className="container min-w-0 px-4 pt-6 sm:px-6 sm:pt-8 lg:pt-14">
+      <div className="grid min-w-0 grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="min-w-0">
+          <h1 className="mb-1 text-center text-xl font-semibold uppercase tracking-wide wrap-break-word sm:text-2xl">
             Lưu trữ danh mục: {category.title}
           </h1>
-          <p className="mb-8 text-center text-sm text-muted-foreground">
+          <p className="mb-6 text-center text-sm text-muted-foreground sm:mb-8">
             {totalCategoryPosts} bài viết trong danh mục này
           </p>
 
           {mainFeatured ? (
             <section className="border-b border-border pb-6">
               <Link
-                className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
+                className="grid gap-3 sm:gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
                 href={`/posts/${mainFeatured?.slug}`}
               >
                 {typeof mainFeatured.meta?.image === 'object' ? (
@@ -154,7 +154,7 @@ export default async function CategoryPage({
                   </div>
                 ) : null}
                 <div className="min-w-0">
-                  <h2 className="text-2xl font-semibold leading-tight hover:underline">
+                  <h2 className="text-xl font-semibold leading-tight hover:underline sm:text-2xl">
                     {mainFeatured.title}
                   </h2>
                   {mainFeatured.meta?.description ? (
@@ -169,7 +169,7 @@ export default async function CategoryPage({
 
           {secondaryFeatured.length ? (
             <section className="mt-6 border-b border-border pb-6">
-              <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+              <div className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2 sm:gap-4 md:grid-cols-4">
                 {secondaryFeatured.map((post) => (
                   <Link
                     className="group min-w-0"
@@ -185,7 +185,7 @@ export default async function CategoryPage({
                         />
                       </div>
                     ) : null}
-                    <h3 className="mt-2 line-clamp-3 text-sm font-medium leading-snug group-hover:underline">
+                    <h3 className="mt-2 line-clamp-3 text-xs font-medium leading-snug group-hover:underline sm:text-sm">
                       {post.title}
                     </h3>
                   </Link>
@@ -199,7 +199,7 @@ export default async function CategoryPage({
               <div className="space-y-5">
                 {(listPosts.docs as Post[]).map((post) => (
                   <Link
-                    className="group grid gap-4 border-b border-border pb-5 md:grid-cols-[220px_minmax(0,1fr)]"
+                    className="group grid gap-3 border-b border-border pb-4 sm:gap-4 sm:pb-5 md:grid-cols-[220px_minmax(0,1fr)]"
                     href={`/posts/${post?.slug}`}
                     key={`list-${post.id}`}
                   >
@@ -213,7 +213,7 @@ export default async function CategoryPage({
                       </div>
                     ) : null}
                     <div className="min-w-0">
-                      <h3 className="line-clamp-2 text-xl font-semibold leading-tight group-hover:underline">
+                      <h3 className="line-clamp-2 text-lg font-semibold leading-tight group-hover:underline md:text-xl">
                         {post.title}
                       </h3>
                       {post.meta?.description ? (
@@ -232,7 +232,7 @@ export default async function CategoryPage({
             {totalPages > 1 ? (
               <nav
                 aria-label="Phân trang bài viết"
-                className="mt-8 flex items-center justify-center gap-2 text-sm"
+                className="mt-6 flex max-w-full flex-wrap items-center justify-center gap-1.5 text-xs sm:mt-8 sm:gap-2 sm:text-sm"
               >
                 <PaginationLink
                   currentPage={currentPage}
@@ -263,13 +263,13 @@ export default async function CategoryPage({
           </section>
         </div>
 
-        <aside className="space-y-6 lg:sticky lg:top-24 lg:h-fit">
-          <section className="border border-border bg-card p-4">
+        <aside className="min-w-0 space-y-6 lg:sticky lg:top-24 lg:h-fit">
+          <section className="border border-border bg-card p-3 sm:p-4">
             <h2 className="mb-3 text-sm font-semibold uppercase">Danh mục</h2>
             <div className="space-y-2 text-sm">
               {allCategories.map((item) => (
                 <Link
-                  className="block hover:underline"
+                  className="block wrap-break-word hover:underline"
                   href={`/categories/${item.slug}`}
                   key={`sidebar-category-${item.id}`}
                 >
@@ -279,17 +279,17 @@ export default async function CategoryPage({
             </div>
           </section>
 
-          <section className="border border-border bg-card p-4">
+          <section className="border border-border bg-card p-3 sm:p-4">
             <h2 className="mb-3 text-sm font-semibold uppercase">Tin xem nhiều</h2>
             <div className="space-y-3">
               {sidebarPosts.map((post) => (
                 <Link
-                  className="group flex items-start gap-2"
+                  className="group flex min-w-0 items-start gap-2"
                   href={`/posts/${post?.slug}`}
                   key={`side-${post.id}`}
                 >
                   {typeof post.meta?.image === 'object' ? (
-                    <div className="w-20 shrink-0 overflow-hidden">
+                    <div className="w-16 shrink-0 overflow-hidden sm:w-20">
                       <Media
                         imgClassName="aspect-video w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
                         resource={post.meta.image}
@@ -297,7 +297,7 @@ export default async function CategoryPage({
                       />
                     </div>
                   ) : null}
-                  <p className="line-clamp-3 text-xs leading-snug group-hover:underline">
+                  <p className="min-w-0 flex-1 line-clamp-3 text-xs leading-snug wrap-break-word group-hover:underline">
                     {post.title}
                   </p>
                 </Link>
@@ -329,7 +329,7 @@ export default async function CategoryPage({
 
       {sidebarForm ? (
         <NewsletterSignupBlock
-          className="my-8"
+          className="my-6 sm:my-8"
           description="Đăng ký để nhận bản tin AI nổi bật mỗi ngày."
           emailPlaceholder="Nhập email của bạn"
           eyebrow="Đọc trên AIVIETNAM"
@@ -360,7 +360,7 @@ function PaginationLink(props: {
 
   if ((label === 'Trước' && currentPage <= 1) || (label === 'Sau' && currentPage >= totalPages)) {
     return (
-      <span className="rounded border border-border px-3 py-1 text-muted-foreground opacity-60">
+      <span className="rounded border border-border px-2 py-1 text-muted-foreground opacity-60 sm:px-3">
         {label}
       </span>
     )
@@ -369,7 +369,7 @@ function PaginationLink(props: {
   if (label === 'Sau' && page === currentPage + 1) {
     return (
       <Link
-        className="rounded border border-border px-3 py-1 hover:bg-muted"
+        className="rounded border border-border px-2 py-1 hover:bg-muted sm:px-3"
         href={`/categories/${slug}?page=${page}`}
       >
         {label}
@@ -380,7 +380,7 @@ function PaginationLink(props: {
   if (label === 'Trước') {
     return (
       <Link
-        className="rounded border border-border px-3 py-1 hover:bg-muted"
+        className="rounded border border-border px-2 py-1 hover:bg-muted sm:px-3"
         href={`/categories/${slug}?page=${page}`}
       >
         {label}
@@ -390,7 +390,7 @@ function PaginationLink(props: {
 
   if (label !== 'Trước' && label !== 'Sau' && page === currentPage) {
     return (
-      <span className="rounded border border-foreground px-3 py-1 font-semibold text-foreground">
+      <span className="rounded border border-foreground px-2 py-1 font-semibold text-foreground sm:px-3">
         {label}
       </span>
     )
@@ -398,7 +398,7 @@ function PaginationLink(props: {
 
   return (
     <Link
-      className="rounded border border-border px-3 py-1 hover:bg-muted"
+      className="rounded border border-border px-2 py-1 hover:bg-muted sm:px-3"
       href={`/categories/${slug}?page=${page}`}
     >
       {label}

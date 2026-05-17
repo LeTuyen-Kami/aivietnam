@@ -124,26 +124,28 @@ export default async function ListingPage({ params: paramsPromise }: Args) {
       .join(', ') || listing.listingType
 
   return (
-    <article className="bg-slate-50/60 pb-16 pt-10">
-      <div className="container bg-background border border-border shadow-lg rounded-lg">
+    <article className="bg-slate-50/60 px-4 pb-12 pt-6 sm:px-6 sm:pb-16 sm:pt-8 md:pt-10">
+      <div className="container min-w-0 overflow-hidden rounded-none border border-border bg-background shadow-lg sm:rounded-lg">
         <PayloadRedirects disableNotFound url={url} />
 
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="p-4">
+        <div className="grid min-w-0 gap-4 sm:gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="min-w-0 p-3 sm:p-5 md:p-6">
             <Link
-              className="inline-flex items-center gap-2 rounded-full border border-border px-2 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted sm:w-auto sm:justify-start sm:px-2"
               href="/listings"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4 shrink-0" />
               Về danh sách
             </Link>
 
-            <h1 className="mt-5 text-xl font-semibold leading-tight text-balance">
+            <h1 className="mt-4 text-lg font-semibold leading-tight text-balance wrap-break-word sm:mt-5 sm:text-xl">
               {listing.title}
             </h1>
 
-            <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3 justify-between">
-              <span className="text-base font-semibold text-emerald-500">{listing.priceLabel}</span>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 sm:mt-4 sm:gap-x-5 sm:gap-y-3">
+              <span className="min-w-0 text-base font-semibold wrap-break-word text-emerald-500">
+                {listing.priceLabel}
+              </span>
               {listing.createdAt ? (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Clock3 className="h-4 w-4" />
@@ -155,27 +157,31 @@ export default async function ListingPage({ params: paramsPromise }: Args) {
             </div>
 
             {gallery.length ? (
-              <section className="mt-8">
+              <section className="mt-6 sm:mt-8">
                 <ListingGalleryLightbox images={gallery} title={listing.title} />
               </section>
             ) : null}
 
-            <section className="mt-10">
-              <h2 className="text-lg font-semibold">Thông tin mô tả</h2>
+            <section className="mt-8 sm:mt-10">
+              <h2 className="text-base font-semibold sm:text-lg">Thông tin mô tả</h2>
               {listing.summary ? (
-                <p className="mt-4 text-sm leading-8 text-muted-foreground">{listing.summary}</p>
+                <p className="mt-3 text-sm leading-7 wrap-break-word text-muted-foreground sm:mt-4 sm:leading-8">
+                  {listing.summary}
+                </p>
               ) : null}
-              <div className="mt-4 text-sm leading-8 text-foreground/90">
+              <div className="mt-3 min-w-0 text-sm leading-7 text-foreground/90 sm:mt-4 sm:leading-8">
                 <RichText
                   data={listing.description}
                   className="max-w-none [&>*:first-child]:mt-0 px-0! text-sm"
                 />
               </div>
-              <p className="mt-6 text-sm text-foreground/80">Liên hệ {listing.contactPhone}</p>
+              <p className="mt-4 text-sm wrap-break-word text-foreground/80 sm:mt-6">
+                Liên hệ {listing.contactPhone}
+              </p>
             </section>
 
-            <section className="mt-10">
-              <h2 className="text-base font-semibold">Đặc điểm tin đăng</h2>
+            <section className="mt-8 sm:mt-10">
+              <h2 className="text-sm font-semibold sm:text-base">Đặc điểm tin đăng</h2>
               <div className="mt-4 overflow-hidden rounded-2xl border border-border">
                 <InfoRow label="Mã tin đăng" value={String(listing.id)} />
                 <InfoRow label="Địa chỉ" value={location || 'Đang cập nhật'} />
@@ -184,8 +190,8 @@ export default async function ListingPage({ params: paramsPromise }: Args) {
               </div>
             </section>
 
-            <section className="mt-10">
-              <h2 className="text-base font-semibold">Thông tin liên hệ</h2>
+            <section className="mt-8 sm:mt-10">
+              <h2 className="text-sm font-semibold sm:text-base">Thông tin liên hệ</h2>
               <div className="mt-4 overflow-hidden rounded-2xl border border-border">
                 <InfoRow label="Người đăng tin" value={listing.contactName} />
                 <InfoRow label="Số điện thoại" value={listing.contactPhone} />
@@ -204,10 +210,10 @@ export default async function ListingPage({ params: paramsPromise }: Args) {
             </section>
           </div>
 
-          <aside className="space-y-8">
-            <section className="p-5 border border-border rounded-lg m-2">
-              <div className="flex items-center gap-4">
-                <div className="relative h-20 w-20 overflow-hidden rounded-full border-4 border-blue-500/80 bg-muted">
+          <aside className="min-w-0 space-y-6 border-t border-border xl:border-t-0 xl:space-y-8">
+            <section className="m-0 border-0 border-border p-4 sm:m-2 sm:rounded-lg sm:border sm:p-5">
+              <div className="flex items-start gap-3 sm:items-center sm:gap-4">
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full border-4 border-blue-500/80 bg-muted sm:h-20 sm:w-20">
                   {isMediaDoc(listing.avatar) ? (
                     <Media fill imgClassName="object-cover" resource={listing.avatar} size="80px" />
                   ) : null}
@@ -215,49 +221,51 @@ export default async function ListingPage({ params: paramsPromise }: Args) {
 
                 <div className="min-w-0 flex-1">
                   <p className="text-sm text-muted-foreground">Người đăng</p>
-                  <h2 className="truncate text-lg font-semibold">{listing.contactName}</h2>
+                  <h2 className="text-base font-semibold wrap-break-word sm:text-lg">{listing.contactName}</h2>
                   {location ? (
-                    <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-                      <MapPin className="size-10" />
-                      <span className="line-clamp-2">{location}</span>
+                    <div className="mt-2 flex items-start gap-2 text-sm text-muted-foreground">
+                      <MapPin aria-hidden className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span className="min-w-0 flex-1 line-clamp-3 wrap-break-word sm:line-clamp-2">
+                        {location}
+                      </span>
                     </div>
                   ) : null}
                 </div>
               </div>
 
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <div className="mt-5 grid gap-2 sm:mt-6 sm:grid-cols-2 sm:gap-3">
                 <a
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                  className="inline-flex min-w-0 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-3 py-2.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 sm:px-4 sm:py-3 sm:text-sm"
                   href={`tel:${listing.contactPhone}`}
                 >
-                  <Phone className="h-4 w-4" />
-                  {listing.contactPhone}
+                  <Phone className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{listing.contactPhone}</span>
                 </a>
 
                 {zaloHref ? (
                   <a
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 py-2.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 sm:px-4 sm:py-3 sm:text-sm"
                     href={zaloHref}
                     rel="noreferrer"
                     target="_blank"
                   >
-                    <MessageSquareText className="h-4 w-4" />
+                    <MessageSquareText className="h-4 w-4 shrink-0" />
                     Nhắn Zalo
                   </a>
                 ) : null}
               </div>
 
-              <div className="mt-8">
-                <h3 className="text-basse font-semibold">Liên hệ tư vấn</h3>
-                <div className="mt-4 space-y-3">
-                  <div className="rounded-xl border border-border px-4 py-3 text-xs text-muted-foreground">
+              <div className="mt-6 sm:mt-8">
+                <h3 className="text-base font-semibold">Liên hệ tư vấn</h3>
+                <div className="mt-3 space-y-2 sm:mt-4 sm:space-y-3">
+                  <div className="rounded-xl border border-border px-3 py-2.5 text-xs wrap-break-word text-muted-foreground sm:px-4 sm:py-3">
                     Số điện thoại: {listing.contactPhone}
                   </div>
-                  <div className="rounded-xl border border-border px-4 py-3 text-xs text-muted-foreground">
+                  <div className="rounded-xl border border-border px-3 py-2.5 text-xs wrap-break-word text-muted-foreground sm:px-4 sm:py-3">
                     Nội dung liên hệ: {listing.title}
                   </div>
                   <a
-                    className="inline-flex w-full items-center justify-center rounded-xl bg-rose-600 px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                    className="inline-flex w-full items-center justify-center rounded-xl bg-rose-600 px-3 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 sm:px-4 sm:py-3"
                     href={`tel:${listing.contactPhone}`}
                   >
                     Gửi yêu cầu
@@ -267,7 +275,7 @@ export default async function ListingPage({ params: paramsPromise }: Args) {
             </section>
 
             {recentListings.length ? (
-              <section className="rounded-sm border border-border bg-background p-5 shadow-sm m-2">
+              <section className="m-0 rounded-none border border-border border-x-0 border-b-0 bg-background p-4 shadow-none sm:m-2 sm:rounded-sm sm:border sm:p-5 sm:shadow-sm">
                 <h2 className="text-base font-semibold">Mới cập nhật</h2>
                 <div className="mt-5 space-y-5">
                   {recentListings.map((item) => (
@@ -280,9 +288,9 @@ export default async function ListingPage({ params: paramsPromise }: Args) {
         </div>
 
         {nearbyListings.length ? (
-          <section className="border-t border-border px-4 pb-8 pt-6 md:px-6">
-            <h2 className="text-2xl font-semibold">Tin đăng cùng khu vực</h2>
-            <div className="mt-5 grid gap-5">
+          <section className="border-t border-border px-3 pb-6 pt-5 sm:px-6 sm:pb-8 sm:pt-6">
+            <h2 className="text-xl font-semibold sm:text-2xl">Tin đăng cùng khu vực</h2>
+            <div className="mt-4 grid gap-4 sm:mt-5 sm:gap-5">
               {nearbyListings.map((item) => (
                 <ListingCard key={item.id} listing={item} />
               ))}
@@ -296,9 +304,9 @@ export default async function ListingPage({ params: paramsPromise }: Args) {
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="grid grid-cols-[140px_minmax(0,1fr)] gap-4 border-b border-border px-5 py-4 last:border-b-0">
+    <div className="grid grid-cols-1 gap-1.5 border-b border-border px-3 py-3 last:border-b-0 sm:grid-cols-[minmax(0,120px)_minmax(0,1fr)] sm:gap-4 sm:px-5 sm:py-4 md:grid-cols-[140px_minmax(0,1fr)]">
       <div className="text-xs font-medium text-muted-foreground">{label}:</div>
-      <div className="text-xs leading-6 text-foreground">{value}</div>
+      <div className="min-w-0 text-xs leading-6 wrap-break-word text-foreground">{value}</div>
     </div>
   )
 }

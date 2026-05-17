@@ -1,11 +1,10 @@
-import React from 'react'
+import React, { Fragment } from 'react'
 
 import type { PortalSplitLayoutBlock, Post } from '@/payload-types'
 
 import { HumanitarianArticlesList } from './HumanitarianArticlesList'
 import { HumanitarianCornerPanel } from './HumanitarianCornerPanel'
 import { LeftFeed } from './LeftFeed'
-import { PortalMobileAdSlot } from './PortalMobileAdSlot'
 import { RowOneLeft } from './RowOneLeft'
 import { RowOneRight } from './RowOneRight'
 import { StandardSection } from './StandardSection'
@@ -37,9 +36,6 @@ export const PortalSplitLayoutBody: React.FC<
     row1RightTitleHref,
     row1TagItems,
     standardSectionsResolved,
-    mobileAdCss,
-    mobileAdHtml,
-    mobileAdScript,
   } = props
 
   const hasRow1 =
@@ -60,44 +56,49 @@ export const PortalSplitLayoutBody: React.FC<
         <HumanitarianCornerPanel items={humanitarianItems} />
         <HumanitarianArticlesList posts={humanitarianPostsResolved} />
 
-        <PortalMobileAdSlot css={mobileAdCss} html={mobileAdHtml} script={mobileAdScript} />
-
-        <div className="space-y-12 lg:col-span-8">
+        <div className="flex flex-col space-y-12 lg:col-span-8">
           {hasRow1 && (
-            <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-8">
-              <RowOneLeft
-                row1CenterGraphic={row1CenterGraphic}
-                row1GridItems={row1GridItems}
-                row1LeftAccent={row1LeftAccent}
-                row1LeftAccentCustomHex={row1LeftAccentCustomHex}
-                row1LeftTitle={row1LeftTitle}
-                row1LeftTitleHref={row1LeftTitleHref}
-                row1OrbitRadiusMaxPct={row1OrbitRadiusMaxPct}
-                row1OrbitRadiusMinPct={row1OrbitRadiusMinPct}
-                row1TagItems={row1TagItems}
-              />
-              <RowOneRight
-                row1RightAccent={row1RightAccent}
-                row1RightAccentCustomHex={row1RightAccentCustomHex}
-                row1RightCards={row1RightCards}
-                row1RightTitle={row1RightTitle}
-                row1RightTitleHref={row1RightTitleHref}
-              />
-            </div>
+            <>
+              <div className="grid grid-cols-1 gap-4 md:gap-10 lg:grid-cols-2 lg:gap-8">
+                <div id="mobile-ad-slot" className="md:hidden"></div>
+                <RowOneLeft
+                  row1CenterGraphic={row1CenterGraphic}
+                  row1GridItems={row1GridItems}
+                  row1LeftAccent={row1LeftAccent}
+                  row1LeftAccentCustomHex={row1LeftAccentCustomHex}
+                  row1LeftTitle={row1LeftTitle}
+                  row1LeftTitleHref={row1LeftTitleHref}
+                  row1OrbitRadiusMaxPct={row1OrbitRadiusMaxPct}
+                  row1OrbitRadiusMinPct={row1OrbitRadiusMinPct}
+                  row1TagItems={row1TagItems}
+                />
+                <RowOneRight
+                  row1RightAccent={row1RightAccent}
+                  row1RightAccentCustomHex={row1RightAccentCustomHex}
+                  row1RightCards={row1RightCards}
+                  row1RightTitle={row1RightTitle}
+                  row1RightTitleHref={row1RightTitleHref}
+                />
+              </div>
+            </>
           )}
 
-          {standardSectionsResolved.map((section, index) => (
-            <StandardSection
-              accent={section.accent}
-              accentCustomHex={section.accentCustomHex}
-              featuredPost={section.featuredPost}
-              footerPosts={section.footerPosts}
-              key={section.id ?? `${section.sectionTitle}-${index}`}
-              sectionTitle={section.sectionTitle}
-              sectionTitleHref={section.sectionTitleHref}
-              subPosts={section.subPosts}
-            />
-          ))}
+          <div>
+            {standardSectionsResolved.map((section, index) => (
+              <Fragment key={section.id ?? `${section.sectionTitle}-${index}`}>
+                <div id={`mobile-ad-slot-${index + 1}`} className="md:hidden mb-2"></div>
+                <StandardSection
+                  accent={section.accent}
+                  accentCustomHex={section.accentCustomHex}
+                  featuredPost={section.featuredPost}
+                  footerPosts={section.footerPosts}
+                  sectionTitle={section.sectionTitle}
+                  sectionTitleHref={section.sectionTitleHref}
+                  subPosts={section.subPosts}
+                />
+              </Fragment>
+            ))}
+          </div>
         </div>
       </div>
     </section>

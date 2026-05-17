@@ -98,71 +98,89 @@ export default async function Post({ params: paramsPromise }: Args) {
 
         {draft && <LivePreviewListener />}
 
-        <div className="container pt-10 lg:pt-14">
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_270px]">
-            <div>
+        <div className="container min-w-0 px-4 pt-6 sm:px-6 sm:pt-8 lg:pt-14">
+          <div className="grid min-w-0 grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_270px]">
+            <div className="min-w-0">
               <nav
-                className="mb-4 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground whitespace-nowrap"
+                className="mb-3 flex min-w-0 flex-wrap items-center gap-x-1 text-xs text-muted-foreground sm:mb-4 sm:text-sm"
                 aria-label="Breadcrumb"
               >
-                <Link href="/" className="hover:underline">
+                <Link className="shrink-0 hover:text-foreground hover:underline" href="/">
                   Trang chủ
                 </Link>
-                <ChevronRight className="h-3.5 w-3.5" />
                 {tags?.length ? (
                   <>
-                    <Link href={getCategoryHref(tags[0].slug)} className="hover:underline">
+                    <ChevronRight aria-hidden className="mx-0.5 h-3.5 w-3.5 shrink-0 opacity-60" />
+                    <Link
+                      className="min-w-0 wrap-break-word hover:text-foreground hover:underline"
+                      href={getCategoryHref(tags[0].slug)}
+                    >
                       {tags[0].title}
                     </Link>
-                    <ChevronRight className="h-3.5 w-3.5" />
                   </>
                 ) : null}
-                <span
-                  className="text-foreground line-clamp-1 max-w-[200px] sm:max-w-[400px]"
-                  title={post.title}
-                >
-                  {post.title}
-                </span>
               </nav>
 
-              <h1 className="text-lg font-semibold leading-tight md:text-[23px]">{post.title}</h1>
+              <h1 className="wrap-break-word text-lg font-semibold leading-snug tracking-tight sm:text-xl md:text-[23px] md:leading-tight">
+                {post.title}
+              </h1>
 
-              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
-                <ViewCounter postId={String(post.id)} initialViews={post.views ?? 0} />
+              <div className="mt-3 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-muted-foreground sm:mt-4 sm:gap-x-2.5 sm:text-sm">
+                <span className="inline-flex items-center gap-1.5">
+                  <ViewCounter postId={String(post.id)} initialViews={post.views ?? 0} />
+                </span>
 
                 {post.publishedAt ? (
-                  <div className="flex items-center gap-1.5">
-                    <Clock className="h-3.5 w-3.5" />
-                    <time dateTime={post.publishedAt}>{formatDateTime(post.publishedAt)}</time>
-                  </div>
+                  <>
+                    <span aria-hidden className="select-none text-muted-foreground/35">
+                      ·
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Clock aria-hidden className="h-3.5 w-3.5 shrink-0 opacity-80" />
+                      <time dateTime={post.publishedAt}>{formatDateTime(post.publishedAt)}</time>
+                    </span>
+                  </>
                 ) : null}
 
                 {tags?.length ? (
-                  <div className="flex items-center gap-1.5">
-                    <Folder className="h-3.5 w-3.5" />
-                    <div className="flex items-center">
-                      {tags.map((tag, index) => (
-                        <React.Fragment key={tag.id}>
-                          {index > 0 && <span className="mr-1">,</span>}
-                          <Link href={getCategoryHref(tag.slug)} className="hover:underline">
-                            {tag.title}
-                          </Link>
-                        </React.Fragment>
-                      ))}
-                    </div>
-                  </div>
+                  <>
+                    <span aria-hidden className="select-none text-muted-foreground/35">
+                      ·
+                    </span>
+                    <span className="inline-flex min-w-0 max-w-full items-center gap-1.5">
+                      <Folder aria-hidden className="h-3.5 w-3.5 shrink-0 opacity-80" />
+                      <span className="min-w-0 leading-snug">
+                        {tags.map((tag, index) => (
+                          <React.Fragment key={tag.id}>
+                            {index > 0 ? <span className="text-muted-foreground/50">, </span> : null}
+                            <Link
+                              className="wrap-break-word underline-offset-2 hover:text-foreground hover:underline"
+                              href={getCategoryHref(tag.slug)}
+                            >
+                              {tag.title}
+                            </Link>
+                          </React.Fragment>
+                        ))}
+                      </span>
+                    </span>
+                  </>
                 ) : null}
 
                 {hasAuthors ? (
-                  <div className="flex items-center gap-1.5">
-                    <User className="h-3.5 w-3.5" />
-                    <span>{authorLabel}</span>
-                  </div>
+                  <>
+                    <span aria-hidden className="select-none text-muted-foreground/35">
+                      ·
+                    </span>
+                    <span className="inline-flex min-w-0 max-w-full items-center gap-1.5">
+                      <User aria-hidden className="h-3.5 w-3.5 shrink-0 opacity-80" />
+                      <span className="wrap-break-word leading-snug">{authorLabel}</span>
+                    </span>
+                  </>
                 ) : null}
               </div>
 
               {post.heroImage && typeof post.heroImage !== 'string' ? (
-                <div className="mt-6 overflow-hidden border border-border">
+                <div className="mt-5 overflow-hidden border border-border sm:mt-6">
                   <Media
                     imgClassName="w-full object-cover"
                     resource={post.heroImage}
@@ -172,25 +190,25 @@ export default async function Post({ params: paramsPromise }: Args) {
               ) : null}
 
               <RichText
-                className="prose-neutral mt-6 max-w-none"
+                className="prose-neutral prose-pre:max-w-full prose-pre:overflow-x-auto mt-5 min-w-0 max-w-none sm:mt-6"
                 data={post.content}
                 enableGutter={false}
               />
 
               {relatedPosts.length ? (
-                <section className="mt-10 border-t border-border pt-6">
-                  <h2 className="mb-4 text-base font-semibold uppercase tracking-wide">
+                <section className="mt-8 border-t border-border pt-5 sm:mt-10 sm:pt-6">
+                  <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide sm:mb-4 sm:text-base">
                     Tin liên quan
                   </h2>
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     {relatedPosts.map((item) => (
                       <Link
-                        className="group flex items-start gap-3 border-b border-border pb-4 last:border-none"
+                        className="group flex items-start gap-2.5 border-b border-border pb-3 last:border-none sm:gap-3 sm:pb-4"
                         href={`/posts/${item?.slug}`}
                         key={item.id}
                       >
                         {typeof item.meta?.image === 'object' ? (
-                          <div className="w-28 shrink-0 overflow-hidden">
+                          <div className="w-24 shrink-0 overflow-hidden sm:w-28">
                             <Media
                               imgClassName="aspect-video w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
                               resource={item.meta.image}
@@ -198,12 +216,12 @@ export default async function Post({ params: paramsPromise }: Args) {
                             />
                           </div>
                         ) : null}
-                        <div className="min-w-0">
-                          <h3 className="line-clamp-2 text-sm font-semibold leading-snug group-hover:underline">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="line-clamp-2 text-xs font-semibold leading-snug wrap-break-word group-hover:underline sm:text-sm">
                             {item.title}
                           </h3>
                           {item.meta?.description ? (
-                            <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                            <p className="mt-1 line-clamp-2 text-[11px] text-muted-foreground sm:text-xs">
                               {item.meta.description}
                             </p>
                           ) : null}
@@ -217,11 +235,11 @@ export default async function Post({ params: paramsPromise }: Args) {
               <PostComments key={post.id} postId={post.id} />
 
               {tags?.length ? (
-                <section className="mt-8 border-t border-border pt-5">
-                  <div className="flex flex-wrap gap-2">
+                <section className="mt-6 border-t border-border pt-4 sm:mt-8 sm:pt-5">
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
                     {tags.map((category) => (
                       <Link
-                        className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground"
+                        className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground wrap-break-word sm:px-3 sm:text-xs"
                         href={getCategoryHref(category.slug)}
                         key={`tag-${String(category.id)}`}
                       >
@@ -233,7 +251,7 @@ export default async function Post({ params: paramsPromise }: Args) {
               ) : null}
 
               {footerBlock ? (
-                <div className="mt-8 overflow-hidden border border-border">
+                <div className="mt-6 overflow-hidden border border-border sm:mt-8">
                   {footerBlock.href ? (
                     <SmartLink className="block" href={footerBlock.href}>
                       <Media
@@ -253,15 +271,15 @@ export default async function Post({ params: paramsPromise }: Args) {
               ) : null}
             </div>
 
-            <aside className="w-full space-y-8 lg:sticky lg:top-24 lg:h-fit lg:w-[270px]">
+            <aside className="min-w-0 w-full space-y-6 border-t border-border pt-6 sm:space-y-8 sm:pt-8 lg:sticky lg:top-24 lg:h-fit lg:w-[270px] lg:border-t-0 lg:pt-0">
               <section>
-                <h2 className="mb-3 text-[15px] font-bold uppercase tracking-tight text-foreground">
+                <h2 className="mb-2 text-sm font-bold uppercase tracking-tight text-foreground sm:mb-3 sm:text-[15px]">
                   Danh mục
                 </h2>
                 <div className="border-t border-border/60">
                   {allCategories.map((category) => (
                     <Link
-                      className="block border-b border-border/60 py-2 text-[15px] leading-6 text-foreground transition-colors hover:text-primary"
+                      className="block border-b border-border/60 py-2 text-sm leading-6 text-foreground wrap-break-word transition-colors hover:text-primary sm:text-[15px]"
                       href={getCategoryHref(category.slug)}
                       key={`sidebar-category-${String(category.id)}`}
                     >
@@ -272,18 +290,18 @@ export default async function Post({ params: paramsPromise }: Args) {
               </section>
 
               <section>
-                <h2 className="mb-3 text-[15px] font-bold uppercase tracking-tight text-foreground">
+                <h2 className="mb-2 text-sm font-bold uppercase tracking-tight text-foreground sm:mb-3 sm:text-[15px]">
                   Tin xem nhiều
                 </h2>
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {sidebarItems.slice(0, 6).map((item) => (
                     <Link
-                      className="group flex items-start gap-2.5"
+                      className="group flex min-w-0 items-start gap-2 sm:gap-2.5"
                       href={`/posts/${item?.slug}`}
                       key={`side-${item.id}`}
                     >
                       {typeof item.meta?.image === 'object' ? (
-                        <div className="w-[84px] shrink-0 overflow-hidden bg-muted">
+                        <div className="w-[72px] shrink-0 overflow-hidden bg-muted sm:w-[84px]">
                           <Media
                             imgClassName="aspect-[84/56] w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
                             resource={item.meta.image}
@@ -291,7 +309,7 @@ export default async function Post({ params: paramsPromise }: Args) {
                           />
                         </div>
                       ) : null}
-                      <p className="line-clamp-3 text-[15px] leading-6 text-foreground transition-colors group-hover:text-primary">
+                      <p className="min-w-0 flex-1 line-clamp-3 text-sm leading-6 text-foreground wrap-break-word transition-colors group-hover:text-primary sm:text-[15px]">
                         {item.title}
                       </p>
                     </Link>
@@ -329,7 +347,7 @@ export default async function Post({ params: paramsPromise }: Args) {
             form={sidebarForm}
             headline="Đừng bỏ lỡ tin AI quan trọng"
             submitLabel="Đăng ký"
-            className="my-8"
+            className="my-6 sm:my-8"
           />
         ) : null}
       </article>

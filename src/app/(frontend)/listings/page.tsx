@@ -214,17 +214,17 @@ export default async function ListingsPage({ searchParams: searchParamsPromise }
   )
 
   return (
-    <div className="bg-slate-50/70 pb-10 pt-10">
+    <div className="bg-slate-50/70 pb-8 pt-6 max-md:px-4 md:pb-10 md:pt-10">
       <section className="container">
-        <h1 className="text-xl font-semibold tracking-tight text-balance">{heading}</h1>
-        <p className="mt-3 max-w-3xl text-sm text-muted-foreground">
+        <h1 className="text-lg font-semibold tracking-tight text-balance md:text-xl">{heading}</h1>
+        <p className="mt-2 max-w-3xl text-sm text-muted-foreground md:mt-3">
           Lọc theo loại tin, chuyên môn và khu vực để tìm đúng nhu cầu nhanh hơn.
         </p>
       </section>
 
-      <section className="container mt-8">
-        <div className="rounded-lg border border-border bg-background p-4 shadow-sm">
-          <div className="flex flex-wrap gap-x-4 gap-y-0 text-sm leading-6">
+      <section className="container mt-6 md:mt-8">
+        <div className="rounded-lg border border-border bg-background p-3 shadow-sm md:p-4">
+          <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm leading-6 md:gap-y-0">
             <FilterChip
               active={!listingType}
               count={totalListingsMatchingPrimaryFilters}
@@ -251,7 +251,7 @@ export default async function ListingsPage({ searchParams: searchParamsPromise }
 
           <div className="my-2 border-t border-border" />
 
-          <div className="flex flex-wrap gap-x-4 gap-y-4 text-sm leading-6">
+          <div className="flex flex-wrap gap-x-3 gap-y-3 text-sm leading-6 md:gap-x-4 md:gap-y-4">
             <FilterChip
               active={!category}
               count={Object.values(categoryCounts).reduce((sum, count) => sum + count, 0)}
@@ -344,16 +344,16 @@ export default async function ListingsPage({ searchParams: searchParamsPromise }
               </select>
             </label>
 
-            <div className="flex items-end gap-3">
+            <div className="flex flex-col gap-2 md:flex-row md:items-end md:gap-3">
               <button
-                className="inline-flex h-11 items-center justify-center rounded-xl border border-border px-4 text-sm font-medium transition-colors hover:bg-muted cursor-pointer"
+                className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-border px-4 text-sm font-medium transition-colors hover:bg-muted cursor-pointer md:w-auto"
                 type="submit"
               >
                 Áp dụng
               </button>
               {hasActiveFilters ? (
                 <Link
-                  className="inline-flex h-11 items-center justify-center rounded-xl border border-border px-4 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-border px-4 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:w-auto"
                   href="/listings"
                 >
                   Xóa bộ lọc
@@ -364,9 +364,9 @@ export default async function ListingsPage({ searchParams: searchParamsPromise }
         </div>
       </section>
 
-      <section className="container mt-10">
+      <section className="container mt-8 md:mt-10">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <p className="text-xl font-semibold">
+          <p className="text-base font-semibold leading-snug text-balance md:text-xl md:leading-normal">
             {listings.totalDocs} tin
             {selectedCategory ? ` thuộc ${selectedCategory.title.toLowerCase()}` : ''}
             {listingType ? ` dạng ${selectedListingTypeLabel.toLowerCase()}` : ''}
@@ -376,7 +376,7 @@ export default async function ListingsPage({ searchParams: searchParamsPromise }
         </div>
       </section>
 
-      <section className="container mt-8">
+      <section className="container mt-6 md:mt-8">
         {listings.docs.length ? (
           <div className="space-y-4">
             {listings.docs.map((listing) => (
@@ -384,17 +384,17 @@ export default async function ListingsPage({ searchParams: searchParamsPromise }
             ))}
           </div>
         ) : (
-          <div className="rounded-2xl border border-dashed border-border px-6 py-12 text-center text-muted-foreground">
+          <div className="rounded-2xl border border-dashed border-border px-4 py-10 text-center text-muted-foreground md:px-6 md:py-12">
             Không có tin đăng phù hợp với bộ lọc hiện tại.
           </div>
         )}
       </section>
 
       {listings.totalPages > 1 ? (
-        <section className="container mt-10">
+        <section className="container mt-8 md:mt-10">
           <nav
             aria-label="Phân trang listings"
-            className="flex flex-wrap items-center justify-center gap-2"
+            className="flex max-w-full flex-wrap items-center justify-center gap-1.5 md:gap-2"
           >
             <PaginationQueryLink
               category={category}
@@ -616,7 +616,7 @@ function PaginationQueryLink({
 }) {
   if (page < 1 || page > totalPages) {
     return (
-      <span className="inline-flex h-10 min-w-10 items-center justify-center rounded-xl border border-border px-4 text-sm text-muted-foreground/50">
+      <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-xl border border-border px-2.5 text-xs text-muted-foreground/50 md:h-10 md:min-w-10 md:px-4 md:text-sm">
         {label}
       </span>
     )
@@ -627,7 +627,7 @@ function PaginationQueryLink({
   return (
     <Link
       className={cn(
-        'inline-flex h-10 min-w-10 items-center justify-center rounded-xl border border-border px-4 text-sm transition-colors hover:bg-background',
+        'inline-flex h-9 min-w-9 items-center justify-center rounded-xl border border-border px-2.5 text-xs transition-colors hover:bg-background md:h-10 md:min-w-10 md:px-4 md:text-sm',
         isActive && 'bg-foreground text-background hover:bg-foreground',
       )}
       href={buildQueryHref({ category, city, district, listingType, sort, page })}

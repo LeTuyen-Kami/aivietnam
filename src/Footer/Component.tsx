@@ -130,13 +130,13 @@ export async function Footer() {
     <footer className="mt-auto border-t border-neutral-200 bg-background text-foreground">
       {categoryColumns.length > 0 && (
         <div className="border-b border-neutral-200">
-          <div className="container py-8 md:py-10">
-            <h2 className="mb-6 text-lg font-semibold text-foreground md:text-xl">
+          <div className="container px-4 py-6 sm:px-6 sm:py-8 md:py-10">
+            <h2 className="mb-4 text-base font-semibold text-foreground sm:mb-6 sm:text-lg md:text-xl">
               {categoriesHeading}
             </h2>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 lg:grid-cols-5">
+            <div className="grid grid-cols-1 gap-y-4 min-[380px]:grid-cols-2 min-[380px]:gap-x-4 sm:grid-cols-3 sm:gap-x-6 sm:gap-y-3 lg:grid-cols-5">
               {categoryColumns.map((column, colIdx) => (
-                <ul className="flex flex-col gap-2 text-sm" key={column.id ?? colIdx}>
+                <ul className="flex min-w-0 flex-col gap-2 text-sm" key={column.id ?? colIdx}>
                   {column.links?.map((row, i) =>
                     row.link ? (
                       <li key={row.id ?? i}>
@@ -151,22 +151,22 @@ export async function Footer() {
         </div>
       )}
 
-      <div className="container py-8 md:py-10">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 lg:items-start lg:gap-8">
+      <div className="container px-4 py-6 sm:px-6 sm:py-8 md:py-10">
+        <div className="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-3 lg:items-start lg:gap-8">
           {/* Left */}
-          <div className="flex flex-col gap-8">
+          <div className="flex min-w-0 flex-col gap-6 md:gap-8">
             {(data.appStoreUrl || data.googlePlayUrl || appStoreBadge || googlePlayBadge) && (
               <div>
                 <p className="mb-3 text-sm font-semibold">
                   {data.downloadsTitle?.trim() || 'Tải ứng dụng'}
                 </p>
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-2 sm:gap-3">
                   {data.appStoreUrl?.trim() &&
                     (appStoreBadge ? (
-                      <SmartLink className="inline-block" href={data.appStoreUrl.trim()}>
+                      <SmartLink className="inline-block max-w-full shrink-0" href={data.appStoreUrl.trim()}>
                         <NextImage
                           alt="App Store"
-                          className="h-10 w-auto"
+                          className="h-9 w-auto max-w-full sm:h-10"
                           height={40}
                           src={getMediaUrl(appStoreBadge.url, appStoreBadge.updatedAt)}
                           width={120}
@@ -182,10 +182,10 @@ export async function Footer() {
                     ))}
                   {data.googlePlayUrl?.trim() &&
                     (googlePlayBadge ? (
-                      <SmartLink className="inline-block" href={data.googlePlayUrl.trim()}>
+                      <SmartLink className="inline-block max-w-full shrink-0" href={data.googlePlayUrl.trim()}>
                         <NextImage
                           alt="Google Play"
-                          className="h-10 w-auto"
+                          className="h-9 w-auto max-w-full sm:h-10"
                           height={40}
                           src={getMediaUrl(googlePlayBadge.url, googlePlayBadge.updatedAt)}
                           width={135}
@@ -208,11 +208,11 @@ export async function Footer() {
                 <p className="mb-2 text-sm font-semibold">
                   {data.hotlineTitle?.trim() || 'Đường dây nóng'}
                 </p>
-                <ul className="flex flex-col gap-1 text-sm">
+                <ul className="flex flex-col gap-1.5 text-sm">
                   {data.hotlines?.map((h, i) => (
-                    <li key={h.id ?? i}>
+                    <li className="min-w-0 wrap-break-word" key={h.id ?? i}>
                       <span className="text-foreground">{h.label} </span>
-                      <SmartLink className={cn('text-sm', accentClass)} href={h.href.trim()}>
+                      <SmartLink className={cn('text-sm break-all', accentClass)} href={h.href.trim()}>
                         {h.phone}
                       </SmartLink>
                     </li>
@@ -234,13 +234,13 @@ export async function Footer() {
                     return (
                       <li key={row.id ?? i}>
                         <SmartLink
-                          className="flex items-center gap-3 rounded-lg bg-neutral-100 px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-neutral-200/80 dark:bg-neutral-800 dark:hover:bg-neutral-700/80"
+                          className="flex min-w-0 items-center gap-2.5 rounded-lg bg-neutral-100 px-2.5 py-2.5 text-sm text-foreground transition-colors hover:bg-neutral-200/80 sm:gap-3 sm:px-3 dark:bg-neutral-800 dark:hover:bg-neutral-700/80"
                           href={href}
                         >
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-neutral-200/80 dark:bg-neutral-700/80">
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-neutral-200/80 sm:h-9 sm:w-9 dark:bg-neutral-700/80">
                             <ContactIcon icon={row.icon} />
                           </span>
-                          <span className="font-medium">{row.link.label}</span>
+                          <span className="min-w-0 flex-1 font-medium wrap-break-word">{row.link.label}</span>
                         </SmartLink>
                       </li>
                     )
@@ -251,28 +251,32 @@ export async function Footer() {
           </div>
 
           {/* Center */}
-          <div className="flex flex-col items-center gap-4 text-center lg:items-center">
+          <div className="flex min-w-0 w-full flex-col items-center gap-3 text-center sm:gap-4 lg:items-center">
             {featureImage && (
               <div className="relative w-full max-w-md overflow-hidden rounded-lg">
                 <Media
                   className="w-full"
-                  imgClassName="max-h-52 w-full object-cover sm:max-h-56 md:max-h-64"
+                  imgClassName="max-h-40 w-full object-cover sm:max-h-52 md:max-h-56 lg:max-h-64"
                   resource={featureImage}
                 />
               </div>
             )}
             {data.brandTitle?.trim() && (
-              <p className="text-lg font-bold uppercase tracking-wide">{data.brandTitle.trim()}</p>
+              <p className="px-1 text-base font-bold uppercase tracking-wide sm:text-lg">
+                {data.brandTitle.trim()}
+              </p>
             )}
             {data.brandTagline?.trim() && (
-              <p className="text-sm italic text-muted-foreground">{data.brandTagline.trim()}</p>
+              <p className="max-w-md px-1 text-sm italic text-muted-foreground sm:px-0">
+                {data.brandTagline.trim()}
+              </p>
             )}
-            <div className="w-full space-y-3 text-left text-sm leading-relaxed">
+            <div className="w-full max-w-md space-y-2.5 text-left text-sm leading-relaxed sm:space-y-3 lg:max-w-none">
               {data.contentResponsibility?.trim() && (
-                <p className="text-foreground">{data.contentResponsibility.trim()}</p>
+                <p className="wrap-break-word text-foreground">{data.contentResponsibility.trim()}</p>
               )}
               {(data.headquartersAddress?.trim() || data.headquartersLabel?.trim()) && (
-                <p className="text-foreground">
+                <p className="wrap-break-word text-foreground">
                   {data.headquartersLabel?.trim() && (
                     <span className="font-semibold">{data.headquartersLabel.trim()} </span>
                   )}
@@ -280,25 +284,25 @@ export async function Footer() {
                 </p>
               )}
               {data.centerPhone?.trim() && (
-                <p>
+                <p className="wrap-break-word">
                   {data.phoneLabel?.trim() && (
                     <span className="font-semibold text-foreground">{data.phoneLabel.trim()} </span>
                   )}
                   {phoneHref ? (
-                    <SmartLink className={cn(accentClass, 'text-sm')} href={phoneHref}>
+                    <SmartLink className={cn(accentClass, 'break-all text-sm')} href={phoneHref}>
                       {data.centerPhone.trim()}
                     </SmartLink>
                   ) : (
-                    <span className={accentClass}>{data.centerPhone.trim()}</span>
+                    <span className={cn(accentClass, 'break-all')}>{data.centerPhone.trim()}</span>
                   )}
                 </p>
               )}
               {emailRaw && (
-                <p>
+                <p className="wrap-break-word">
                   {data.emailLabel?.trim() && (
                     <span className="font-semibold text-foreground">{data.emailLabel.trim()} </span>
                   )}
-                  <SmartLink className={cn(accentClass, 'text-sm')} href={emailHref}>
+                  <SmartLink className={cn(accentClass, 'break-all text-sm')} href={emailHref}>
                     {emailRaw}
                   </SmartLink>
                 </p>
@@ -307,7 +311,7 @@ export async function Footer() {
           </div>
 
           {/* Right */}
-          <div className="flex flex-col gap-6">
+          <div className="flex min-w-0 flex-col gap-5 sm:gap-6">
             {(data.socialFacebook ||
               data.socialX ||
               data.socialYoutube ||
@@ -317,7 +321,7 @@ export async function Footer() {
                 <p className="mb-3 text-sm font-semibold">
                   {data.socialHeading?.trim() || 'Theo dõi AI Việt Nam trên'}
                 </p>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap justify-center gap-2 lg:justify-start">
                   {socialWrap(
                     <Users aria-hidden className={socialIconClass} strokeWidth={1.75} />,
                     data.socialFacebook,
@@ -351,7 +355,7 @@ export async function Footer() {
               <div>
                 {data.promoHref?.trim() ? (
                   <SmartLink
-                    className="block rounded border border-neutral-300 p-4 text-center transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-900/40"
+                    className="block rounded border border-neutral-300 p-3 text-center transition-colors hover:bg-neutral-50 sm:p-4 dark:hover:bg-neutral-900/40"
                     href={data.promoHref.trim()}
                   >
                     {data.promoTitle?.trim() && (
@@ -366,7 +370,7 @@ export async function Footer() {
                     )}
                   </SmartLink>
                 ) : (
-                  <div className="rounded border border-neutral-300 p-4 text-center">
+                  <div className="rounded border border-neutral-300 p-3 text-center sm:p-4">
                     {data.promoTitle?.trim() && (
                       <p className="text-sm font-bold uppercase leading-snug">
                         {data.promoTitle.trim()}
@@ -382,7 +386,7 @@ export async function Footer() {
               </div>
             )}
 
-            <div className="space-y-2 text-xs leading-relaxed text-muted-foreground">
+            <div className="space-y-2 text-xs leading-relaxed wrap-break-word text-muted-foreground">
               {data.licenseLine?.trim() && <p>{data.licenseLine.trim()}</p>}
               {data.copyrightLine?.trim() && <p>{data.copyrightLine.trim()}</p>}
             </div>

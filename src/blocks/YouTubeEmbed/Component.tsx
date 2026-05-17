@@ -52,9 +52,9 @@ export const YouTubeEmbedBlockComponent: React.FC<Props> = ({ title, videoTitle,
   }
 
   return (
-    <section className="container">
+    <section className="container px-4 md:px-0">
       {trimmedTitle ? (
-        <h2 className="mb-5 text-center font-serif text-[26px]! font-semibold uppercase leading-tight text-foreground md:mb-6 md:text-4xl">
+        <h2 className="mb-2 mt-4 md:mt-0 text-center text-lg font-serif md:text-[26px]! font-semibold uppercase leading-tight text-foreground md:mb-6 md:text-4xl">
           {trimmedTitle}
         </h2>
       ) : null}

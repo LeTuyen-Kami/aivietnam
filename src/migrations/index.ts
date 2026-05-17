@@ -22,6 +22,9 @@ import * as migration_20260512_000000_listing_create_block from './20260512_0000
 import * as migration_20260516_223553_add_mobile_header_banner from './20260516_223553_add_mobile_header_banner'
 import * as migration_20260516_235700_portal_split_humanitarian_items from './20260516_235700_portal_split_humanitarian_items'
 import * as migration_20260517_120000_portal_split_mobile_ad_fields from './20260517_120000_portal_split_mobile_ad_fields'
+import * as migration_20260517_180000_targeted_ad_slot_block from './20260517_180000_targeted_ad_slot_block'
+import * as migration_20260517_210000_remove_portal_split_mobile_ad_fields from './20260517_210000_remove_portal_split_mobile_ad_fields'
+import * as migration_20260517_220000_tas_target_element_id_nullable from './20260517_220000_tas_target_element_id_nullable'
 
 export const migrations = [
   {
@@ -143,5 +146,20 @@ export const migrations = [
     up: migration_20260517_120000_portal_split_mobile_ad_fields.up,
     down: migration_20260517_120000_portal_split_mobile_ad_fields.down,
     name: '20260517_120000_portal_split_mobile_ad_fields',
+  },
+  {
+    up: migration_20260517_180000_targeted_ad_slot_block.up,
+    down: migration_20260517_180000_targeted_ad_slot_block.down,
+    name: '20260517_180000_targeted_ad_slot_block',
+  },
+  {
+    up: migration_20260517_210000_remove_portal_split_mobile_ad_fields.up,
+    down: migration_20260517_210000_remove_portal_split_mobile_ad_fields.down,
+    name: '20260517_210000_remove_portal_split_mobile_ad_fields',
+  },
+  {
+    up: migration_20260517_220000_tas_target_element_id_nullable.up,
+    down: migration_20260517_220000_tas_target_element_id_nullable.down,
+    name: '20260517_220000_tas_target_element_id_nullable',
   },
 ]

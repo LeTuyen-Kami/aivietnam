@@ -158,13 +158,21 @@ function OrbitCard({
   card,
   className,
   style,
+  stackLayout,
 }: {
   card: ResolvedCard
   className?: string
   style?: React.CSSProperties
+  /** Smaller orbit tiles on narrow phones; desktop orbit unchanged (lg:) */
+  stackLayout?: boolean
 }) {
   const imageNode = (
-    <div className="relative mx-auto mb-3 h-18 w-18 overflow-hidden rounded-full bg-muted shadow-sm sm:size-20 lg:size-16">
+    <div
+      className={cn(
+        'relative mx-auto mb-2 overflow-hidden rounded-full bg-muted shadow-sm sm:mb-3',
+        stackLayout ? 'size-14 max-[380px]:size-12 sm:size-18' : 'h-18 w-18 sm:size-20 lg:size-16',
+      )}
+    >
       <Media
         className="absolute inset-0"
         fill
@@ -178,7 +186,14 @@ function OrbitCard({
   const content = (
     <>
       {imageNode}
-      <h3 className="text-center text-[15px] font-medium leading-tight text-foreground sm:text-base lg:text-[17px]">
+      <h3
+        className={cn(
+          'text-center font-medium leading-tight text-foreground',
+          stackLayout
+            ? 'text-xs max-[380px]:text-[11px] sm:text-sm'
+            : 'text-[15px] sm:text-base lg:text-[17px]',
+        )}
+      >
         {card.title}
       </h3>
     </>
@@ -205,19 +220,13 @@ function CenterLabel({ label }: { label: ResolvedLabel }) {
 
   if (label.href) {
     return (
-      <SmartLink className="block" href={label.href}>
+      <SmartLink className="block wrap-break-word" href={label.href}>
         {content}
       </SmartLink>
     )
   }
 
   return <>{content}</>
-}
-
-function renderCenterLabel(label: ResolvedLabel | null) {
-  if (!label) return null
-
-  return <CenterLabel label={label} />
 }
 
 function asCenterLabelValue(value: unknown): CenterLabelValue {
@@ -228,23 +237,42 @@ function asCenterLabelHrefValue(value: unknown): string | null | undefined {
   return value as string | null | undefined
 }
 
-function CenterImage({ image, href }: { image: MediaType; href?: string | null }) {
+function CenterImage({
+  image,
+  href,
+  variant = 'orbit',
+}: {
+  image: MediaType
+  href?: string | null
+  /** `stack` = mobile-only layout branch; `orbit` = desktop ring (unchanged at lg+) */
+  variant?: 'orbit' | 'stack'
+}) {
+  const frameClass =
+    variant === 'stack'
+      ? 'relative mx-auto aspect-square w-[8.5rem] max-w-full shrink-0 overflow-hidden rounded-full bg-muted max-[380px]:w-[7.25rem] sm:w-44'
+      : 'relative mx-auto aspect-square w-44 shrink-0 overflow-hidden rounded-full bg-muted sm:w-52 lg:w-[220px]'
+
   const media = (
-    <div className="relative mx-auto h-44 w-44 overflow-hidden rounded-full bg-muted sm:h-52 sm:w-52 lg:h-[220px] lg:w-[220px]">
+    <div className={frameClass}>
       <Media
-        className="absolute inset-0"
+        className="absolute inset-0 size-full"
         fill
-        imgClassName="h-full w-full object-cover"
+        pictureClassName="absolute inset-0 block size-full overflow-hidden rounded-full"
+        imgClassName="size-full rounded-full object-cover"
         priority
         resource={image}
-        size="(max-width: 1024px) 14rem, 16rem"
+        size={
+          variant === 'stack'
+            ? '(max-width: 640px) 8.5rem, 11rem'
+            : '(max-width: 1024px) 14rem, 16rem'
+        }
       />
     </div>
   )
 
   if (href?.trim()) {
     return (
-      <SmartLink className="block" href={href.trim()}>
+      <SmartLink className="block w-fit max-w-full shrink-0" href={href.trim()}>
         {media}
       </SmartLink>
     )
@@ -276,6 +304,12 @@ export const AIEcosystemMapBlockComponent: React.FC<Props> = ({
   const orbitRadiusY = 35
   const labelOrbitRadiusX = 20
   const labelOrbitRadiusY = 22
+
+  /** Mobile (<lg): label ring inside a square map — % like desktop (left ↔ width, top ↔ height). */
+  const mobileMapCenterX = 50
+  const mobileMapCenterY = 50
+  const mobileLabelRingRx = 36
+  const mobileLabelRingRy = 38
 
   const centerLabelFields = rest as CenterLabelRestFields
 
@@ -327,10 +361,10 @@ export const AIEcosystemMapBlockComponent: React.FC<Props> = ({
   }
 
   return (
-    <section className={cn(!disableInnerContainer && 'container -mb-10')}>
+    <section className={cn(!disableInnerContainer && 'container mb-0 md:-mb-10')}>
       <div className="mx-auto max-w-[1180px]">
         <div className="hidden lg:block">
-          <h2 className="text-center font-serif text-2xl font-semibold uppercase tracking-[0.08em] text-teal-800 mb-4">
+          <h2 className="text-center font-serif text-lg md:text-2xl font-semibold uppercase tracking-[0.08em] text-teal-800 mb-0 md:mb-4">
             {heading}
           </h2>
           <div className="relative px-6 pb-8 pt-2 w-full aspect-1100/882">
@@ -387,53 +421,43 @@ export const AIEcosystemMapBlockComponent: React.FC<Props> = ({
         </div>
 
         <div className="lg:hidden">
-          <div className="px-4 pb-4 pt-2 sm:px-6">
-            <h2 className="mb-7 text-center font-serif text-3xl font-semibold uppercase leading-tight tracking-[0.06em] text-teal-800 sm:text-4xl">
+          <div className="px-3 pb-6 pt-2 sm:px-6">
+            <h2 className="mb-0 text-balance text-center mt-4 font-serif text-lg font-semibold uppercase leading-snug tracking-[0.06em] text-teal-800 sm:mb-7 sm:text-3xl sm:leading-tight md:text-4xl">
               {heading}
             </h2>
 
-            <div className="mx-auto mb-6 grid max-w-[460px] grid-cols-3 gap-x-4 gap-y-3 text-center">
-              <div className="text-xl font-medium leading-tight text-foreground sm:text-2xl">
-                {renderCenterLabel(labelMap.centerTopLeftLabel)}
-              </div>
-              <div className="text-xl font-medium leading-tight text-foreground sm:text-2xl">
-                {renderCenterLabel(labelMap.centerTopMiddleLabel)}
-              </div>
-              <div className="text-xl font-medium leading-tight text-foreground sm:text-2xl">
-                {renderCenterLabel(labelMap.centerTopRightLabel)}
-              </div>
-              <div className="text-xl font-medium leading-tight text-foreground sm:text-2xl">
-                {renderCenterLabel(labelMap.centerMiddleLeftLabel)}
-              </div>
-              <div className="row-span-2 flex items-center justify-center">
-                <CenterImage href={centerImageHref} image={centerMedia} />
-              </div>
-              <div className="text-xl font-medium leading-tight text-foreground sm:text-2xl">
-                {renderCenterLabel(labelMap.centerMiddleRightLabel)}
-              </div>
-              <div className="text-xl font-medium leading-tight text-foreground sm:text-2xl">
-                {renderCenterLabel(labelMap.centerBottomLeftLabel)}
-              </div>
-              <div className="text-xl font-medium leading-tight text-foreground sm:text-2xl">
-                {renderCenterLabel(labelMap.centerRightUpperLabel)}
-              </div>
-              <div className="text-xl font-medium leading-tight text-foreground sm:text-2xl">
-                {renderCenterLabel(labelMap.centerBottomFarLeftLabel)}
-              </div>
-              <div className="text-xl font-medium leading-tight text-foreground sm:text-2xl">
-                {renderCenterLabel(labelMap.centerBottomMiddleLabel)}
-              </div>
-              <div className="text-xl font-medium leading-tight text-foreground sm:text-2xl">
-                {renderCenterLabel(labelMap.centerBottomRightLabel)}
-              </div>
-              <div className="col-start-3 text-xl font-medium leading-tight text-foreground sm:text-2xl">
-                {renderCenterLabel(labelMap.centerBottomFarRightLabel)}
+            <div className="relative mx-auto mb-6 aspect-square w-full max-w-[min(100%,19rem)] touch-manipulation sm:mb-8 sm:max-w-[min(100%,22rem)]">
+              {desktopLabelPlacements.map((placement, labelIndex) => {
+                const label = labelMap[placement.key]
+                if (!label) return null
+
+                const angle =
+                  ((Math.PI * 2) / desktopLabelPlacements.length) * labelIndex - Math.PI / 2
+                const left = mobileMapCenterX + mobileLabelRingRx * Math.cos(angle)
+                const top = mobileMapCenterY + mobileLabelRingRy * Math.sin(angle)
+
+                return (
+                  <div
+                    className="absolute z-1 max-w-[min(30vw,6.25rem)] -translate-x-1/2 -translate-y-1/2 text-center text-[11px] font-semibold leading-snug text-foreground wrap-break-word sm:max-w-28 sm:text-sm sm:leading-tight"
+                    key={placement.key}
+                    style={{
+                      left: `${left}%`,
+                      top: `${top}%`,
+                    }}
+                  >
+                    <CenterLabel label={label} />
+                  </div>
+                )
+              })}
+
+              <div className="absolute left-1/2 top-1/2 z-2 -translate-x-1/2 -translate-y-1/2">
+                <CenterImage href={centerImageHref} image={centerMedia} variant="stack" />
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-x-3 gap-y-8 sm:gap-x-6 sm:gap-y-10">
+            <div className="mx-auto grid w-full max-w-[520px] grid-cols-3 gap-x-2 gap-y-6 min-[400px]:grid-cols-3 min-[400px]:gap-x-3 sm:max-w-none sm:gap-x-6 sm:gap-y-10">
               {cards.map((card) => (
-                <OrbitCard card={card} className="min-w-0" key={card.key} />
+                <OrbitCard card={card} className="min-w-0" key={card.key} stackLayout />
               ))}
             </div>
           </div>

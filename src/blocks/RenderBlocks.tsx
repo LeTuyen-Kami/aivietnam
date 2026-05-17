@@ -20,6 +20,7 @@ import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import { MediaHubTriptychBlockComponent } from '@/blocks/MediaHubTriptych/Component'
 import { NewsletterSignupBlock } from '@/blocks/NewsletterSignup/Component'
 import { PortalSplitLayoutBlockAsync } from '@/blocks/PortalSplitLayout/Component'
+import { TargetedAdSlotBlockComponent } from '@/blocks/TargetedAdSlot/Component'
 import { YouTubeEmbedBlockComponent } from '@/blocks/YouTubeEmbed/Component'
 
 const blockComponents = {
@@ -42,6 +43,7 @@ const blockComponents = {
   listingsCategoryItem: ListingsCategoryItemBlockComponent,
   marketplaceStats: MarketplaceStatsBlockComponent,
   livestreamPortal: LivestreamPortalBlockComponent,
+  targetedAdSlot: TargetedAdSlotBlockComponent,
 }
 
 export const RenderBlocks: React.FC<{
@@ -61,6 +63,12 @@ export const RenderBlocks: React.FC<{
             const Block = blockComponents[blockType]
 
             if (Block) {
+              if (blockType === 'targetedAdSlot') {
+                return (
+                  // @ts-expect-error block union props are resolved at runtime by blockType
+                  <Block key={index} {...block} />
+                )
+              }
               return (
                 <div className="md:my-8 my-0 relative z-0" key={index}>
                   {/* @ts-expect-error block union props are resolved at runtime by blockType */}

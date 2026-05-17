@@ -23,7 +23,10 @@ export function RowOneRight({
 
   return (
     <div style={accentTextVarStyle(palette.text)}>
-      <div className="mb-3 h-0.5 w-full rounded-sm" style={{ backgroundColor: palette.bar }} />
+      <div
+        className="mb-3 h-0.5 rounded-sm mx-4 md:mx-0"
+        style={{ backgroundColor: palette.bar }}
+      />
       {row1RightTitle &&
         (row1RightTitleHref?.trim() ? (
           <SmartLink className="mb-6 block text-center" href={row1RightTitleHref.trim()}>

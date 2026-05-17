@@ -99,6 +99,7 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
     startY: 0,
     originY: 0,
   })
+  const scrollParallaxRef = useRef({ current: 0, target: 0, animationFrame: 0 })
   const [title, setTitle] = useState('')
   const [slug, setSlug] = useState('')
   const [descriptionValue, setDescriptionValue] = useState('')
@@ -132,22 +133,36 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
     }
 
     let previousScrollY = window.scrollY
-    let animationFrame = 0
+
+    const animateScrollParallax = () => {
+      const state = scrollParallaxRef.current
+
+      state.target *= 0.82
+      state.current += (state.target - state.current) * 0.18
+
+      if (Math.abs(state.current) < 0.05 && Math.abs(state.target) < 0.05) {
+        state.current = 0
+        state.target = 0
+        state.animationFrame = 0
+        setScrollOffsetY(0)
+        return
+      }
+
+      setScrollOffsetY(state.current)
+      state.animationFrame = window.requestAnimationFrame(animateScrollParallax)
+    }
 
     const handleScroll = () => {
       const nextScrollY = window.scrollY
       const delta = nextScrollY - previousScrollY
       previousScrollY = nextScrollY
 
-      if (animationFrame) {
-        window.cancelAnimationFrame(animationFrame)
+      const state = scrollParallaxRef.current
+      state.target = Math.max(-18, Math.min(18, delta * -1))
+
+      if (!state.animationFrame) {
+        state.animationFrame = window.requestAnimationFrame(animateScrollParallax)
       }
-
-      setScrollOffsetY((current) => current * 0.55)
-
-      animationFrame = window.requestAnimationFrame(() => {
-        setScrollOffsetY(Math.max(-18, Math.min(18, delta * 0.35)))
-      })
     }
 
     updateButtonBounds()
@@ -157,21 +172,13 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
     return () => {
       window.removeEventListener('resize', updateButtonBounds)
       window.removeEventListener('scroll', handleScroll)
-      if (animationFrame) {
-        window.cancelAnimationFrame(animationFrame)
+      const state = scrollParallaxRef.current
+      if (state.animationFrame) {
+        window.cancelAnimationFrame(state.animationFrame)
+        state.animationFrame = 0
       }
     }
   }, [isMounted])
-
-  useEffect(() => {
-    if (!scrollOffsetY) return
-
-    const timeout = window.setTimeout(() => {
-      setScrollOffsetY((current) => current * 0.45)
-    }, 120)
-
-    return () => window.clearTimeout(timeout)
-  }, [scrollOffsetY])
 
   useEffect(() => {
     if (!isMounted || typeof window === 'undefined') return
@@ -355,7 +362,7 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
           aria-controls="livestream-admin-panel-modal"
           aria-expanded={isOpen}
           aria-haspopup="dialog"
-          className="fixed right-6 z-[10000] h-14 w-14 rounded-full shadow-xl shadow-black/20 transition-transform duration-300 ease-out hover:scale-105 hover:cursor-pointer active:scale-95 touch-none"
+          className="fixed right-6 z-[10000] h-14 w-14 rounded-full shadow-xl shadow-black/20 hover:scale-105 hover:cursor-pointer active:scale-95 touch-none"
           onClick={handleOpenButtonClick}
           onPointerDown={handleButtonPointerDown}
           onPointerMove={handleButtonPointerMove}

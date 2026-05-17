@@ -38,8 +38,11 @@ export function ViewCounter({ postId, initialViews }: ViewCounterProps) {
   }
 
   return (
-    <span className="flex items-center gap-1.5 text-xs text-muted-foreground" title={`${initialViews} lượt xem`}>
-      <Eye className="h-3.5 w-3.5" />
+    <span
+      className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground"
+      title={`${initialViews} lượt xem`}
+    >
+      <Eye aria-hidden className="h-3.5 w-3.5 shrink-0" />
       <span>{formatViews(initialViews)} lượt xem</span>
     </span>
   )

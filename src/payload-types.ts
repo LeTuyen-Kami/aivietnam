@@ -270,6 +270,7 @@ export interface Page {
     | ListingsCategoryItemBlock
     | MarketplaceStatsBlock
     | LivestreamPortalBlock
+    | TargetedAdSlotBlock
   )[];
   meta?: {
     title?: string | null;
@@ -1267,18 +1268,6 @@ export interface PortalSplitLayoutBlock {
         id?: string | null;
       }[]
     | null;
-  /**
-   * Markup for the ad container (e.g. wrapper divs, iframes, noscript fallbacks).
-   */
-  mobileAdHtml?: string | null;
-  /**
-   * Styles for this slot (raw rules or a full <style>…</style> block if you paste from an ad network).
-   */
-  mobileAdCss?: string | null;
-  /**
-   * JavaScript or third-party snippet (inline code or full <script>…</script> tags).
-   */
-  mobileAdScript?: string | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'portalSplitLayout';
@@ -1549,6 +1538,31 @@ export interface LivestreamPortalBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'livestreamPortal';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TargetedAdSlotBlock".
+ */
+export interface TargetedAdSlotBlock {
+  /**
+   * Must match an element’s id on this page (client-side). You can leave this empty while drafting; publish only after it is set. Place this block after the target in layout when possible; otherwise the UI will wait for the node to appear.
+   */
+  targetElementId?: string | null;
+  /**
+   * Markup injected into the target element as normal DOM (portal + slot container).
+   */
+  embedHtml?: string | null;
+  /**
+   * Styles for this slot (raw rules or a full <style>…</style> block).
+   */
+  embedCss?: string | null;
+  /**
+   * JavaScript or third-party snippet (inline or full <script>…</script> tags).
+   */
+  embedScript?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'targetedAdSlot';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2283,6 +2297,7 @@ export interface PagesSelect<T extends boolean = true> {
         listingsCategoryItem?: T | ListingsCategoryItemBlockSelect<T>;
         marketplaceStats?: T | MarketplaceStatsBlockSelect<T>;
         livestreamPortal?: T | LivestreamPortalBlockSelect<T>;
+        targetedAdSlot?: T | TargetedAdSlotBlockSelect<T>;
       };
   meta?:
     | T
@@ -2660,9 +2675,6 @@ export interface PortalSplitLayoutBlockSelect<T extends boolean = true> {
         post?: T;
         id?: T;
       };
-  mobileAdHtml?: T;
-  mobileAdCss?: T;
-  mobileAdScript?: T;
   id?: T;
   blockName?: T;
 }
@@ -2805,6 +2817,18 @@ export interface LivestreamPortalBlockSelect<T extends boolean = true> {
   description?: T;
   emptyMessage?: T;
   adminListLimit?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TargetedAdSlotBlock_select".
+ */
+export interface TargetedAdSlotBlockSelect<T extends boolean = true> {
+  targetElementId?: T;
+  embedHtml?: T;
+  embedCss?: T;
+  embedScript?: T;
   id?: T;
   blockName?: T;
 }

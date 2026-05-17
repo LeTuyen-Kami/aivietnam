@@ -33,8 +33,14 @@ export function RowOneLeft({
   const palette = getAccentStyleWithCustomHex(row1LeftAccent ?? 'teal', row1LeftAccentCustomHex)
 
   return (
-    <div style={accentTextVarStyle(palette.text)}>
-      <div className="mb-3 h-0.5 w-full rounded-sm" style={{ backgroundColor: palette.bar }} />
+    <div
+      style={accentTextVarStyle(palette.text)}
+      className="min-w-0 max-w-full md:overflow-hidden md:max-w-screen"
+    >
+      <div
+        className="mb-3 h-0.5 mx-4 md:mx-0 md:w-full rounded-sm"
+        style={{ backgroundColor: palette.bar }}
+      />
       {row1LeftTitle &&
         (row1LeftTitleHref?.trim() ? (
           <SmartLink className="block text-center" href={row1LeftTitleHref.trim()}>
@@ -64,7 +70,7 @@ export function RowOneLeft({
         row1TagItems={row1TagItems}
       />
       {row1GridItems && row1GridItems.length > 0 && (
-        <div className="grid grid-cols-3 gap-x-2 gap-y-2 text-sm">
+        <div className="grid grid-cols-3 gap-x-2 gap-y-2 text-sm px-4 md:px-0">
           {row1GridItems.map((cell, index) => {
             const href = cell.href?.trim()
             const key = cell.id != null ? `${cell.id}-${index}` : `${cell.label}-${index}`

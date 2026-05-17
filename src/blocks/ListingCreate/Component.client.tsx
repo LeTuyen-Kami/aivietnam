@@ -217,7 +217,7 @@ function ToolbarButton({
   return (
     <button
       className={cn(
-        'inline-flex h-9 w-9 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
+        'inline-flex h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:h-9 sm:w-9',
         active && 'bg-muted text-foreground',
       )}
       onClick={onClick}
@@ -255,7 +255,7 @@ function EditorToolbar() {
   }, [editor])
 
   return (
-    <div className="flex flex-wrap gap-2 border-b border-border bg-muted/20 p-3">
+    <div className="flex flex-wrap gap-1.5 border-b border-border bg-muted/20 p-2 sm:gap-2 sm:p-3">
       <ToolbarButton
         active={formats.bold}
         onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold')}
@@ -362,7 +362,7 @@ function ListingDescriptionEditor({
     <LexicalComposer initialConfig={initialConfig}>
       <div className="min-h-56">
         <EditorToolbar />
-        <div className="px-4 py-3">
+        <div className="px-3 py-2.5 sm:px-4 sm:py-3">
           <RichTextPlugin
             ErrorBoundary={LexicalErrorBoundary}
             contentEditable={
@@ -717,7 +717,7 @@ export function ListingCreateClient({
       <>
         <motion.button
           aria-label={buttonLabel}
-          className="fixed bottom-5 right-5 z-70 inline-flex h-14 items-center justify-center gap-2 rounded-full bg-[#1d9bf0] px-5 text-sm font-bold text-white shadow-[0_14px_30px_rgba(29,155,240,0.35)] transition-colors hover:bg-[#1686d9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#1d9bf0] active:scale-[0.97] md:bottom-8 md:right-8 cursor-pointer"
+          className="fixed z-70 inline-flex h-14 cursor-pointer items-center justify-center gap-2 rounded-full bg-[#1d9bf0] px-4 text-sm font-bold text-white shadow-[0_14px_30px_rgba(29,155,240,0.35)] transition-colors hover:bg-[#1686d9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#1d9bf0] active:scale-[0.97] bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))] right-[calc(1.25rem+env(safe-area-inset-right,0px))] sm:px-5 md:bottom-[calc(2rem+env(safe-area-inset-bottom,0px))] md:right-[calc(2rem+env(safe-area-inset-right,0px))]"
           initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.94, y: 10 }}
           animate={shouldReduceMotion ? undefined : { opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.2, ease: EASE_OUT }}
@@ -750,19 +750,22 @@ export function ListingCreateClient({
 
               <div className="pointer-events-none absolute inset-0 flex items-end justify-center p-0 sm:items-center sm:p-4">
                 <motion.div
-                  className="pointer-events-auto max-h-[92vh] w-full overflow-hidden rounded-t-2xl border border-border bg-background shadow-2xl sm:max-w-5xl sm:rounded-2xl"
+                  className="pointer-events-auto max-h-[min(92vh,90dvh)] w-full overflow-hidden rounded-t-2xl border border-border bg-background shadow-2xl sm:max-h-[92vh] sm:max-w-5xl sm:rounded-2xl"
                   initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.97, y: 24 }}
                   animate={shouldReduceMotion ? undefined : { opacity: 1, scale: 1, y: 0 }}
                   exit={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.98, y: 18 }}
                   transition={{ duration: 0.22, ease: EASE_OUT }}
                 >
-                  <div className="flex items-start justify-between gap-4 border-b border-border p-5">
-                    <div>
-                      <h2 className="text-xl font-bold leading-tight" id={titleId}>
+                  <div className="flex items-start justify-between gap-3 border-b border-border p-4 sm:gap-4 sm:p-5">
+                    <div className="min-w-0 flex-1 pr-1">
+                      <h2
+                        className="text-lg font-bold leading-tight sm:text-xl"
+                        id={titleId}
+                      >
                         {modalTitle}
                       </h2>
                       <p
-                        className="mt-1 text-sm leading-6 text-muted-foreground"
+                        className="mt-1 text-sm leading-relaxed text-muted-foreground sm:leading-6"
                         id={descriptionId}
                       >
                         {helperText}
@@ -780,7 +783,7 @@ export function ListingCreateClient({
 
                   <form
                     id="listing-create-form"
-                    className="max-h-[calc(92vh-112px)] overflow-y-auto p-5"
+                    className="max-h-[calc(min(92vh,90dvh)-104px)] overflow-y-auto p-4 sm:max-h-[calc(92vh-112px)] sm:p-5"
                     onSubmit={submitListing}
                   >
                     {error ? (
@@ -794,7 +797,7 @@ export function ListingCreateClient({
                       </div>
                     ) : null}
 
-                    <div className="grid gap-4 pb-15 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
+                    <div className="grid gap-3 pb-12 sm:gap-4 sm:pb-15 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
                       <div className="grid gap-4 md:grid-cols-2">
                         <Field label="Tiêu đề" required>
                           <input
@@ -1011,7 +1014,7 @@ export function ListingCreateClient({
                           }}
                         />
                         {gallery.length ? (
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="grid grid-cols-2 gap-2 sm:gap-3">
                             {gallery.map((item) => (
                               <MediaPreview
                                 key={item.id}
@@ -1028,9 +1031,9 @@ export function ListingCreateClient({
                       </div>
                     </div>
                   </form>
-                  <div className="sticky bottom-0 mt-5 flex items-center justify-end gap-3 border-t border-border bg-background px-5 py-4">
+                  <div className="sticky bottom-0 mt-4 flex flex-col gap-2 border-t border-border bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:mt-5 sm:flex-row sm:items-center sm:justify-end sm:gap-3 sm:px-5 sm:py-4 sm:pb-4">
                     <button
-                      className="inline-flex h-11 items-center justify-center rounded-full border border-border px-5 text-sm font-semibold transition-colors hover:bg-muted active:scale-[0.98]"
+                      className="inline-flex h-11 w-full items-center justify-center rounded-full border border-border px-5 text-sm font-semibold transition-colors hover:bg-muted active:scale-[0.98] sm:w-auto"
                       onClick={() => setOpen(false)}
                       type="button"
                     >
@@ -1038,7 +1041,7 @@ export function ListingCreateClient({
                     </button>
                     <button
                       form="listing-create-form"
-                      className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[#1d9bf0] px-5 text-sm font-bold text-white transition-colors hover:bg-[#1686d9] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                      className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[#1d9bf0] px-5 text-sm font-bold text-white transition-colors hover:bg-[#1686d9] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                       disabled={
                         pending || uploadingAvatar || uploadingThumbnail || uploadingGallery
                       }
@@ -1061,7 +1064,7 @@ export function ListingCreateClient({
 }
 
 const inputClassName =
-  'h-11 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none transition-colors focus:border-foreground/50'
+  'h-11 w-full rounded-lg border border-border bg-background px-3 text-base outline-none transition-colors focus:border-foreground/50 sm:text-sm'
 
 function Field({
   children,
@@ -1103,8 +1106,8 @@ function UploadField({
   return (
     <label className="grid gap-2 text-sm font-semibold text-foreground">
       <span>{label}</span>
-      <div className="rounded-xl border border-dashed border-border bg-muted/20 p-4">
-        <div className="flex items-center gap-3 text-muted-foreground">
+      <div className="rounded-xl border border-dashed border-border bg-muted/20 p-3 sm:p-4">
+        <div className="flex flex-col gap-2 text-muted-foreground sm:flex-row sm:items-center sm:gap-3">
           {loading ? (
             <Loader2 className="h-5 w-5 animate-spin" />
           ) : (

@@ -113,31 +113,52 @@ function squeezeCentersIntoArc(anglesDeg: number[], widthsPx: number[], rPx: num
   return anglesDeg.map((θ) => minC + ((θ - a0) / span) * (maxC - minC))
 }
 
+/** Tailwind `md` — mobile-only orbit / layout tweaks use max-width viewport. */
+const MOBILE_ORBIT_MQ = '(max-width: 767px)'
+
 /**
  * Binary search smallest orbit radius so tangent gaps fit; if impossible at max R, squeeze angles.
+ * When `applyMobileGeomCap`, tighten max radius so wide labels fit inside the square (narrow viewports).
  */
 function resolveOrbitAndAngles(
   widthsPx: number[],
   containerMinPx: number,
   orbitPct: OrbitRadiusPct,
+  applyMobileGeomCap: boolean,
 ): {
   anglesDeg: number[]
   orbitRpx: number
 } {
   const n = widthsPx.length
+
   if (n === 0) {
     return { anglesDeg: [], orbitRpx: containerMinPx * (orbitPct.rMinPct / 100) * 0.5 }
   }
   if (n === 1) {
     const singlePct = (orbitPct.rMinPct + orbitPct.rMaxPct) / 2
+    const orbitDesired = Math.min(containerMinPx * (singlePct / 100), 120)
+    if (!applyMobileGeomCap) {
+      return {
+        anglesDeg: [(ARC_START_DEG + ARC_END_DEG) / 2],
+        orbitRpx: orbitDesired,
+      }
+    }
+    const maxHalfWidth = Math.max(...widthsPx) / 2
+    const rGeomCap = containerMinPx / 2 - maxHalfWidth - 8
     return {
       anglesDeg: [(ARC_START_DEG + ARC_END_DEG) / 2],
-      orbitRpx: Math.min(containerMinPx * (singlePct / 100), 120),
+      orbitRpx: Math.max(0, Math.min(orbitDesired, rGeomCap)),
     }
   }
 
   const rMin = containerMinPx * (orbitPct.rMinPct / 100)
-  const rMax = containerMinPx * (orbitPct.rMaxPct / 100)
+  const rMaxDesired = containerMinPx * (orbitPct.rMaxPct / 100)
+  let rMax = rMaxDesired
+  if (applyMobileGeomCap) {
+    const maxHalfWidth = Math.max(...widthsPx) / 2
+    const rGeomCap = containerMinPx / 2 - maxHalfWidth - 8
+    rMax = Math.max(rMin, Math.min(rMaxDesired, rGeomCap))
+  }
 
   if (fitsArc(widthsPx, rMin)) {
     return { anglesDeg: buildAnglesFromWidths(widthsPx, rMin), orbitRpx: rMin }
@@ -194,6 +215,8 @@ function RowOneCircularInfographic({
     const el = containerRef.current
     if (!el || tags.length === 0) return
 
+    const mq = window.matchMedia(MOBILE_ORBIT_MQ)
+
     const run = () => {
       const rect = el.getBoundingClientRect()
       const size = Math.min(rect.width, rect.height)
@@ -206,10 +229,12 @@ function RowOneCircularInfographic({
 
       if (widths.some((w) => w < 1)) return
 
+      const applyMobileGeomCap = mq.matches
       const { anglesDeg: nextAngles, orbitRpx: nextR } = resolveOrbitAndAngles(
         widths,
         size,
         orbitPct,
+        applyMobileGeomCap,
       )
       setAnglesDeg(nextAngles)
       setOrbitRpx(nextR)
@@ -220,9 +245,11 @@ function RowOneCircularInfographic({
 
     const ro = new ResizeObserver(() => run())
     ro.observe(el)
+    mq.addEventListener('change', run)
     return () => {
       cancelAnimationFrame(raf)
       ro.disconnect()
+      mq.removeEventListener('change', run)
     }
   }, [tags, orbitPct])
 
@@ -244,7 +271,9 @@ function RowOneCircularInfographic({
   return (
     <div
       ref={containerRef}
-      className={cn('relative mx-auto my-4 aspect-square w-full max-w-[min(100%,28rem)] z-0')}
+      className={cn(
+        'relative mx-auto -my-10 md:my-4 aspect-square w-full max-w-[min(100%,28rem)] z-0',
+      )}
       style={
         orbitRpx != null
           ? ({ ['--orbit-r' as string]: `${orbitRpx}px` } as CSSProperties)
@@ -271,10 +300,10 @@ function RowOneCircularInfographic({
               'dark:shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_0_56px_-10px_rgba(56,189,248,0.2),0_22px_48px_-18px_rgba(0,0,0,0.65)]',
             )}
           >
-            <div className="overflow-hidden rounded-full bg-[#faf8f3] ring-1 ring-black/5 dark:bg-slate-900/90 dark:ring-white/8">
+            <div className="overflow-hidden aspect-square rounded-full bg-[#faf8f3] ring-1 ring-black/5 dark:bg-slate-900/90 dark:ring-white/8">
               <MediaComponent
                 className="w-full"
-                imgClassName="mx-auto aspect-square max-h-[min(22vmin,9.5rem)] w-auto object-cover"
+                imgClassName="object-cover w-full h-full"
                 resource={row1CenterGraphic}
                 size="(max-width: 1024px) 100vw, 40vw"
               />
