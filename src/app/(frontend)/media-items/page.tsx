@@ -12,7 +12,6 @@ import { Camera, Headphones, Images, PlayCircle } from 'lucide-react'
 import { getPayload } from 'payload'
 import React from 'react'
 
-export const dynamic = 'force-static'
 export const revalidate = 600
 
 const typeOrder: MediaItemType[] = ['podcast', 'video', 'image']

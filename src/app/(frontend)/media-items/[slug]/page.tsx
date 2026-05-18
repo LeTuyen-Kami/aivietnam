@@ -26,6 +26,8 @@ import Link from 'next/link'
 import { getPayload } from 'payload'
 import React, { cache } from 'react'
 
+export const revalidate = 60
+
 type Args = {
   params: Promise<{
     slug?: string

@@ -29,7 +29,7 @@ export const HumanitarianArticlesList: React.FC<{
   return (
     <div className="mx-4 md:mx-0 block md:hidden border-r-0">
       <div className="bg-white">
-        <ul className="border-b border-neutral-200 pb-2">
+        <ul>
           {visible.map((post) => {
             const slug = typeof post.slug === 'string' ? post.slug : ''
             if (!slug) {
@@ -37,8 +37,13 @@ export const HumanitarianArticlesList: React.FC<{
             }
             const href = `/posts/${slug}`
             return (
-              <li key={post.id}>
-                <SmartLink className={cn('text-base line-clamp-2')} href={href}>
+              <li className="border-b border-neutral-200 last:border-b-0" key={post.id}>
+                <SmartLink
+                  className={cn(
+                    'block py-3 font-serif text-base leading-snug text-foreground line-clamp-2',
+                  )}
+                  href={href}
+                >
                   {post.title}
                 </SmartLink>
               </li>
@@ -46,9 +51,9 @@ export const HumanitarianArticlesList: React.FC<{
           })}
         </ul>
         {canShowMore ? (
-          <div className="border-t border-neutral-200 bg-white px-0 py-3">
+          <div className="flex justify-center bg-white pt-5 pb-1">
             <button
-              className="w-full py-2 text-center font-sans text-sm font-medium text-neutral-800 transition-colors hover:text-black"
+              className="rounded px-8 py-2.5 font-serif text-sm uppercase tracking-wide text-white transition-colors bg-[#bcbcbc] hover:bg-[#a8a8a8]"
               type="button"
               onClick={() => setVisibleCount((c) => Math.min(c + PAGE_SIZE, posts.length))}
             >

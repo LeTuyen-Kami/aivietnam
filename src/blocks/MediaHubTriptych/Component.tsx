@@ -260,7 +260,7 @@ export const MediaHubTriptychBlockComponent: React.FC<Props> = (props) => {
   ).filter((item) => item.type === 'image')
 
   const inner = (
-    <div className="grid gap-4 lg:grid-cols-3 lg:gap-5">
+    <div className="grid gap-4 lg:grid-cols-3 lg:gap-5 mb-4 md:mb-0">
       <section
         className={cn(
           'flex flex-col rounded-xl border p-4 md:p-5',

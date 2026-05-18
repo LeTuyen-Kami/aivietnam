@@ -36,7 +36,7 @@ export function StandardSection({
   return (
     <section style={accentTextVarStyle(palette.text)}>
       <div
-        className="mb-4 h-0.5 rounded-sm mx-4 md:mx-0"
+        className="mb-4 h-0.5 rounded-sm mx-4 md:mx-0 mt-0 md:mt-4"
         style={{ backgroundColor: palette.bar }}
       />
       {sectionTitleHref?.trim() ? (
@@ -72,7 +72,7 @@ export function StandardSection({
             />
           )}
         </Link>
-        <div className="flex flex-col justify-start px-4 md:px-0  mt-2 md:mt-0 ">
+        <div className="flex flex-col justify-start px-4 md:px-0  mt-2 md:mt-0 mb-4 md:mb-0">
           <Link className="block" href={`/posts/${featuredPost?.slug}`}>
             <h3
               className={cn(
@@ -91,7 +91,7 @@ export function StandardSection({
         <div className="mb-2 md:mb-8 px-4 md:space-y-5 md:px-0">
           {subPosts.map((post) => (
             <div
-              className="group/sub flex flex-col gap-3 border-t border-border pt-4 md:grid md:grid-cols-[minmax(0,140px)_1fr] md:gap-3 md:border-t-0 md:pt-0"
+              className="group/sub flex flex-col gap-3 border-t border-border pt-4 md:grid md:grid-cols-[minmax(0,140px)_1fr] md:gap-3 md:border-t-0 md:pt-0 mb-2 md:mb-0 last:mb-0"
               key={post.id}
             >
               <div className="min-w-0 md:col-start-2 md:row-start-1">
@@ -125,7 +125,7 @@ export function StandardSection({
                     />
                   )}
                 </Link>
-                <div className="min-w-0 [&>p]:mt-0 md:col-start-2 md:row-start-2 md:[&>p]:mt-2">
+                <div className="min-w-0 [&>p]:mt-0 md:col-start-2 md:row-start-2 md:[&>p]:mt-2 ">
                   <PostExcerpt post={post} />
                 </div>
               </div>

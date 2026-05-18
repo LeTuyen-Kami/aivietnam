@@ -69,16 +69,35 @@ const SmallRowPromo: React.FC<{
     />
   )
 
+  const aspectRatioStyle: React.CSSProperties = {
+    aspectRatio: media?.width && media?.height ? `1489/1224` : '16 / 9',
+  }
+
   return (
-    <article className="relative flex min-h-[200px] overflow-hidden sm:min-h-0 sm:h-full sm:flex-col cursor-pointer order-2 md:order-last px-4 md:px-0">
-      {!raw ? (
-        <div className={shellClass}>{inner}</div>
-      ) : (
-        <SmartLink className={shellClass} href={raw}>
-          {inner}
-        </SmartLink>
-      )}
-    </article>
+    <>
+      <div className="md:hidden block border-t border-border mx-4 md:mx-0"></div>
+      <article className="relative min-h-[200px] overflow-hidden sm:min-h-0 sm:h-full sm:flex-col cursor-pointer order-2 md:order-last px-4 md:px-0 hidden md:block">
+        {!raw ? (
+          <div className={shellClass}>{inner}</div>
+        ) : (
+          <SmartLink className={shellClass} href={raw}>
+            {inner}
+          </SmartLink>
+        )}
+      </article>
+      <article
+        className="relative flex min-h-[200px] overflow-hidden sm:min-h-0 sm:h-full sm:flex-col cursor-pointer order-2 md:order-last md:hidden p-4"
+        style={aspectRatioStyle}
+      >
+        {!raw ? (
+          <div className={shellClass}>{inner}</div>
+        ) : (
+          <SmartLink className={shellClass} href={raw}>
+            {inner}
+          </SmartLink>
+        )}
+      </article>
+    </>
   )
 }
 
@@ -129,7 +148,7 @@ const FeaturedPostsSideMediaBlockComponent: React.FC<Props> = ({
                       {featuredPost.title}
                     </h3>
                     {featuredPost.meta?.description && (
-                      <p className="mt-3 text-sm text-muted-foreground lg:text-sm">
+                      <p className="mt-3 text-base text-muted-foreground lg:text-sm font-arial">
                         {featuredPost.meta.description}
                       </p>
                     )}
@@ -149,7 +168,7 @@ const FeaturedPostsSideMediaBlockComponent: React.FC<Props> = ({
                       {post.title}
                     </h4>
                     {post.meta?.description ? (
-                      <p className="mt-2 line-clamp-5 text-sm text-muted-foreground md:hidden">
+                      <p className="mt-2 line-clamp-5 text-base text-muted-foreground md:hidden font-arial">
                         {post.meta.description}
                       </p>
                     ) : null}

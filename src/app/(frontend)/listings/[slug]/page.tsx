@@ -15,6 +15,8 @@ import { cache } from 'react'
 import RichText from '@/components/RichText'
 import type { Listing, ListingCategory, Media as MediaDoc } from '@/payload-types'
 
+export const revalidate = 60
+
 export async function generateStaticParams() {
   if (process.env.NODE_ENV === 'development') {
     return []
@@ -221,7 +223,9 @@ export default async function ListingPage({ params: paramsPromise }: Args) {
 
                 <div className="min-w-0 flex-1">
                   <p className="text-sm text-muted-foreground">Người đăng</p>
-                  <h2 className="text-base font-semibold wrap-break-word sm:text-lg">{listing.contactName}</h2>
+                  <h2 className="text-base font-semibold wrap-break-word sm:text-lg">
+                    {listing.contactName}
+                  </h2>
                   {location ? (
                     <div className="mt-2 flex items-start gap-2 text-sm text-muted-foreground">
                       <MapPin aria-hidden className="mt-0.5 h-4 w-4 shrink-0" />

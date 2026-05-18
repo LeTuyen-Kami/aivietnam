@@ -133,6 +133,7 @@ export default buildConfig({
   sharp,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
+    autoGenerate: false,
   },
   jobs: {
     access: {

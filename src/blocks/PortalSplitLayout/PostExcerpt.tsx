@@ -1,11 +1,16 @@
 import type { Post } from '@/payload-types'
+import { cn } from '@/utilities/ui'
 
-export function PostExcerpt({ post }: { post: Post }) {
+export function PostExcerpt({ post, className }: { post: Post; className?: string }) {
   const text = post.meta?.description
 
   if (!text) {
     return null
   }
 
-  return <p className="mt-2 line-clamp-4 text-sm text-muted-foreground">{text}</p>
+  return (
+    <p className={cn('mt-2 line-clamp-4 text-base text-muted-foreground font-arial', className)}>
+      {text}
+    </p>
+  )
 }

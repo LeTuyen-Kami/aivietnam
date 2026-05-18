@@ -21,6 +21,11 @@ const nextConfig = {
           protocol: url.protocol.replace(':', ''),
         }
       }),
+      {
+        hostname: '180.93.2.175',
+        protocol: 'http',
+        port: '3000',
+      },
     ],
   },
   webpack: (webpackConfig) => {

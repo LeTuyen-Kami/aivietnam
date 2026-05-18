@@ -22,6 +22,8 @@ import { ChevronRight, Clock, Folder, User } from 'lucide-react'
 import PageClient from './page.client'
 import { ViewCounter } from './ViewCounter'
 
+export const revalidate = 60
+
 export async function generateStaticParams() {
   // Workaround for Payload + Postgres dev spam:
   // avoid prebuilding params in development to prevent repetitive schema pulls.
@@ -152,7 +154,9 @@ export default async function Post({ params: paramsPromise }: Args) {
                       <span className="min-w-0 leading-snug">
                         {tags.map((tag, index) => (
                           <React.Fragment key={tag.id}>
-                            {index > 0 ? <span className="text-muted-foreground/50">, </span> : null}
+                            {index > 0 ? (
+                              <span className="text-muted-foreground/50">, </span>
+                            ) : null}
                             <Link
                               className="wrap-break-word underline-offset-2 hover:text-foreground hover:underline"
                               href={getCategoryHref(tag.slug)}
