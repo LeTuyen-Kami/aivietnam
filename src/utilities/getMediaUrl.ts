@@ -19,8 +19,9 @@ export const getMediaUrl = (url: string | null | undefined, cacheTag?: string | 
   const baseUrl = getServerSideURL().replace(/\/$/, '')
   const path = url.startsWith('/') ? url : `/${url}`
   const absoluteUrl = `${baseUrl}${path}`
+  const _url = process?.env?.NEXT_PUBLIC_ENV === 'dev' ? absoluteUrl : path
 
-  return cacheTag ? `${absoluteUrl}?${cacheTag}` : absoluteUrl
+  return cacheTag ? `${_url}?${cacheTag}` : _url
 }
 
 // docker stop aivietnam
