@@ -92,7 +92,7 @@ export async function ListingsCategoriesGridBlockComponent(props: Props) {
                     </div>
                   )}
                 </div>
-                <span className="line-clamp-2 max-w-full text-[13px] font-medium leading-snug text-slate-800 group-hover:text-slate-950 sm:text-[14px] sm:leading-7">
+                <span className="line-clamp-2 max-w-full text-sm font-medium leading-snug text-slate-800 group-hover:text-slate-950 sm:text-[14px] sm:leading-7">
                   {category.title}
                 </span>
               </Link>

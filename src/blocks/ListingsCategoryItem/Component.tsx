@@ -158,7 +158,7 @@ export async function ListingsCategoryItemBlockComponent(props: Props) {
 
                 <div className="flex flex-1 flex-col space-y-3 p-3.5 sm:space-y-4 sm:p-4">
                   <div className="space-y-2 sm:space-y-3">
-                    <h3 className="line-clamp-2 text-[13px] font-semibold leading-[1.45] text-[#0f4a8a] transition-colors group-hover:text-[#0c3b6e] sm:text-sm">
+                    <h3 className="line-clamp-2 text-sm font-semibold leading-[1.45] text-[#0f4a8a] transition-colors group-hover:text-[#0c3b6e] sm:text-sm">
                       {listing.title}
                     </h3>
                     <p className="text-sm font-semibold leading-none text-emerald-500 sm:text-base">

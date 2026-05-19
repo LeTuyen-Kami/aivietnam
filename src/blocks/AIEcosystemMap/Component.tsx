@@ -190,7 +190,7 @@ function OrbitCard({
         className={cn(
           'text-center font-medium leading-tight text-foreground',
           stackLayout
-            ? 'text-xs max-[380px]:text-[11px] sm:text-sm'
+            ? 'text-sm max-[380px]:text-sm sm:text-sm'
             : 'text-[15px] sm:text-base lg:text-[17px]',
         )}
       >
@@ -438,7 +438,7 @@ export const AIEcosystemMapBlockComponent: React.FC<Props> = ({
 
                 return (
                   <div
-                    className="absolute z-1 max-w-[min(30vw,6.25rem)] -translate-x-1/2 -translate-y-1/2 text-center text-[11px] font-semibold leading-snug text-foreground wrap-break-word sm:max-w-28 sm:text-sm sm:leading-tight"
+                    className="absolute text-sm z-1 max-w-[min(30vw,6.25rem)] -translate-x-1/2 -translate-y-1/2 text-center font-semibold leading-snug text-foreground wrap-break-word sm:max-w-28 sm:text-sm sm:leading-tight"
                     key={placement.key}
                     style={{
                       left: `${left}%`,
