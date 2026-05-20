@@ -159,7 +159,7 @@ const FeaturedPostsSideMediaBlockComponent: React.FC<Props> = ({
 
             {smallPosts.map((post) => (
               <article
-                className="flex h-full min-h-0 flex-col overflow-hidden order-3 md:order-3 mx-0 md:mx-4 md:px-0 border-t border-border pt-4 md:pt-0 md:border-none"
+                className="flex h-full min-h-0 flex-col overflow-hidden order-3 md:order-3 mx-4 md:mx-0 md:px-0 border-t border-border pt-4 md:pt-0 md:border-none"
                 key={post.id}
               >
                 <Link className="group flex h-full min-h-0 flex-col" href={`/posts/${post?.slug}`}>
