@@ -92,19 +92,16 @@ function mapMessageToComment(message: LocalMessage): LivestreamComment {
 
 function commentPlaceholder({
   loading,
-  isGuest,
   user,
   isLive,
   overlay,
 }: {
   loading: boolean
-  isGuest: boolean
   user: unknown
   isLive: boolean
   overlay: boolean
 }): string {
   if (loading) return 'Đang tải...'
-  if (isGuest) return 'Đăng nhập để bình luận'
   if (!user) return 'Đăng nhập để bình luận'
   if (!isLive) return 'Chỉ gửi bình luận khi livestream đang phát'
   return overlay ? 'Nhập...' : 'Viết bình luận...'
@@ -148,12 +145,10 @@ function OverlayCommentRow({
 export function LiveViewerEngagement({
   slug,
   isLive,
-  isGuest = false,
   overlay = false,
 }: {
   slug: string
   isLive: boolean
-  isGuest?: boolean
   overlay?: boolean
 }) {
   const { user, loading, openAuthModal } = useAuth()
@@ -219,7 +214,7 @@ export function LiveViewerEngagement({
   }, [slug])
 
   useEffect(() => {
-    if (!slug || loading || !user || isGuest) return
+    if (!slug || loading || !user) return
 
     let active = true
     let activeChannel: Channel | null = null
@@ -307,7 +302,7 @@ export function LiveViewerEngagement({
         void activeChannel.stopWatching().catch(() => null)
       }
     }
-  }, [isGuest, loading, slug, user])
+  }, [loading, slug, user])
 
   useEffect(() => {
     return () => {
@@ -343,8 +338,8 @@ export function LiveViewerEngagement({
     })
   }, [comments, overlay, isLoadingComments])
 
-  const canSend = Boolean(user) && !isGuest && isLive
-  const placeholder = commentPlaceholder({ loading, isGuest, user, isLive, overlay })
+  const canSend = Boolean(user) && isLive
+  const placeholder = commentPlaceholder({ loading, user, isLive, overlay })
 
   const sendMessage = async (text: string) => {
     if (!channel) throw new Error('Chat chưa sẵn sàng')
@@ -362,7 +357,7 @@ export function LiveViewerEngagement({
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault()
-    if (!user || isGuest) {
+    if (!user) {
       openAuthModal()
       return
     }
@@ -372,7 +367,7 @@ export function LiveViewerEngagement({
   }
 
   const toggleLike = async (comment: LivestreamComment) => {
-    if (!channel || isGuest) return
+    if (!channel || !user) return
     setIsTogglingLike(true)
     try {
       if (comment.likedByMe) {
@@ -434,20 +429,20 @@ export function LiveViewerEngagement({
               aria-label={comment.likedByMe ? 'Bỏ tim bình luận' : 'Thả tim bình luận'}
               className={cn(
                 'flex shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl px-2 py-1 text-white/50 transition-colors',
-                !isGuest && 'hover:bg-rose-500/10 hover:text-rose-300',
-                comment.likedByMe && !isGuest && 'text-rose-300',
+                user && 'hover:bg-rose-500/10 hover:text-rose-300',
+                comment.likedByMe && user && 'text-rose-300',
               )}
-              disabled={isTogglingLike || !channel || isGuest}
+              disabled={isTogglingLike || !channel || !user}
               type="button"
               onClick={() => {
-                if (!user || isGuest) {
+                if (!user) {
                   openAuthModal()
                   return
                 }
                 void toggleLike(comment)
               }}
             >
-              <Heart className={cn('h-4 w-4', comment.likedByMe && !isGuest && 'fill-current')} />
+              <Heart className={cn('h-4 w-4', comment.likedByMe && user && 'fill-current')} />
               <span className="tabular-nums text-[11px] font-medium">{comment.likeCount}</span>
             </button>
           </div>
@@ -482,13 +477,13 @@ export function LiveViewerEngagement({
             value={body}
             onChange={(event) => setBody(event.target.value)}
             onClick={() => {
-              if (!loading && (!user || isGuest)) openAuthModal()
+              if (!loading && !user) openAuthModal()
             }}
-            readOnly={!user || !isLive || isGuest}
+            readOnly={!user || !isLive}
             disabled={isSending}
           />
           <Button
-            aria-label={isGuest ? 'Đăng nhập để chat' : isSending ? 'Đang gửi' : 'Gửi bình luận'}
+            aria-label={!user ? 'Đăng nhập để chat' : isSending ? 'Đang gửi' : 'Gửi bình luận'}
             className="h-10 shrink-0 rounded-full bg-white px-3 text-black hover:bg-white/90 disabled:bg-white/40 disabled:text-black/50 aspect-square"
             disabled={isSending || (canSend && channel ? !body.trim() : false)}
             size="sm"
@@ -520,10 +515,10 @@ export function LiveViewerEngagement({
               </p>
             </div>
           </div>
-          {isGuest ? (
+          {!user && !loading ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white/80 ring-1 ring-white/10">
               <Lock className="h-3.5 w-3.5" aria-hidden />
-              Guest lock
+              Cần đăng nhập
             </span>
           ) : null}
         </div>
@@ -550,9 +545,9 @@ export function LiveViewerEngagement({
             value={body}
             onChange={(event) => setBody(event.target.value)}
             onClick={() => {
-              if (!loading && (!user || isGuest)) openAuthModal()
+              if (!loading && !user) openAuthModal()
             }}
-            readOnly={!user || !isLive || isGuest}
+            readOnly={!user || !isLive}
           />
           <Button
             className="w-full bg-white text-black hover:bg-white/90"
@@ -560,7 +555,7 @@ export function LiveViewerEngagement({
             size="sm"
             type="submit"
           >
-            {isGuest ? 'Đăng nhập để chat' : isSending ? 'Đang gửi…' : 'Gửi'}
+            {!user ? 'Đăng nhập để chat' : isSending ? 'Đang gửi…' : 'Gửi'}
           </Button>
         </form>
       </div>

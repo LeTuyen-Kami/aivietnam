@@ -68,6 +68,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null)
   }, [])
 
+  const handleLoginSuccess = useCallback(async () => {
+    await refresh()
+  }, [refresh])
+
   const value = useMemo(
     () => ({
       user,
@@ -84,7 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <AuthContext.Provider value={value}>
       {children}
-      <AuthModal onLoginSuccess={() => void refresh()} open={authModalOpen} onOpenChange={setAuthModalOpen} />
+      <AuthModal onLoginSuccess={handleLoginSuccess} open={authModalOpen} onOpenChange={setAuthModalOpen} />
     </AuthContext.Provider>
   )
 }

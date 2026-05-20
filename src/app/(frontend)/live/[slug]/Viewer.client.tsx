@@ -15,6 +15,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { getPublicStreamSetupMessage } from '@/lib/stream/publicClientEnv'
 import type { Livestream } from '@/payload-types'
+import { useAuth } from '@/providers/Auth'
 import { cn } from '@/utilities/ui'
 
 import { LiveViewerEngagement } from './LiveViewerEngagement.client'
@@ -174,9 +175,10 @@ export function ViewerClient({
   const [client, setClient] = useState<StreamVideoClient | null>(null)
   const [call, setCall] = useState<Call | null>(null)
 
+  const { user: authUser, loading: authLoading } = useAuth()
   const apiKey = streamApiKey.trim()
   const hasStreamingConfig = useMemo(() => apiKey.length > 0, [apiKey])
-  const isGuest = !streamUser.email
+  const isGuestViewer = !authUser && !authLoading
   const live = isLiveStatus(statusState.status)
   const waitingForLive = statusState.status === 'scheduled' || statusState.status === 'draft'
   const scheduledAt = formatDate(livestream.scheduledAt)
@@ -383,7 +385,7 @@ export function ViewerClient({
 
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-linear-to-t from-black/90 via-black/45 to-transparent px-3 pb-4 pt-24 sm:px-6 lg:hidden">
             <div className="pointer-events-auto w-full touch-auto md:max-w-[min(100%,20rem)]">
-              <LiveViewerEngagement isGuest={isGuest} isLive={live} overlay slug={safeSlug} />
+              <LiveViewerEngagement isLive={live} overlay slug={safeSlug} />
             </div>
           </div>
         </div>
@@ -398,13 +400,13 @@ export function ViewerClient({
                 <div>
                   <p className="text-sm font-medium text-white">{streamUser.name}</p>
                   <p className="text-xs text-white/60">
-                    {isGuest ? 'Khách xem · chat bị khóa' : 'Đang xem livestream'}
+                    {isGuestViewer ? 'Khách xem · đăng nhập để chat' : 'Đang xem livestream'}
                   </p>
                 </div>
               </div>
             </div>
             <div className="min-h-0 flex-1 p-4">
-              <LiveViewerEngagement isGuest={isGuest} isLive={live} slug={safeSlug} />
+              <LiveViewerEngagement isLive={live} slug={safeSlug} />
             </div>
           </div>
         </aside>

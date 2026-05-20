@@ -15,7 +15,7 @@ type Tab = 'login' | 'register'
 export type AuthModalProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onLoginSuccess: () => void
+  onLoginSuccess: () => void | Promise<void>
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, onLoginSuccess }) => {
@@ -63,7 +63,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, onLogi
         setError(data.message ?? data.errors?.[0]?.message ?? 'Đăng nhập thất bại')
         return
       }
-      onLoginSuccess()
+      await onLoginSuccess()
       handleOpenChange(false)
     } finally {
       setPending(false)
@@ -104,7 +104,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, onLogi
         setTab('login')
         return
       }
-      onLoginSuccess()
+      await onLoginSuccess()
       handleOpenChange(false)
     } finally {
       setPending(false)
