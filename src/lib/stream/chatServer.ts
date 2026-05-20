@@ -2,7 +2,11 @@ import 'server-only'
 
 import { StreamChat } from 'stream-chat'
 
-import { streamChatChannelIdFromSlug, streamChatChannelType } from './chatChannel'
+import {
+  streamChatChannelCidFromSlug,
+  streamChatChannelIdFromSlug,
+  streamChatChannelType,
+} from './chatChannel'
 
 let chatClient: StreamChat | undefined
 
@@ -62,5 +66,31 @@ export async function ensureLivestreamChatChannel(params: {
     channelType,
     channelId,
     channelCid: `${channelType}:${channelId}`,
+  }
+}
+
+export async function getLivestreamChatHostStreamUserId(slug: string): Promise<string | null> {
+  if (!isStreamChatEnabled()) return null
+
+  try {
+    const client = getStreamChatServerClient()
+    const cid = streamChatChannelCidFromSlug(slug)
+    const channels = await client.queryChannels({ cid: { $eq: cid } }, {}, { limit: 1 })
+    const first = channels[0]
+    if (!first) return null
+
+    const data = first.data as Record<string, unknown> | undefined
+    const createdBy = data?.created_by
+    if (createdBy && typeof createdBy === 'object' && 'id' in createdBy) {
+      const id = (createdBy as { id?: unknown }).id
+      if (typeof id === 'string' && id.trim()) return id.trim()
+    }
+
+    const fromData = data?.created_by_id
+    if (typeof fromData === 'string' && fromData.trim()) return fromData.trim()
+
+    return null
+  } catch {
+    return null
   }
 }

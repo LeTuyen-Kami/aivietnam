@@ -137,7 +137,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, onLogi
             <button
               type="button"
               className={cn(
-                'flex-1 border-b-2 pb-2 text-sm font-medium transition-colors',
+                'flex-1 border-b-2 pb-2 text-sm font-medium transition-colors cursor-pointer',
                 tab === 'login'
                   ? 'border-primary text-foreground'
                   : 'border-transparent text-muted-foreground hover:text-foreground',
@@ -152,7 +152,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, onLogi
             <button
               type="button"
               className={cn(
-                'flex-1 border-b-2 pb-2 text-sm font-medium transition-colors',
+                'flex-1 border-b-2 pb-2 text-sm font-medium transition-colors cursor-pointer',
                 tab === 'register'
                   ? 'border-primary text-foreground'
                   : 'border-transparent text-muted-foreground hover:text-foreground',
@@ -167,7 +167,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, onLogi
           </div>
 
           <a
-            className="mb-4 flex w-full items-center justify-center gap-2 rounded-md border border-input bg-background py-2 text-sm font-medium shadow-xs hover:bg-accent"
+            className="mb-4 flex w-full items-center justify-center gap-2 rounded-md border border-input bg-background py-2 text-sm font-medium shadow-xs hover:bg-accent cursor-pointer"
             href={googleHref}
           >
             <svg aria-hidden className="size-4" viewBox="0 0 24 24">
@@ -221,7 +221,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, onLogi
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
-              <Button className="w-full" disabled={pending} type="submit">
+              <Button className="w-full cursor-pointer" disabled={pending} type="submit">
                 {pending ? 'Đang xử lý…' : 'Đăng nhập'}
               </Button>
             </form>
@@ -259,7 +259,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, onLogi
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
-              <Button className="w-full" disabled={pending} type="submit">
+              <Button className="w-full cursor-pointer" disabled={pending} type="submit">
                 {pending ? 'Đang xử lý…' : 'Đăng ký'}
               </Button>
             </form>

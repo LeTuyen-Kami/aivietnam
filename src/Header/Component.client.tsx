@@ -99,7 +99,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
   ) : (
     <button
       type="button"
-      className="shrink-0 rounded-full border border-border bg-background px-4 py-2 text-sm font-medium text-foreground shadow-xs transition-colors hover:bg-accent"
+      className="shrink-0 rounded-full border border-border bg-background px-4 py-2 text-sm font-medium text-foreground shadow-xs transition-colors hover:bg-accent cursor-pointer"
       onClick={openAuthModal}
     >
       Đăng nhập
@@ -111,7 +111,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
   ) : (
     <button
       type="button"
-      className="inline-flex h-10 w-10 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+      className="inline-flex h-10 w-10 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:text-foreground cursor-pointer"
       aria-label={user ? `Tài khoản ${user.email}` : 'Đăng nhập'}
       onClick={user ? () => void logout() : openAuthModal}
     >

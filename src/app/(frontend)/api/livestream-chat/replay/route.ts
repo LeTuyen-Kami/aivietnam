@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 
 import { getSiteMemberUser } from '@/access/siteMemberUser'
+import { getLivestreamChatHostStreamUserId } from '@/lib/stream/chatServer'
 
 const DEFAULT_LIMIT = 50
 const MAX_LIMIT = 200
@@ -93,5 +94,7 @@ export async function GET(req: NextRequest) {
     return row
   })
 
-  return NextResponse.json({ docs })
+  const hostStreamUserId = await getLivestreamChatHostStreamUserId(slug)
+
+  return NextResponse.json({ docs, hostStreamUserId })
 }

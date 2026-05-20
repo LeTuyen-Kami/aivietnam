@@ -382,7 +382,7 @@ export function ViewerClient({
           </div>
 
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-linear-to-t from-black/90 via-black/45 to-transparent px-3 pb-4 pt-24 sm:px-6 lg:hidden">
-            <div className="pointer-events-auto ml-auto max-w-[min(100%,28rem)]">
+            <div className="pointer-events-auto w-full touch-auto md:max-w-[min(100%,20rem)]">
               <LiveViewerEngagement isGuest={isGuest} isLive={live} overlay slug={safeSlug} />
             </div>
           </div>
