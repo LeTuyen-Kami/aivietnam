@@ -669,13 +669,13 @@ export function BroadcasterClient({
               <div className="h-full w-full bg-black">
                 <StreamVideo client={client}>
                   <StreamCall call={call}>
-                    <div className="pointer-events-none absolute right-3 top-3 z-30 sm:right-6">
-                      <BroadcasterMobileSettingsMenu
-                        {...mobileChromeProps}
-                        deviceControls={<BroadcasterDeviceMenuItems />}
-                      />
-                    </div>
                     <NoiseCancellationProvider noiseCancellation={noiseCancellation}>
+                      <div className="pointer-events-none absolute right-3 top-3 z-30 sm:right-6">
+                        <BroadcasterMobileSettingsMenu
+                          {...mobileChromeProps}
+                          deviceControls={<BroadcasterDeviceMenuItems />}
+                        />
+                      </div>
                       <LivestreamLayout />
                       <StudioDeviceControls />
                     </NoiseCancellationProvider>
