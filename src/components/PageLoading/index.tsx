@@ -6,10 +6,14 @@ function Skeleton({ className }: { className?: string }) {
 
 function PageLoadingIndicator() {
   return (
-    <div className="relative size-9 motion-reduce:opacity-70" aria-hidden>
-      <div className="absolute inset-0 rounded-full border-2 border-muted/50" />
-      <div className="absolute inset-0 motion-reduce:animate-none animate-spin rounded-full border-2 border-transparent border-t-foreground animation-duration-[0.9s]" />
-    </div>
+    <img
+      alt=""
+      aria-hidden
+      className="size-12 object-contain motion-reduce:opacity-70"
+      height={48}
+      src="/animation-gif.gif"
+      width={48}
+    />
   )
 }
 
