@@ -10,9 +10,21 @@ import {
   type Call,
 } from '@stream-io/video-react-sdk'
 import '@stream-io/video-react-sdk/dist/css/styles.css'
-import { AlertCircle, Clock3, Radio, Sparkles, User } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  AlertCircle,
+  Clock3,
+  Maximize2,
+  Minimize2,
+  Radio,
+  Sparkles,
+  User,
+  Volume2,
+  VolumeX,
+} from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import { LiveChromeIconButton } from '@/components/Live/LiveChromeIconButton'
+import { useLiveImmersiveMode } from '@/hooks/useLiveImmersiveMode'
 import { getPublicStreamSetupMessage } from '@/lib/stream/publicClientEnv'
 import type { Livestream } from '@/payload-types'
 import { useAuth } from '@/providers/Auth'
@@ -91,7 +103,13 @@ function formatDate(value: string | null | undefined): string | null {
   }).format(date)
 }
 
-function LiveCallContent() {
+function LiveCallContent({
+  immersive,
+  onToggleImmersive,
+}: {
+  immersive: boolean
+  onToggleImmersive: () => void
+}) {
   const { useCallCallingState } = useCallStateHooks()
   const callingState = useCallCallingState()
   const [hasUserEnabledAudio, setHasUserEnabledAudio] = useState(false)
@@ -101,6 +119,29 @@ function LiveCallContent() {
 
   return (
     <div className="h-full w-full">
+      <div className="pointer-events-auto absolute right-3 top-3 z-30 flex items-center gap-2 lg:hidden">
+        <LiveChromeIconButton
+          ariaLabel={hasUserEnabledAudio ? 'Tắt tiếng livestream' : 'Bật tiếng livestream'}
+          onClick={() => setHasUserEnabledAudio((value) => !value)}
+        >
+          {hasUserEnabledAudio ? (
+            <Volume2 className="h-5 w-5" aria-hidden />
+          ) : (
+            <VolumeX className="h-5 w-5" aria-hidden />
+          )}
+        </LiveChromeIconButton>
+        <LiveChromeIconButton
+          ariaLabel={immersive ? 'Thu nhỏ màn hình' : 'Mở rộng màn hình'}
+          onClick={onToggleImmersive}
+        >
+          {immersive ? (
+            <Minimize2 className="h-5 w-5" aria-hidden />
+          ) : (
+            <Maximize2 className="h-5 w-5" aria-hidden />
+          )}
+        </LiveChromeIconButton>
+      </div>
+
       {showReconnecting ? (
         <div className="absolute left-3 right-3 top-16 z-20 flex items-center gap-2 rounded-full bg-amber-500/85 px-3 py-2 text-xs font-medium text-white shadow-lg backdrop-blur sm:left-6 sm:right-auto">
           <span className="relative flex h-2 w-2">
@@ -111,24 +152,11 @@ function LiveCallContent() {
         </div>
       ) : null}
 
-      {!hasUserEnabledAudio ? (
-        <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/40 px-6">
-          <button
-            className="rounded-full bg-white px-5 py-3 text-sm font-semibold text-black shadow-lg transition hover:bg-white/90"
-            onClick={() => {
-              setHasUserEnabledAudio(true)
-            }}
-            type="button"
-          >
-            Bật tiếng livestream
-          </button>
-        </div>
-      ) : null}
-
       <LivestreamLayout
         key={hasUserEnabledAudio ? 'audio-on' : 'audio-off'}
         muted={!hasUserEnabledAudio}
-        showMuteButton
+        showMuteButton={false}
+        enableFullScreen={false}
         showDuration
         showLiveBadge
         showParticipantCount
@@ -174,6 +202,8 @@ export function ViewerClient({
   })
   const [client, setClient] = useState<StreamVideoClient | null>(null)
   const [call, setCall] = useState<Call | null>(null)
+  const sectionRef = useRef<HTMLElement>(null)
+  const { immersive, toggle: toggleImmersive } = useLiveImmersiveMode(sectionRef)
 
   const { user: authUser, loading: authLoading } = useAuth()
   const apiKey = streamApiKey.trim()
@@ -299,7 +329,13 @@ export function ViewerClient({
   ])
 
   return (
-    <section className="relative h-[100svh] w-full overflow-hidden bg-black text-white z-10">
+    <section
+      ref={sectionRef}
+      className={cn(
+        'relative h-[100svh] w-full overflow-hidden bg-black text-white z-10',
+        immersive && 'fixed inset-0 z-50',
+      )}
+    >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_30%),linear-gradient(180deg,_rgba(0,0,0,0.18)_0%,_rgba(0,0,0,0.78)_100%)]" />
 
       <div className="relative grid h-[100svh] w-full lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_420px]">
@@ -346,7 +382,12 @@ export function ViewerClient({
               <div className="h-full w-full bg-black">
                 <StreamVideo client={client}>
                   <StreamCall call={call}>
-                    <LiveCallContent />
+                    <LiveCallContent
+                      immersive={immersive}
+                      onToggleImmersive={() => {
+                        void toggleImmersive()
+                      }}
+                    />
                   </StreamCall>
                 </StreamVideo>
               </div>

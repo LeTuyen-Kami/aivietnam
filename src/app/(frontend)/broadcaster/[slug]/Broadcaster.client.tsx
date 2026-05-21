@@ -16,20 +16,26 @@ import {
   AlertCircle,
   Copy,
   ExternalLink,
+  Maximize2,
   Mic,
   MicOff,
+  Minimize2,
   Radio,
+  Settings,
+  Share2,
   Shield,
   Square,
   Video,
   VideoOff,
   WandSparkles,
 } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 
 import { LiveViewerEngagement } from '@/app/(frontend)/live/[slug]/LiveViewerEngagement.client'
+import { LiveChromeIconButton } from '@/components/Live/LiveChromeIconButton'
 import { Button } from '@/components/ui/button'
 import { ConfirmModal } from '@/components/ui/confirm'
+import { useLiveImmersiveMode } from '@/hooks/useLiveImmersiveMode'
 import { getPublicStreamSetupMessage } from '@/lib/stream/publicClientEnv'
 import type { Livestream } from '@/payload-types'
 import { cn } from '@/utilities/ui'
@@ -117,7 +123,7 @@ function StudioDeviceControls() {
   } = useNoiseCancellation()
 
   return (
-    <div className="absolute bottom-3 left-3 right-3 z-20 flex flex-wrap items-center gap-2 sm:bottom-6 sm:left-6 sm:right-6">
+    <div className="absolute bottom-3 left-3 right-3 z-20 hidden flex-wrap items-center gap-2 lg:flex sm:bottom-6 sm:left-6 sm:right-6">
       <Button
         className="gap-2 border-white/15 bg-black/55 text-white backdrop-blur"
         onClick={() => {
@@ -173,6 +179,171 @@ function StudioDeviceControls() {
   )
 }
 
+const MOBILE_MENU_ITEM_CLASS =
+  'flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm text-white transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-45'
+
+function BroadcasterDeviceMenuItems() {
+  const { useCameraState, useMicrophoneState } = useCallStateHooks()
+  const { camera, isMute: isCameraMute } = useCameraState()
+  const { microphone, isMute: isMicrophoneMute } = useMicrophoneState()
+  const {
+    isEnabled: isNoiseCancellationEnabled,
+    isSupported: isNoiseCancellationSupported,
+    setEnabled,
+  } = useNoiseCancellation()
+
+  return (
+    <>
+      <button
+        className={MOBILE_MENU_ITEM_CLASS}
+        onClick={() => {
+          void microphone.toggle()
+        }}
+        type="button"
+      >
+        {isMicrophoneMute ? (
+          <MicOff className="h-4 w-4 shrink-0" aria-hidden />
+        ) : (
+          <Mic className="h-4 w-4 shrink-0" aria-hidden />
+        )}
+        {isMicrophoneMute ? 'Bật mic' : 'Tắt mic'}
+      </button>
+      <button
+        className={MOBILE_MENU_ITEM_CLASS}
+        onClick={() => {
+          void camera.toggle()
+        }}
+        type="button"
+      >
+        {isCameraMute ? (
+          <VideoOff className="h-4 w-4 shrink-0" aria-hidden />
+        ) : (
+          <Video className="h-4 w-4 shrink-0" aria-hidden />
+        )}
+        {isCameraMute ? 'Bật camera' : 'Tắt camera'}
+      </button>
+      <button
+        className={MOBILE_MENU_ITEM_CLASS}
+        disabled={isNoiseCancellationSupported !== true}
+        onClick={() => {
+          void setEnabled(!isNoiseCancellationEnabled)
+        }}
+        type="button"
+      >
+        <Shield className="h-4 w-4 shrink-0" aria-hidden />
+        {isNoiseCancellationSupported !== true
+          ? 'Noise cancellation không hỗ trợ'
+          : isNoiseCancellationEnabled
+            ? 'Tắt noise cancellation'
+            : 'Bật noise cancellation'}
+      </button>
+    </>
+  )
+}
+
+function BroadcasterMobileSettingsMenu({
+  deviceControls,
+  immersive,
+  isEnding,
+  isStarting,
+  live,
+  onEndLive,
+  onShare,
+  onStartLive,
+  onToggleImmersive,
+  shareNotice,
+}: {
+  deviceControls: ReactNode
+  immersive: boolean
+  isEnding: boolean
+  isStarting: boolean
+  live: boolean
+  onEndLive: () => void
+  onShare: () => void
+  onStartLive: () => void
+  onToggleImmersive: () => void
+  shareNotice: string | null
+}) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div className="pointer-events-auto flex items-center gap-2 lg:hidden">
+      <LiveChromeIconButton
+        ariaLabel={immersive ? 'Thu nhỏ màn hình' : 'Mở rộng màn hình'}
+        onClick={onToggleImmersive}
+      >
+        {immersive ? (
+          <Minimize2 className="h-5 w-5" aria-hidden />
+        ) : (
+          <Maximize2 className="h-5 w-5" aria-hidden />
+        )}
+      </LiveChromeIconButton>
+
+      <div className="relative">
+        <LiveChromeIconButton ariaLabel="Cài đặt phát sóng" onClick={() => setOpen((value) => !value)}>
+          <Settings className="h-5 w-5" aria-hidden />
+        </LiveChromeIconButton>
+
+        {open ? (
+          <>
+            <button
+              aria-label="Đóng menu"
+              className="fixed inset-0 z-40"
+              onClick={() => setOpen(false)}
+              type="button"
+            />
+            <div className="absolute right-0 top-[calc(100%+0.5rem)] z-50 w-[min(100vw-2rem,16rem)] overflow-hidden rounded-2xl border border-white/10 bg-black/90 p-1.5 shadow-2xl backdrop-blur-xl">
+              {deviceControls}
+
+              {live ? (
+                <button
+                  className={cn(MOBILE_MENU_ITEM_CLASS, 'text-rose-300 hover:bg-rose-500/15')}
+                  disabled={isEnding}
+                  onClick={() => {
+                    setOpen(false)
+                    onEndLive()
+                  }}
+                  type="button"
+                >
+                  <Square className="h-4 w-4 shrink-0" aria-hidden />
+                  {isEnding ? 'Đang kết thúc…' : 'Kết thúc live'}
+                </button>
+              ) : (
+                <button
+                  className={MOBILE_MENU_ITEM_CLASS}
+                  disabled={isStarting}
+                  onClick={() => {
+                    setOpen(false)
+                    onStartLive()
+                  }}
+                  type="button"
+                >
+                  <Radio className="h-4 w-4 shrink-0" aria-hidden />
+                  {isStarting ? 'Đang bắt đầu…' : 'Bắt đầu live'}
+                </button>
+              )}
+
+              <button
+                className={MOBILE_MENU_ITEM_CLASS}
+                onClick={() => {
+                  void onShare()
+                }}
+                type="button"
+              >
+                <Share2 className="h-4 w-4 shrink-0" aria-hidden />
+                Chia sẻ link xem
+              </button>
+              {shareNotice ? (
+                <p className="px-3 py-1.5 text-[11px] text-white/55">{shareNotice}</p>
+              ) : null}
+            </div>
+          </>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
 export function BroadcasterClient({
   livestream,
   streamApiKey,
@@ -195,6 +366,9 @@ export function BroadcasterClient({
   })
   const [client, setClient] = useState<StreamVideoClient | null>(null)
   const [call, setCall] = useState<Call | null>(null)
+  const [shareNotice, setShareNotice] = useState<string | null>(null)
+  const sectionRef = useRef<HTMLElement>(null)
+  const { immersive, toggle: toggleImmersive } = useLiveImmersiveMode(sectionRef)
   const noiseCancellation = useMemo(() => new NoiseCancellation(), [])
 
   const tokenProvider = useCallback(async () => {
@@ -351,8 +525,51 @@ export function BroadcasterClient({
     await navigator.clipboard.writeText(absoluteHref)
   }
 
+  const shareViewerLink = useCallback(async () => {
+    if (!viewerHref || typeof window === 'undefined') return
+    const absoluteHref = new URL(viewerHref, window.location.origin).toString()
+
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({
+          title: livestream.title,
+          text: livestream.title,
+          url: absoluteHref,
+        })
+        setShareNotice(null)
+        return
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') return
+      }
+    }
+
+    await copyViewerLink()
+    setShareNotice('Đã copy link xem livestream')
+    window.setTimeout(() => setShareNotice(null), 2500)
+  }, [copyViewerLink, livestream.title, viewerHref])
+
+  const mobileChromeProps = {
+    immersive,
+    isEnding,
+    isStarting,
+    live,
+    onEndLive: () => setIsEndConfirmOpen(true),
+    onShare: shareViewerLink,
+    onStartLive: startLivestream,
+    onToggleImmersive: () => {
+      void toggleImmersive()
+    },
+    shareNotice,
+  }
+
   return (
-    <section className="relative h-[100svh] w-full overflow-hidden bg-black text-white z-10">
+    <section
+      ref={sectionRef}
+      className={cn(
+        'relative h-[100svh] w-full overflow-hidden bg-black text-white z-10',
+        immersive && 'fixed inset-0 z-50',
+      )}
+    >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_30%),linear-gradient(180deg,_rgba(0,0,0,0.18)_0%,_rgba(0,0,0,0.82)_100%)]" />
 
       <div className="relative grid h-[100svh] w-full lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_420px]">
@@ -374,21 +591,15 @@ export function BroadcasterClient({
                   ) : null}
                   {statusLabel(callState.status)}
                 </span>
-                <span className="rounded-full bg-black/45 px-3 py-1 text-[11px] text-white/75 ring-1 ring-white/10 backdrop-blur">
-                  Studio admin
-                </span>
               </div>
 
               <div className="space-y-1">
                 <h1 className="line-clamp-2 text-xl font-semibold tracking-tight sm:text-3xl">
                   {livestream.title}
                 </h1>
-                <p className="text-sm text-white/65 sm:text-base">
-                  Điều khiển phiên phát, theo dõi preview và chat realtime trong cùng màn hình.
-                </p>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 text-xs text-white/70">
+              <div className="hidden flex-wrap items-center gap-2 text-xs text-white/70 lg:flex">
                 {viewerHref ? (
                   <button
                     className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 ring-1 ring-white/10 backdrop-blur transition-colors hover:bg-white/16"
@@ -424,7 +635,7 @@ export function BroadcasterClient({
               </div>
             </div>
 
-            <div className="flex max-w-[46%] shrink-0 flex-col items-end gap-2 sm:max-w-none sm:flex-row sm:flex-wrap sm:justify-end">
+            <div className="hidden max-w-[46%] shrink-0 flex-col items-end gap-2 sm:max-w-none sm:flex-row sm:flex-wrap sm:justify-end lg:flex">
               <Button
                 className="gap-2 bg-white text-black hover:bg-white/90"
                 disabled={!hasStreamingConfig || isStarting || isEnding || live}
@@ -458,6 +669,12 @@ export function BroadcasterClient({
               <div className="h-full w-full bg-black">
                 <StreamVideo client={client}>
                   <StreamCall call={call}>
+                    <div className="pointer-events-none absolute right-3 top-3 z-30 sm:right-6">
+                      <BroadcasterMobileSettingsMenu
+                        {...mobileChromeProps}
+                        deviceControls={<BroadcasterDeviceMenuItems />}
+                      />
+                    </div>
                     <NoiseCancellationProvider noiseCancellation={noiseCancellation}>
                       <LivestreamLayout />
                       <StudioDeviceControls />
@@ -465,30 +682,39 @@ export function BroadcasterClient({
                   </StreamCall>
                 </StreamVideo>
               </div>
-            ) : !hasStreamingConfig ? (
-              <BroadcasterStatePanel
-                description={streamSetupMessage ?? getPublicStreamSetupMessage()}
-                icon={<AlertCircle className="h-9 w-9" aria-hidden />}
-                title="Chưa cấu hình livestream"
-              />
-            ) : error ? (
-              <BroadcasterStatePanel
-                description={error}
-                icon={<AlertCircle className="h-9 w-9" aria-hidden />}
-                title="Không thể mở studio phát sóng"
-              />
             ) : (
-              <BroadcasterStatePanel
-                description="Phiên đã có trong hệ thống. Khi sẵn sàng, nhấn Bắt đầu live để phát cho người xem."
-                icon={<WandSparkles className="h-9 w-9" aria-hidden />}
-                title="Studio sẵn sàng phát"
-              />
+              <>
+                <div className="pointer-events-none absolute right-3 top-3 z-30 sm:right-6">
+                  <BroadcasterMobileSettingsMenu {...mobileChromeProps} deviceControls={null} />
+                </div>
+                {!hasStreamingConfig ? (
+                  <BroadcasterStatePanel
+                    description={streamSetupMessage ?? getPublicStreamSetupMessage()}
+                    icon={<AlertCircle className="h-9 w-9" aria-hidden />}
+                    title="Chưa cấu hình livestream"
+                  />
+                ) : error ? (
+                  <BroadcasterStatePanel
+                    description={error}
+                    icon={<AlertCircle className="h-9 w-9" aria-hidden />}
+                    title="Không thể mở studio phát sóng"
+                  />
+                ) : (
+                  <BroadcasterStatePanel
+                    description="Phiên đã có trong hệ thống. Khi sẵn sàng, nhấn Bắt đầu live để phát cho người xem."
+                    icon={<WandSparkles className="h-9 w-9" aria-hidden />}
+                    title="Studio sẵn sàng phát"
+                  />
+                )}
+              </>
             )}
           </div>
 
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-linear-to-t from-black/90 via-black/45 to-transparent px-3 pb-4 pt-24 sm:px-6 lg:hidden">
-            <div className="pointer-events-auto ml-auto max-w-[min(100%,28rem)]">
-              {commentSlug ? <LiveViewerEngagement isLive={live} slug={commentSlug} /> : null}
+            <div className="pointer-events-auto w-full touch-auto md:max-w-[min(100%,20rem)]">
+              {commentSlug ? (
+                <LiveViewerEngagement isLive={live} overlay slug={commentSlug} />
+              ) : null}
             </div>
           </div>
         </div>
@@ -505,10 +731,6 @@ export function BroadcasterClient({
                     <p className="text-sm font-medium text-white">{streamUser.name || 'Admin'}</p>
                     <p className="text-xs text-white/60">Bảng điều khiển phát sóng</p>
                   </div>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-3 text-xs text-white/70">
-                  Người xem mobile sẽ thấy giao diện full screen kiểu live feed. Khung này giúp bạn
-                  theo dõi chat song song khi phát.
                 </div>
               </div>
             </div>

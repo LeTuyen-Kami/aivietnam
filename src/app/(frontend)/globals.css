@@ -239,3 +239,12 @@ html[data-theme='light'] {
   justify-content: center;
   align-items: center;
 }
+
+body.live-immersive {
+  overflow: hidden;
+}
+
+body.live-immersive header,
+body.live-immersive footer {
+  display: none !important;
+}
