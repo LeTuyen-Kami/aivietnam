@@ -10,8 +10,10 @@ import type { GeneralSetting, Header, Media } from '@/payload-types'
 import { Logo } from '@/components/Logo/Logo'
 import { SmartLink } from '@/components/SmartLink'
 import { useAuth } from '@/providers/Auth'
+import { cn } from '@/utilities/ui'
 import { getMediaUrl } from '@/utilities/getMediaUrl'
-import { MenuIcon, SearchIcon, UserIcon } from 'lucide-react'
+import * as Dialog from '@radix-ui/react-dialog'
+import { MenuIcon, SearchIcon, UserIcon, X } from 'lucide-react'
 import { HeaderWeatherBar } from './HeaderWeatherBar'
 import { HeaderNav } from './Nav'
 
@@ -34,6 +36,8 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
 }) => {
   /* Storing the value in a useState to avoid hydration errors */
   const [theme, setTheme] = useState<string | null>(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [accountSheetOpen, setAccountSheetOpen] = useState(false)
 
   const { headerTheme, setHeaderTheme } = useHeaderTheme()
   const pathname = usePathname()
@@ -53,6 +57,10 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
     if (headerTheme && headerTheme !== theme) setTheme(headerTheme)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [headerTheme])
+
+  useEffect(() => {
+    if (!user) setAccountSheetOpen(false)
+  }, [user])
 
   // const themeProps = theme ? { 'data-theme': theme } : {}
   const themeProps = {}
@@ -108,12 +116,26 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
 
   const mobileAccountControl = authLoading ? (
     <div className="h-10 w-10 shrink-0 animate-pulse rounded-full bg-muted/60" aria-hidden />
+  ) : user ? (
+    <button
+      type="button"
+      className={cn(
+        'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors cursor-pointer',
+        'text-foreground ring-2 ring-primary/40 ring-offset-2 ring-offset-background hover:bg-accent',
+      )}
+      aria-label="Tài khoản"
+      aria-expanded={accountSheetOpen}
+      aria-haspopup="dialog"
+      onClick={() => setAccountSheetOpen(true)}
+    >
+      <UserIcon className="h-5 w-5" aria-hidden />
+    </button>
   ) : (
     <button
       type="button"
       className="inline-flex h-10 w-10 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:text-foreground cursor-pointer"
-      aria-label={user ? `Tài khoản ${user.email}` : 'Đăng nhập'}
-      onClick={user ? () => void logout() : openAuthModal}
+      aria-label="Đăng nhập"
+      onClick={openAuthModal}
     >
       <UserIcon className="h-5 w-5" />
     </button>
@@ -212,8 +234,11 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
             <div className="flex min-w-[88px] items-center gap-2">
               <button
                 type="button"
-                className="inline-flex h-10 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+                className="inline-flex h-10 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground cursor-pointer"
                 aria-label="Mở menu"
+                aria-expanded={mobileMenuOpen}
+                aria-controls="header-mobile-drawer-nav"
+                onClick={() => setMobileMenuOpen(true)}
               >
                 <MenuIcon className="h-6 w-6" />
               </button>
@@ -235,6 +260,87 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
           </div>
         </header>
       </div>
+
+      <Dialog.Root open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-100 bg-black/50" />
+          <Dialog.Content
+            className={cn(
+              'fixed inset-y-0 left-0 z-101 flex w-[min(100vw,20rem)] flex-col border-r border-border bg-background shadow-xl outline-none',
+              'transition-transform duration-300 ease-out',
+              'data-[state=closed]:-translate-x-full data-[state=open]:translate-x-0',
+            )}
+          >
+            <div className="flex items-center justify-between border-b border-border px-4 py-3">
+              <Dialog.Title className="text-lg font-semibold text-foreground">Menu</Dialog.Title>
+              <Dialog.Close
+                type="button"
+                className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                aria-label="Đóng menu"
+              >
+                <X className="h-5 w-5" />
+              </Dialog.Close>
+            </div>
+            <Dialog.Description className="sr-only">Danh sách liên kết điều hướng trang</Dialog.Description>
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              <HeaderNav
+                data={data}
+                variant="drawer"
+                onNavigate={() => setMobileMenuOpen(false)}
+              />
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      <Dialog.Root open={accountSheetOpen} onOpenChange={setAccountSheetOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-100 bg-black/50" />
+          <Dialog.Content
+            className={cn(
+              'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-1/2 left-1/2 z-101 w-[min(100vw-2rem,360px)] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-background p-5 shadow-lg outline-none',
+            )}
+          >
+            <div className="mb-4 flex items-start justify-between gap-2">
+              <Dialog.Title className="text-lg font-semibold text-foreground">Tài khoản</Dialog.Title>
+              <Dialog.Close
+                type="button"
+                className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+                aria-label="Đóng"
+              >
+                <X className="size-4" />
+              </Dialog.Close>
+            </div>
+            <Dialog.Description className="sr-only">
+              Thông tin tài khoản đang đăng nhập và đăng xuất
+            </Dialog.Description>
+            {user ? (
+              <div className="flex flex-col gap-4">
+                <div className="min-w-0">
+                  <p className="truncate text-base font-medium text-foreground" title={user.email ?? ''}>
+                    {user.name?.trim() || user.email}
+                  </p>
+                  {user.name?.trim() ? (
+                    <p className="mt-1 truncate text-sm text-muted-foreground" title={user.email ?? ''}>
+                      {user.email}
+                    </p>
+                  ) : null}
+                </div>
+                <button
+                  type="button"
+                  className="w-full rounded-md border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent cursor-pointer"
+                  onClick={() => {
+                    void logout()
+                    setAccountSheetOpen(false)
+                  }}
+                >
+                  Đăng xuất
+                </button>
+              </div>
+            ) : null}
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
 
       <div className="sticky top-0 z-50 w-full border-b border-border/60 bg-[#F1F1F1] shadow-sm md:hidden">
         <HeaderNav data={data} variant="mobile" />

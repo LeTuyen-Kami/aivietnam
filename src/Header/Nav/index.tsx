@@ -39,12 +39,14 @@ function MobileHomeToRootIcon({ className }: { className?: string }) {
   )
 }
 
-export type HeaderNavVariant = 'desktop' | 'mobile'
+export type HeaderNavVariant = 'desktop' | 'mobile' | 'drawer'
 
-export const HeaderNav: React.FC<{ data: HeaderType; variant?: HeaderNavVariant }> = ({
-  data,
-  variant = 'desktop',
-}) => {
+export const HeaderNav: React.FC<{
+  data: HeaderType
+  variant?: HeaderNavVariant
+  /** Close mobile drawer after navigation */
+  onNavigate?: () => void
+}> = ({ data, variant = 'desktop', onNavigate }) => {
   const navItems =
     data?.navItems?.filter((item) => {
       if (variant === 'mobile') {
@@ -83,6 +85,21 @@ export const HeaderNav: React.FC<{ data: HeaderType; variant?: HeaderNavVariant 
       )
     }
 
+    if (variant === 'drawer') {
+      return (
+        <CMSLink
+          key={i}
+          {...link}
+          appearance="link"
+          onClick={onNavigate}
+          className={cn(
+            'block w-full rounded-md px-3 py-3 text-base font-medium transition-colors hover:bg-muted/50',
+            isActive ? 'bg-muted/50 text-rose-800' : 'text-foreground',
+          )}
+        />
+      )
+    }
+
     return (
       <CMSLink
         key={i}
@@ -112,6 +129,29 @@ export const HeaderNav: React.FC<{ data: HeaderType; variant?: HeaderNavVariant 
           )}
         >
           <MobileHomeToRootIcon className="h-7 w-7" />
+        </Link>
+        {linkNodes}
+      </nav>
+    )
+  }
+
+  if (variant === 'drawer') {
+    return (
+      <nav
+        className="flex flex-col gap-1 p-2"
+        aria-label="Điều hướng chính"
+        id="header-mobile-drawer-nav"
+      >
+        <Link
+          href="/"
+          onClick={onNavigate}
+          className={cn(
+            'flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium transition-colors hover:bg-muted/50',
+            isHomeActive ? 'bg-muted/50 text-rose-800' : 'text-foreground',
+          )}
+        >
+          <MobileHomeToRootIcon className="h-8 w-8 shrink-0" />
+          <span>Trang chủ</span>
         </Link>
         {linkNodes}
       </nav>
