@@ -1,6 +1,16 @@
 'use client'
 
-import { CalendarDays, ExternalLink, Loader2, Radio, Video, WandSparkles, X } from 'lucide-react'
+import {
+  CalendarDays,
+  ExternalLink,
+  ImagePlus,
+  Loader2,
+  Radio,
+  Trash2,
+  Video,
+  WandSparkles,
+  X,
+} from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -28,6 +38,64 @@ type Props = {
 type CreateResponse = {
   slug?: string
   error?: string
+}
+
+type UploadedCover = {
+  alt?: string | null
+  id: number
+  mimeType?: string | null
+  url?: string | null
+}
+
+const MAX_COVER_SIZE = 10 * 1024 * 1024
+const ACCEPTED_COVER_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'] as const
+
+function getCoverUploadError(file: File): string | null {
+  if (!ACCEPTED_COVER_TYPES.includes(file.type as (typeof ACCEPTED_COVER_TYPES)[number])) {
+    return 'Chỉ hỗ trợ JPG, PNG, WEBP hoặc GIF'
+  }
+
+  if (file.size > MAX_COVER_SIZE) {
+    return 'Ảnh tối đa 10MB'
+  }
+
+  return null
+}
+
+function mediaToUploadedCover(media: MediaType): UploadedCover {
+  return {
+    alt: media.alt,
+    id: media.id,
+    mimeType: media.mimeType,
+    url: media.url,
+  }
+}
+
+function CoverPreview({ cover, onRemove }: { cover: UploadedCover; onRemove: () => void }) {
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-border bg-muted/20">
+      {cover.url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          alt={cover.alt || 'Ảnh cover livestream'}
+          className="aspect-video w-full object-cover"
+          src={cover.url}
+        />
+      ) : (
+        <div className="flex aspect-video items-center justify-center text-xs text-muted-foreground">
+          Không xem trước được ảnh
+        </div>
+      )}
+      <button
+        className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-black/65 text-white transition-opacity hover:opacity-90"
+        onClick={onRemove}
+        type="button"
+      >
+        <Trash2 className="h-4 w-4" aria-hidden />
+        <span className="sr-only">Xóa ảnh cover</span>
+      </button>
+    </div>
+  )
 }
 
 function statusLabel(status: Livestream['status']): string {
@@ -104,7 +172,8 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
   const [slug, setSlug] = useState('')
   const [descriptionValue, setDescriptionValue] = useState('')
   const [scheduledAt, setScheduledAt] = useState('')
-  const [coverImage, setCoverImage] = useState('')
+  const [selectedCover, setSelectedCover] = useState<UploadedCover | null>(null)
+  const [uploadingCover, setUploadingCover] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -248,6 +317,47 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
     }
   }, [isOpen])
 
+  const uploadCover = async (file: File) => {
+    const uploadError = getCoverUploadError(file)
+    if (uploadError) throw new Error(uploadError)
+
+    const body = new FormData()
+    body.append('file', file, file.name?.trim() || `cover-${Date.now()}`)
+    body.append('alt', file.name.replace(/\.[^.]+$/, '') || title.trim() || 'Livestream cover')
+
+    const response = await fetch('/api/livestreams/media', {
+      method: 'POST',
+      credentials: 'include',
+      body,
+    })
+
+    const data = (await response.json().catch(() => ({}))) as {
+      error?: string
+      doc?: UploadedCover
+    }
+
+    if (!response.ok || !data.doc) {
+      throw new Error(data.error ?? 'Không tải được ảnh cover')
+    }
+
+    return data.doc
+  }
+
+  const handleCoverFileChange = async (file: File | null) => {
+    if (!file) return
+
+    setUploadingCover(true)
+    setError(null)
+    try {
+      const uploaded = await uploadCover(file)
+      setSelectedCover(uploaded)
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : 'Không tải được ảnh cover')
+    } finally {
+      setUploadingCover(false)
+    }
+  }
+
   const handleTitleChange = (value: string) => {
     setTitle(value)
     setSlug((current) => {
@@ -287,7 +397,7 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
           slug: normalizedSlug,
           description: descriptionValue.trim() || null,
           scheduledAt: scheduledAt || null,
-          coverImage: coverImage || null,
+          coverImage: selectedCover?.id ?? null,
         }),
       })
 
@@ -496,52 +606,87 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
                         </div>
 
                         <div className="space-y-3">
-                          <label className="text-sm font-medium" htmlFor="livestream-cover-image">
-                            Cover image
-                          </label>
-                          <Input
-                            id="livestream-cover-image"
-                            onChange={(event) => setCoverImage(event.target.value)}
-                            placeholder="Nhập Media ID hoặc chọn nhanh từ danh sách bên dưới"
-                            value={coverImage}
-                          />
-                          {coverOptions.length > 0 ? (
-                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                              {coverOptions.map((media) => {
-                                const selected = coverImage === String(media.id)
-                                return (
-                                  <button
-                                    className={cn(
-                                      'overflow-hidden rounded-2xl border text-left transition-all',
-                                      selected
-                                        ? 'border-primary ring-2 ring-primary/30'
-                                        : 'border-border/70 hover:border-primary/40',
-                                    )}
-                                    key={media.id}
-                                    onClick={() => setCoverImage(String(media.id))}
-                                    type="button"
-                                  >
-                                    <div className="relative aspect-[4/5] bg-muted">
-                                      <Media
-                                        fill
-                                        imgClassName="object-cover"
-                                        pictureClassName="absolute inset-0"
-                                        resource={media}
-                                      />
-                                    </div>
-                                    <div className="px-3 py-2 text-xs text-muted-foreground">
-                                      Media #{media.id}
-                                    </div>
-                                  </button>
-                                )
-                              })}
+                          <span className="text-sm font-medium">Ảnh cover</span>
+                          <p className="text-xs text-muted-foreground">
+                            Tải ảnh mới hoặc chọn lại cover từ phòng đã có. Không bắt buộc.
+                          </p>
+
+                          {selectedCover ? (
+                            <CoverPreview
+                              cover={selectedCover}
+                              onRemove={() => setSelectedCover(null)}
+                            />
+                          ) : null}
+
+                          <label className="grid gap-2 text-sm font-medium text-foreground">
+                            <span className="sr-only">Tải ảnh cover</span>
+                            <div className="rounded-xl border border-dashed border-border bg-muted/20 p-3 sm:p-4">
+                              <div className="flex flex-col gap-2 text-muted-foreground sm:flex-row sm:items-center sm:gap-3">
+                                {uploadingCover ? (
+                                  <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
+                                ) : (
+                                  <ImagePlus className="h-5 w-5" aria-hidden />
+                                )}
+                                <div>
+                                  <p className="text-sm font-medium text-foreground">
+                                    {uploadingCover ? 'Đang tải ảnh…' : 'Chọn ảnh từ thiết bị'}
+                                  </p>
+                                  <p className="text-xs leading-5">
+                                    JPG, PNG, WEBP hoặc GIF — tối đa 10MB. Khuyến nghị tỷ lệ 16:9.
+                                  </p>
+                                </div>
+                              </div>
+                              <input
+                                accept="image/png,image/jpeg,image/webp,image/gif"
+                                className="mt-3 block w-full text-sm text-muted-foreground file:mr-4 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary-foreground hover:file:opacity-90"
+                                disabled={uploadingCover}
+                                onChange={(event) => {
+                                  void handleCoverFileChange(event.currentTarget.files?.[0] ?? null)
+                                  event.currentTarget.value = ''
+                                }}
+                                type="file"
+                              />
                             </div>
-                          ) : (
-                            <p className="text-xs text-muted-foreground">
-                              Chưa có cover gợi ý. Bạn có thể nhập Media ID thủ công từ collection
-                              Media.
-                            </p>
-                          )}
+                          </label>
+
+                          {coverOptions.length > 0 ? (
+                            <div className="space-y-2">
+                              <p className="text-xs font-medium text-muted-foreground">
+                                Hoặc dùng lại cover có sẵn
+                              </p>
+                              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                                {coverOptions.map((media) => {
+                                  const selected = selectedCover?.id === media.id
+                                  return (
+                                    <button
+                                      className={cn(
+                                        'overflow-hidden rounded-2xl border text-left transition-all',
+                                        selected
+                                          ? 'border-primary ring-2 ring-primary/30'
+                                          : 'border-border/70 hover:border-primary/40',
+                                      )}
+                                      key={media.id}
+                                      onClick={() => setSelectedCover(mediaToUploadedCover(media))}
+                                      type="button"
+                                    >
+                                      <div className="relative aspect-video bg-muted">
+                                        <Media
+                                          className="absolute inset-0"
+                                          fill
+                                          imgClassName="object-cover"
+                                          pictureClassName="absolute inset-0 block size-full"
+                                          resource={media}
+                                        />
+                                      </div>
+                                      <div className="truncate px-3 py-2 text-xs text-muted-foreground">
+                                        {media.alt?.trim() || media.filename || `Ảnh #${media.id}`}
+                                      </div>
+                                    </button>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          ) : null}
                         </div>
 
                         {error ? <p className="text-sm text-destructive">{error}</p> : null}
@@ -561,13 +706,13 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
                   </Card>
 
                   <Card className="min-h-0 border-border/80 shadow-lg shadow-black/5">
-                    <CardHeader>
+                    <CardHeader className="p-0 md:p-6">
                       <CardTitle className="text-xl">Danh sách phòng</CardTitle>
                       <CardDescription>
                         Chọn phòng có sẵn để mở broadcaster hoặc xem chi tiết.
                       </CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-0 md:p-6">
                       <div className="space-y-3">
                         {livestreams.length === 0 ? (
                           <div className="rounded-2xl border border-dashed border-border/80 bg-muted/20 p-6 text-sm text-muted-foreground">

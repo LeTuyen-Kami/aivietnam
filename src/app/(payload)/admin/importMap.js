@@ -34,6 +34,7 @@ import { BlocksFeatureClient as BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0
 import { SeoImageChecker as SeoImageChecker_80b74083c60162cf9630b14bbe5d82fe } from '@/components/SeoImageChecker'
 import { FolderTableCell as FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { FolderField as FolderField_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
+import { MediaUrlCell as MediaUrlCell_40ce4a09d07716082d5c4546312300a7 } from '@/components/Media/MediaUrlCell'
 import { LivestreamSlugActionsCell as LivestreamSlugActionsCell_48903523f1d539d5543bfea1339922c7 } from '@/components/Livestreams/LivestreamSlugActionsCell'
 import { LivestreamStatusCell as LivestreamStatusCell_8d76490c7fb6f36b217c856b9f715b42 } from '@/components/Livestreams/LivestreamStatusCell'
 import { LivestreamViewerLinksField as LivestreamViewerLinksField_5c4a3bc24cd697410f859c516abcd40e } from '@/components/Livestreams/LivestreamViewerLinksField'
@@ -86,6 +87,7 @@ export const importMap = {
   "@/components/SeoImageChecker#SeoImageChecker": SeoImageChecker_80b74083c60162cf9630b14bbe5d82fe,
   "@payloadcms/next/rsc#FolderTableCell": FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1,
   "@payloadcms/next/rsc#FolderField": FolderField_f9c02e79a4aed9a3924487c0cd4cafb1,
+  "@/components/Media/MediaUrlCell#MediaUrlCell": MediaUrlCell_40ce4a09d07716082d5c4546312300a7,
   "@/components/Livestreams/LivestreamSlugActionsCell#LivestreamSlugActionsCell": LivestreamSlugActionsCell_48903523f1d539d5543bfea1339922c7,
   "@/components/Livestreams/LivestreamStatusCell#LivestreamStatusCell": LivestreamStatusCell_8d76490c7fb6f36b217c856b9f715b42,
   "@/components/Livestreams/LivestreamViewerLinksField#LivestreamViewerLinksField": LivestreamViewerLinksField_5c4a3bc24cd697410f859c516abcd40e,

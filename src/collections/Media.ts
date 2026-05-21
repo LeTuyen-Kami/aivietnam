@@ -13,6 +13,9 @@ import sharp from 'sharp'
 export const Media: CollectionConfig = {
   slug: 'media',
   folders: true,
+  admin: {
+    defaultColumns: ['filename', 'url', 'alt', 'updatedAt'],
+  },
   access: {
     create: authenticated,
     delete: authenticated,
@@ -20,6 +23,16 @@ export const Media: CollectionConfig = {
     update: authenticated,
   },
   fields: [
+    {
+      name: 'url',
+      type: 'text',
+      admin: {
+        readOnly: true,
+        components: {
+          Cell: '@/components/Media/MediaUrlCell#MediaUrlCell',
+        },
+      },
+    },
     {
       name: 'alt',
       type: 'text',

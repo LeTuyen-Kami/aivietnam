@@ -3,6 +3,7 @@
 import { cn } from '@/utilities/ui'
 import {
   Maximize2,
+  Minimize2,
   Pause,
   Play,
   RotateCcw,
@@ -145,16 +146,39 @@ export function CustomAudioPlayer({ className, src }: BasePlayerProps) {
   )
 }
 
+function isShellFullscreen(shell: HTMLDivElement | null): boolean {
+  if (!shell) return false
+  return (
+    document.fullscreenElement === shell ||
+    (document as Document & { webkitFullscreenElement?: Element | null }).webkitFullscreenElement ===
+      shell
+  )
+}
+
 export function CustomVideoPlayer({ className, poster, src, title }: VideoPlayerProps) {
   const shellRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [volume, setVolume] = useState(0.9)
 
   const progress = getProgress(currentTime, duration)
+
+  useEffect(() => {
+    const syncFullscreen = () => {
+      setIsFullscreen(isShellFullscreen(shellRef.current))
+    }
+
+    document.addEventListener('fullscreenchange', syncFullscreen)
+    document.addEventListener('webkitfullscreenchange', syncFullscreen)
+    return () => {
+      document.removeEventListener('fullscreenchange', syncFullscreen)
+      document.removeEventListener('webkitfullscreenchange', syncFullscreen)
+    }
+  }, [])
 
   useEffect(() => {
     const video = videoRef.current
@@ -187,11 +211,27 @@ export function CustomVideoPlayer({ className, poster, src, title }: VideoPlayer
     setCurrentTime(nextTime)
   }
 
-  async function enterFullscreen() {
+  async function toggleFullscreen() {
     const shell = shellRef.current
-    if (!shell || !document.fullscreenEnabled) return
+    if (!shell) return
 
-    await shell.requestFullscreen()
+    if (isShellFullscreen(shell)) {
+      if (document.exitFullscreen) {
+        await document.exitFullscreen().catch(() => null)
+      } else {
+        const doc = document as Document & { webkitExitFullscreen?: () => void }
+        doc.webkitExitFullscreen?.()
+      }
+      return
+    }
+
+    if (shell.requestFullscreen) {
+      await shell.requestFullscreen().catch(() => null)
+      return
+    }
+
+    const el = shell as HTMLDivElement & { webkitRequestFullscreen?: () => void }
+    el.webkitRequestFullscreen?.()
   }
 
   const volumeIcon = useMemo(() => {
@@ -202,10 +242,19 @@ export function CustomVideoPlayer({ className, poster, src, title }: VideoPlayer
 
   return (
     <div
-      className={cn('group overflow-hidden border border-border bg-black text-white', className)}
+      className={cn(
+        'group overflow-hidden border border-border bg-black text-white',
+        isFullscreen && 'flex size-full max-h-none flex-col',
+        className,
+      )}
       ref={shellRef}
     >
-      <div className="relative aspect-video">
+      <div
+        className={cn(
+          'relative aspect-video',
+          isFullscreen && 'aspect-auto min-h-0 flex-1',
+        )}
+      >
         <video
           className="h-full w-full bg-black object-contain"
           onClick={togglePlay}
@@ -236,7 +285,7 @@ export function CustomVideoPlayer({ className, poster, src, title }: VideoPlayer
         ) : null}
       </div>
 
-      <div className="space-y-3 bg-[#101010] p-3">
+      <div className={cn('shrink-0 space-y-3 bg-[#101010] p-3', isFullscreen && 'pb-[max(0.75rem,env(safe-area-inset-bottom))]')}>
         <Range
           ariaLabel="Tiến trình video"
           value={progress}
@@ -282,11 +331,11 @@ export function CustomVideoPlayer({ className, poster, src, title }: VideoPlayer
             />
             <button
               className="flex h-8 w-8 items-center justify-center text-white/80 transition-colors hover:text-white"
-              onClick={enterFullscreen}
+              onClick={toggleFullscreen}
               type="button"
             >
-              <Maximize2 className="h-4 w-4" />
-              <span className="sr-only">Toàn màn hình</span>
+              {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              <span className="sr-only">{isFullscreen ? 'Thoát toàn màn hình' : 'Toàn màn hình'}</span>
             </button>
           </div>
         </div>

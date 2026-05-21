@@ -103,28 +103,29 @@ function ViewerLiveCard({
   const updatedAt = formatDate(livestream.updatedAt)
 
   return (
-    <section className="container">
-      <Card className="group overflow-hidden border-border/80 bg-card shadow-xl shadow-black/5 ring-1 ring-black/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/10 dark:ring-white/10">
-        <div className="grid gap-0 lg:grid-cols-[1.4fr_0.8fr]">
-          <SmartLink className="block h-full" href={href}>
-            <div className="relative flex min-h-[320px] items-end overflow-hidden bg-black sm:min-h-[420px] lg:min-h-[520px]">
+    <section className="container pt-4 md:pt-0">
+      <Card className="group isolate overflow-hidden border-border/80 bg-card shadow-xl shadow-black/5 ring-1 ring-black/5 transition-[transform,box-shadow] duration-300 md:hover:-translate-y-1 md:hover:shadow-2xl md:hover:shadow-black/10 dark:ring-white/10">
+        <div className="grid min-h-0 gap-0 lg:grid-cols-[1.4fr_0.8fr]">
+          <SmartLink className="block min-h-0 w-full" href={href}>
+            <div className="relative isolate min-h-[300px] w-full overflow-hidden bg-black sm:min-h-[420px] lg:min-h-[520px]">
               {coverImage ? (
                 <Media
+                  className="absolute inset-0"
                   fill
-                  imgClassName="object-cover object-center transition-transform duration-500 group-hover:scale-105"
-                  pictureClassName="absolute inset-0"
+                  imgClassName="object-cover object-center transition-transform duration-500 md:group-hover:scale-105"
+                  pictureClassName="absolute inset-0 block size-full"
                   resource={coverImage}
                 />
               ) : null}
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.14),_transparent_34%),linear-gradient(180deg,_rgba(0,0,0,0.12)_0%,_rgba(0,0,0,0.72)_100%)]" />
-              <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-black/55 px-3 py-1 text-xs font-medium text-white ring-1 ring-white/10 backdrop-blur">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.14),_transparent_34%),linear-gradient(180deg,_rgba(0,0,0,0.12)_0%,_rgba(0,0,0,0.72)_100%)]" />
+              <div className="absolute left-4 top-4 z-10 inline-flex items-center gap-2 rounded-full bg-black/55 px-3 py-1 text-xs font-medium text-white ring-1 ring-white/10 backdrop-blur">
                 <span className="relative flex h-2.5 w-2.5">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75" />
                   <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-rose-500" />
                 </span>
                 LIVE
               </div>
-              <div className="relative z-10 w-full p-5 text-white sm:p-7 lg:p-10">
+              <div className="absolute inset-x-0 bottom-0 z-10 p-5 text-white sm:p-7 lg:p-10">
                 <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium ring-1 ring-white/15 backdrop-blur">
                   <Zap className="h-3.5 w-3.5" aria-hidden />
                   Nhấn để vào màn hình chi tiết
@@ -212,14 +213,12 @@ export const LivestreamPortalBlockComponent = async ({
   const resolvedDescription = description?.trim() || null
   const resolvedEmptyMessage = emptyMessage?.trim() || 'Hiện chưa có livestream nào đang phát.'
 
-  console.log('LivestreamPortalBlockComponent', { isAdmin })
-
   if (isAdmin) {
     const adminUser = user
     const limit = Math.min(24, Math.max(1, adminListLimit ?? 8))
     const result = await payload.find({
       collection: 'livestreams',
-      depth: 0,
+      depth: 1,
       draft: false,
       limit,
       pagination: false,
