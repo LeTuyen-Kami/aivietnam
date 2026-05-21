@@ -1,5 +1,6 @@
 import type { Metadata } from 'next/types'
 
+import { getSiteLabelForMetadata } from '@/utilities/siteMetadata'
 import { CollectionArchive } from '@/components/CollectionArchive'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
@@ -83,8 +84,9 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
   )
 }
 
-export function generateMetadata(): Metadata {
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await getSiteLabelForMetadata()
   return {
-    title: `Payload Website Template Search`,
+    title: `Search | ${site}`,
   }
 }

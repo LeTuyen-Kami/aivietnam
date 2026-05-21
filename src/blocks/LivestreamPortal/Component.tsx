@@ -1,6 +1,8 @@
 import configPromise from '@payload-config'
 import { Radio, Video, Zap } from 'lucide-react'
+import { unstable_noStore as noStore } from 'next/cache'
 import { headers } from 'next/headers'
+import { connection } from 'next/server'
 import { getPayload } from 'payload'
 
 import { isUsersCollectionAdmin } from '@/access/isAdminUser'
@@ -11,7 +13,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/ca
 import type { Livestream } from '@/payload-types'
 import { cn } from '@/utilities/ui'
 
-import { LivestreamPortalAdminPanel } from './LivestreamPortalAdminPanel'
+import { LivestreamPortalView } from './LivestreamPortalView.client'
 
 type Props = {
   heading?: string | null
@@ -65,26 +67,6 @@ function formatDate(value: string | null | undefined): string | null {
   }).format(date)
 }
 
-function ViewerEmptyState({ heading, emptyMessage }: { heading: string; emptyMessage: string }) {
-  return (
-    <section className="container">
-      <Card className="overflow-hidden border-border/80 bg-linear-to-br from-card via-card to-muted/20 shadow-xl shadow-black/5">
-        <CardHeader className="space-y-4 p-6 sm:p-8">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20">
-            <Video className="h-6 w-6" aria-hidden />
-          </div>
-          <div className="space-y-2">
-            <CardTitle className="text-2xl tracking-tight sm:text-3xl">{heading}</CardTitle>
-            <CardDescription className="max-w-2xl text-sm sm:text-base">
-              {emptyMessage}
-            </CardDescription>
-          </div>
-        </CardHeader>
-      </Card>
-    </section>
-  )
-}
-
 function ViewerLiveCard({
   heading,
   description,
@@ -129,14 +111,6 @@ function ViewerLiveCard({
                 <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium ring-1 ring-white/15 backdrop-blur">
                   <Zap className="h-3.5 w-3.5" aria-hidden />
                   Nhấn để vào màn hình chi tiết
-                </div>
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-white/70">
-                  <span className="rounded-full bg-white/10 px-3 py-1 ring-1 ring-white/10 backdrop-blur">
-                    Trải nghiệm fullscreen mobile
-                  </span>
-                  <span className="rounded-full bg-white/10 px-3 py-1 ring-1 ring-white/10 backdrop-blur">
-                    Comment overlay realtime
-                  </span>
                 </div>
                 <h2 className="mt-4 max-w-3xl text-2xl font-semibold tracking-tight sm:text-3xl lg:text-4xl">
                   {livestream.title}
@@ -200,43 +174,19 @@ function ViewerLiveCard({
 }
 
 export const LivestreamPortalBlockComponent = async ({
-  adminListLimit,
   description,
-  emptyMessage,
+  emptyMessage: _emptyMessage,
   heading,
 }: Props) => {
+  await connection()
+  noStore()
+
   const payload = await getPayload({ config: configPromise })
   const requestHeaders = await headers()
   const { user } = await payload.auth({ headers: requestHeaders })
-  const isAdmin = isUsersCollectionAdmin(user)
+  const serverIsAdmin = isUsersCollectionAdmin(user)
   const resolvedHeading = heading?.trim() || 'Livestream'
   const resolvedDescription = description?.trim() || null
-  const resolvedEmptyMessage = emptyMessage?.trim() || 'Hiện chưa có livestream nào đang phát.'
-
-  if (isAdmin) {
-    const adminUser = user
-    const limit = Math.min(24, Math.max(1, adminListLimit ?? 8))
-    const result = await payload.find({
-      collection: 'livestreams',
-      depth: 1,
-      draft: false,
-      limit,
-      pagination: false,
-      sort: '-updatedAt',
-      user: adminUser,
-      overrideAccess: false,
-    })
-
-    return (
-      <section className="container">
-        <LivestreamPortalAdminPanel
-          description={resolvedDescription}
-          heading={resolvedHeading}
-          livestreams={result.docs as Livestream[]}
-        />
-      </section>
-    )
-  }
 
   const result = await payload.find({
     collection: 'livestreams',
@@ -255,15 +205,20 @@ export const LivestreamPortalBlockComponent = async ({
 
   const livestream = result.docs[0] as Livestream | undefined
 
-  if (!livestream) {
-    return null
-  }
-
-  return (
+  const viewerSlot = livestream ? (
     <ViewerLiveCard
       description={resolvedDescription}
       heading={resolvedHeading}
       livestream={livestream}
+    />
+  ) : null
+
+  return (
+    <LivestreamPortalView
+      description={resolvedDescription}
+      heading={resolvedHeading}
+      serverIsAdmin={serverIsAdmin}
+      viewerSlot={viewerSlot}
     />
   )
 }

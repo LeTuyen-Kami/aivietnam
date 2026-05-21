@@ -123,7 +123,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, onLogi
           <div className="mb-4 flex items-start justify-between gap-2">
             <Dialog.Title className="text-lg font-semibold">Tài khoản</Dialog.Title>
             <Dialog.Close
-              className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+              className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground cursor-pointer active:scale-95"
               aria-label="Đóng"
             >
               <X className="size-4" />

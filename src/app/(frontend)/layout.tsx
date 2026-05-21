@@ -10,7 +10,7 @@ import { Footer } from '@/Footer/Component'
 import { Header } from '@/Header/Component'
 import { Providers } from '@/providers'
 import { InitTheme } from '@/providers/Theme/InitTheme'
-import { getCachedGlobal } from '@/utilities/getGlobals'
+import { getGeneralSettingsCached, siteLabelFromGeneralSettings } from '@/utilities/siteMetadata'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { draftMode } from 'next/headers'
 
@@ -19,7 +19,7 @@ import { getServerSideURL } from '@/utilities/getURL'
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { isEnabled } = await draftMode()
-  const generalSettings: GeneralSetting = await getCachedGlobal('general-settings', 1)()
+  const generalSettings: GeneralSetting = await getGeneralSettingsCached(1)
   const faviconMedia =
     typeof generalSettings?.favicon === 'object' ? (generalSettings.favicon as Media) : null
   const faviconHref = faviconMedia?.url || '/favicon.ico'
@@ -56,11 +56,23 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   )
 }
 
-export const metadata: Metadata = {
-  metadataBase: new URL(getServerSideURL()),
-  openGraph: mergeOpenGraph(),
-  twitter: {
-    card: 'summary_large_image',
-    creator: '@payloadcms',
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const generalSettings = await getGeneralSettingsCached(0)
+  const siteName = siteLabelFromGeneralSettings(generalSettings)
+  const description = generalSettings?.siteDescription?.trim() || ''
+
+  return {
+    metadataBase: new URL(getServerSideURL()),
+    description: description || undefined,
+    openGraph: mergeOpenGraph({
+      description,
+      siteName,
+      title: siteName,
+    }),
+    title: siteName,
+    twitter: {
+      card: 'summary_large_image',
+      creator: '@payloadcms',
+    },
+  }
 }

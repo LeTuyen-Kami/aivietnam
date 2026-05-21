@@ -53,10 +53,17 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
           ) : null}
 
           <div className="mt-6 flex justify-end gap-2">
-            <Button disabled={pending} type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              className="cursor-pointer active:scale-95"
+              disabled={pending}
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               {cancelLabel}
             </Button>
             <Button
+              className="cursor-pointer active:scale-95"
               disabled={pending}
               type="button"
               variant={confirmVariant}

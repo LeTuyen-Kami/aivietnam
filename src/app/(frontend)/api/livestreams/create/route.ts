@@ -1,9 +1,10 @@
 import config from '@payload-config'
 import { headers } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
+import { APIError, ValidationError, getPayload } from 'payload'
 
 import { isUsersCollectionAdmin } from '@/access/isAdminUser'
+import { ensureUniqueLivestreamSlug } from '@/utilities/ensureUniqueLivestreamSlug'
 import { slugifyTitle } from '@/utilities/slugify'
 
 function toIsoOrNull(value: unknown): string | null {
@@ -62,46 +63,60 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'slug is invalid' }, { status: 400 })
   }
 
-  const existing = await payload.find({
-    collection: 'livestreams',
-    depth: 0,
-    limit: 1,
-    pagination: false,
-    user,
-    overrideAccess: false,
-    where: {
-      slug: {
-        equals: normalizedSlug,
-      },
-    },
-  })
-
-  if (existing.docs.length > 0) {
-    return NextResponse.json({ error: 'slug already exists' }, { status: 409 })
+  let uniqueSlug: string
+  try {
+    uniqueSlug = await ensureUniqueLivestreamSlug({
+      payload,
+      baseSlug: normalizedSlug,
+    })
+  } catch {
+    return NextResponse.json({ error: 'slug is invalid' }, { status: 400 })
   }
 
-  const created = await payload.create({
-    collection: 'livestreams',
-    data: {
-      title,
-      slug: normalizedSlug,
-      description: description || undefined,
-      coverImage: coverImage && Number.isFinite(coverImage) ? coverImage : undefined,
-      scheduledAt: scheduledAt ?? undefined,
-      status: scheduledAt ? 'scheduled' : 'draft',
-      callId: normalizedSlug,
-      callType: 'livestream',
-      generateSlug: false,
-    },
-    depth: 0,
-    draft: false,
-    user,
-    overrideAccess: false,
-  })
+  try {
+    const created = await payload.create({
+      collection: 'livestreams',
+      data: {
+        title,
+        slug: uniqueSlug,
+        description: description || undefined,
+        coverImage: coverImage && Number.isFinite(coverImage) ? coverImage : undefined,
+        scheduledAt: scheduledAt ?? undefined,
+        status: scheduledAt ? 'scheduled' : 'draft',
+        callId: uniqueSlug,
+        callType: 'livestream',
+        generateSlug: false,
+      },
+      depth: 0,
+      draft: false,
+      user,
+      overrideAccess: false,
+    })
 
-  return NextResponse.json({
-    id: created.id,
-    slug: created.slug,
-    status: created.status,
-  })
+    return NextResponse.json({
+      id: created.id,
+      slug: created.slug,
+      status: created.status,
+    })
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      const slugFieldError = error.data.errors.find((entry) => entry.path === 'slug')
+      return NextResponse.json(
+        {
+          error: slugFieldError?.message || error.message || 'Slug không hợp lệ',
+        },
+        { status: error.status ?? 400 },
+      )
+    }
+
+    if (error instanceof APIError) {
+      return NextResponse.json(
+        { error: error.message || 'Không thể tạo livestream' },
+        { status: error.status ?? 500 },
+      )
+    }
+
+    console.error('[livestreams/create]', error)
+    return NextResponse.json({ error: 'Không thể tạo livestream' }, { status: 500 })
+  }
 }

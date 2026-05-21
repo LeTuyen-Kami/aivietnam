@@ -240,6 +240,11 @@ html[data-theme='light'] {
   align-items: center;
 }
 
+:root {
+  /* Mobile header bar (61px) + nav (48px) + weather row (~48px) above live pages */
+  --live-mobile-chrome: 9.75rem;
+}
+
 body.live-immersive {
   overflow: hidden;
 }
@@ -251,4 +256,24 @@ body.live-immersive footer {
 
 .str-video__livestream-layout__overlay {
   pointer-events: none !important;
+}
+
+/* iOS Safari auto-zooms focused fields when font-size < 16px */
+@media (width < 48rem) {
+  input:not(
+      [type='button'],
+      [type='submit'],
+      [type='reset'],
+      [type='checkbox'],
+      [type='radio'],
+      [type='range'],
+      [type='file'],
+      [type='hidden'],
+      [type='image'],
+      [type='color']
+    ),
+  textarea,
+  select {
+    font-size: 1rem !important;
+  }
 }

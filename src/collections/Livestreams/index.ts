@@ -1,5 +1,4 @@
-import type { CollectionConfig, RowField } from 'payload'
-import { slugField } from 'payload'
+import type { CollectionConfig } from 'payload'
 
 import { canAccessAdminPanel } from '@/access/isAdminUser'
 import { getLivestreamViewerAbsoluteUrl } from '@/utilities/livestreamViewerUrl'
@@ -37,23 +36,46 @@ export const Livestreams: CollectionConfig<'livestreams'> = {
       type: 'text',
       required: true,
     },
-    slugField({
-      slugify: ({ valueToSlugify }) => slugifyTitle(valueToSlugify),
-      overrides: (field: RowField) => {
-        const slugText = field.fields[1]
-        if (slugText && 'admin' in slugText && slugText.admin) {
-          const prev = slugText.admin.components
-          slugText.admin = {
-            ...slugText.admin,
-            components: {
-              ...(prev as Record<string, unknown>),
-              Cell: '@/components/Livestreams/LivestreamSlugActionsCell#LivestreamSlugActionsCell',
-            },
-          }
-        }
-        return field
+    {
+      name: 'generateSlug',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description:
+          'When enabled, the slug will auto-generate from the title field on save and autosave.',
+        disableBulkEdit: true,
+        disableGroupBy: true,
+        disableListColumn: true,
+        disableListFilter: true,
+        hidden: true,
       },
-    }),
+    },
+    {
+      name: 'slug',
+      type: 'text',
+      required: true,
+      unique: true,
+      index: true,
+      admin: {
+        components: {
+          Field: {
+            clientProps: {
+              useAsSlug: 'title',
+            },
+            path: '@payloadcms/next/client#SlugField',
+          },
+          Cell: '@/components/Livestreams/LivestreamSlugActionsCell#LivestreamSlugActionsCell',
+        },
+      },
+      hooks: {
+        beforeValidate: [
+          ({ value }) => {
+            if (typeof value !== 'string') return value
+            return slugifyTitle(value) ?? value
+          },
+        ],
+      },
+    },
     {
       name: 'status',
       type: 'select',

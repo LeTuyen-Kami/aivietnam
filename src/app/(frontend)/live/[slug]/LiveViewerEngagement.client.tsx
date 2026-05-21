@@ -383,7 +383,7 @@ export function LiveViewerEngagement({
     >
       <Input
         aria-label="Nhập bình luận livestream"
-        className="h-10 min-w-0 flex-1 rounded-full border-white/15 bg-black/45 text-sm text-white shadow-none placeholder:text-white/50 focus-visible:border-white/25 focus-visible:ring-white/15"
+        className="h-10 min-w-0 flex-1 rounded-full border-white/15 bg-black/45 text-base text-white shadow-none placeholder:text-white/50 focus-visible:border-white/25 focus-visible:ring-white/15 md:text-sm"
         placeholder={placeholder}
         value={body}
         onChange={(event) => setBody(event.target.value)}
@@ -419,7 +419,7 @@ export function LiveViewerEngagement({
             COMMENT_LIST_MASK,
           )}
         >
-          <div className="flex min-h-[32svh] flex-col justify-end gap-1.5 sm:min-h-[36svh]">
+          <div className="flex min-h-0 flex-col justify-end gap-1.5">
             {commentListContent}
           </div>
         </div>

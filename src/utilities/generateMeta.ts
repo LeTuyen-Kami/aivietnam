@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 
 import type { Media, Page, Post, Config } from '../payload-types'
 
+import { getSiteLabelForMetadata } from './siteMetadata'
 import { mergeOpenGraph } from './mergeOpenGraph'
 import { getServerSideURL } from './getURL'
 
@@ -24,11 +25,10 @@ export const generateMeta = async (args: {
 }): Promise<Metadata> => {
   const { doc } = args
 
+  const siteLabel = await getSiteLabelForMetadata()
   const ogImage = getImageURL(doc?.meta?.image)
 
-  const title = doc?.meta?.title
-    ? doc?.meta?.title + ' | Payload Website Template'
-    : 'Payload Website Template'
+  const title = doc?.meta?.title ? `${doc.meta.title} | ${siteLabel}` : siteLabel
 
   return {
     description: doc?.meta?.description,
@@ -41,6 +41,7 @@ export const generateMeta = async (args: {
             },
           ]
         : undefined,
+      siteName: siteLabel,
       title,
       url: Array.isArray(doc?.slug) ? doc?.slug.join('/') : '/',
     }),

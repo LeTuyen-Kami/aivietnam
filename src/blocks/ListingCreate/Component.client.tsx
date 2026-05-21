@@ -1064,7 +1064,7 @@ export function ListingCreateClient({
 }
 
 const inputClassName =
-  'h-11 w-full rounded-lg border border-border bg-background px-3 text-base outline-none transition-colors focus:border-foreground/50 sm:text-sm'
+  'h-11 w-full rounded-lg border border-border bg-background px-3 text-base outline-none transition-colors focus:border-foreground/50 md:text-sm'
 
 function Field({
   children,

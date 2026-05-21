@@ -8,6 +8,7 @@ export type AuthUser = {
   id: number
   email: string
   name?: string | null
+  roles?: ('admin' | 'member' | 'editor' | 'moderator')[]
 }
 
 type AuthContextValue = {
@@ -45,8 +46,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(null)
         return
       }
-      const data = (await res.json()) as { user?: AuthUser }
-      setUser(data.user ?? null)
+      const data = (await res.json()) as {
+        user?: AuthUser & { roles?: AuthUser['roles'] }
+      }
+      const next = data.user
+      setUser(
+        next
+          ? {
+              id: next.id,
+              email: next.email,
+              name: next.name ?? null,
+              roles: next.roles,
+            }
+          : null,
+      )
     } catch {
       setUser(null)
     }

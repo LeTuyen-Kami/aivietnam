@@ -74,7 +74,7 @@ export default async function ViewerPage({ params }: Args) {
   const streamEnv = getPublicStreamEnvStatus()
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main className="min-h-[100dvh] bg-black text-white">
       <ViewerClient
         livestream={livestream}
         streamApiKey={streamEnv.apiKey}

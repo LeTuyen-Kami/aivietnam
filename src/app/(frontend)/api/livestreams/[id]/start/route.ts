@@ -35,6 +35,13 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     depth: 0,
   })
 
+  if (livestream.status === 'ended') {
+    return NextResponse.json(
+      { error: 'Phiên livestream đã kết thúc. Tạo phòng mới để phát lại.' },
+      { status: 410 },
+    )
+  }
+
   const callType = livestream.callType?.trim() || 'livestream'
   const callId = normalizeCallId(livestreamId, livestream.callId)
   const streamUserId = streamUserIdFromPayloadUser(user)

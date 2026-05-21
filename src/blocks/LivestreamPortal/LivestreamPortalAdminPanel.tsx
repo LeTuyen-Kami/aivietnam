@@ -1,38 +1,19 @@
 'use client'
 
-import {
-  CalendarDays,
-  ExternalLink,
-  ImagePlus,
-  Loader2,
-  Radio,
-  Trash2,
-  Video,
-  WandSparkles,
-  X,
-} from 'lucide-react'
+import { ImagePlus, Loader2, Trash2, WandSparkles, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-import { Media } from '@/components/Media'
-import { SmartLink } from '@/components/SmartLink'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import type { Livestream, Media as MediaType } from '@/payload-types'
 import { slugifyTitle } from '@/utilities/slugify'
-import { cn } from '@/utilities/ui'
-
-type LivestreamWithCover = Livestream & {
-  coverImage?: MediaType | number | null
-}
 
 type Props = {
   heading: string
   description?: string | null
-  livestreams: LivestreamWithCover[]
 }
 
 type CreateResponse = {
@@ -50,6 +31,14 @@ type UploadedCover = {
 const MAX_COVER_SIZE = 10 * 1024 * 1024
 const ACCEPTED_COVER_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'] as const
 
+function generateRandomLivestreamSlug(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `live-${crypto.randomUUID().replace(/-/g, '').slice(0, 10)}`
+  }
+
+  return `live-${Math.random().toString(36).slice(2, 12)}`
+}
+
 function getCoverUploadError(file: File): string | null {
   if (!ACCEPTED_COVER_TYPES.includes(file.type as (typeof ACCEPTED_COVER_TYPES)[number])) {
     return 'Chỉ hỗ trợ JPG, PNG, WEBP hoặc GIF'
@@ -60,15 +49,6 @@ function getCoverUploadError(file: File): string | null {
   }
 
   return null
-}
-
-function mediaToUploadedCover(media: MediaType): UploadedCover {
-  return {
-    alt: media.alt,
-    id: media.id,
-    mimeType: media.mimeType,
-    url: media.url,
-  }
 }
 
 function CoverPreview({ cover, onRemove }: { cover: UploadedCover; onRemove: () => void }) {
@@ -98,62 +78,7 @@ function CoverPreview({ cover, onRemove }: { cover: UploadedCover; onRemove: () 
   )
 }
 
-function statusLabel(status: Livestream['status']): string {
-  switch (status) {
-    case 'live':
-      return 'Đang phát'
-    case 'scheduled':
-      return 'Đã lên lịch'
-    case 'draft':
-      return 'Bản nháp'
-    case 'ended':
-      return 'Đã kết thúc'
-    default:
-      return status
-  }
-}
-
-function statusClass(status: Livestream['status']): string {
-  switch (status) {
-    case 'live':
-      return 'bg-rose-500/15 text-rose-700 ring-rose-500/30 dark:text-rose-300'
-    case 'scheduled':
-      return 'bg-sky-500/15 text-sky-700 ring-sky-500/30 dark:text-sky-300'
-    case 'draft':
-      return 'bg-amber-500/15 text-amber-800 ring-amber-500/30 dark:text-amber-200'
-    case 'ended':
-      return 'bg-muted text-muted-foreground ring-border'
-    default:
-      return 'bg-muted text-muted-foreground ring-border'
-  }
-}
-
-function formatDate(value: string | null | undefined): string | null {
-  if (!value) return null
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return null
-
-  return new Intl.DateTimeFormat('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(date)
-}
-
-export function LivestreamPortalAdminPanel({ heading, description, livestreams }: Props) {
-  const coverOptions = livestreams
-    .map((livestream) =>
-      typeof livestream.coverImage === 'object' && livestream.coverImage
-        ? livestream.coverImage
-        : null,
-    )
-    .filter((media, index, array): media is MediaType => {
-      if (!media) return false
-      return array.findIndex((item) => item?.id === media.id) === index
-    })
-
+export function LivestreamPortalAdminPanel({ heading, description }: Props) {
   const router = useRouter()
   const [isMounted, setIsMounted] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
@@ -169,9 +94,8 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
   })
   const scrollParallaxRef = useRef({ current: 0, target: 0, animationFrame: 0 })
   const [title, setTitle] = useState('')
-  const [slug, setSlug] = useState('')
+  const [slug, setSlug] = useState(generateRandomLivestreamSlug)
   const [descriptionValue, setDescriptionValue] = useState('')
-  const [scheduledAt, setScheduledAt] = useState('')
   const [selectedCover, setSelectedCover] = useState<UploadedCover | null>(null)
   const [uploadingCover, setUploadingCover] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -358,12 +282,12 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
     }
   }
 
-  const handleTitleChange = (value: string) => {
-    setTitle(value)
-    setSlug((current) => {
-      if (current.trim().length > 0) return current
-      return slugifyTitle(value) ?? ''
-    })
+  const resetCreateForm = () => {
+    setTitle('')
+    setSlug(generateRandomLivestreamSlug())
+    setDescriptionValue('')
+    setSelectedCover(null)
+    setError(null)
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -371,7 +295,7 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
     setError(null)
 
     const trimmedTitle = title.trim()
-    const rawSlug = slug.trim() || suggestedSlug
+    const rawSlug = slug.trim() || generateRandomLivestreamSlug()
     const normalizedSlug = slugifyTitle(rawSlug) ?? ''
 
     if (!trimmedTitle) {
@@ -396,17 +320,22 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
           title: trimmedTitle,
           slug: normalizedSlug,
           description: descriptionValue.trim() || null,
-          scheduledAt: scheduledAt || null,
           coverImage: selectedCover?.id ?? null,
         }),
       })
 
       const body = (await response.json().catch(() => ({}))) as CreateResponse
       if (!response.ok || !body.slug) {
-        throw new Error(body.error ?? 'Không thể tạo livestream')
+        throw new Error(
+          body.error ??
+            (response.status >= 500
+              ? 'Lỗi máy chủ khi tạo phòng. Thử lại hoặc đổi slug.'
+              : 'Không thể tạo livestream'),
+        )
       }
 
       setIsOpen(false)
+      resetCreateForm()
       router.push(`/broadcaster/${encodeURIComponent(body.slug)}`)
       router.refresh()
     } catch (submitError) {
@@ -462,6 +391,7 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
       return
     }
 
+    resetCreateForm()
     setIsOpen(true)
   }
 
@@ -524,8 +454,7 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
                       className="text-sm text-muted-foreground"
                       id="livestream-admin-panel-description"
                     >
-                      {description ||
-                        'Tạo phòng mới, kiểm tra trạng thái và chuyển nhanh sang màn hình phát sóng.'}
+                      {description || 'Tạo phòng mới và chuyển nhanh sang màn hình phát sóng.'}
                     </p>
                   </div>
 
@@ -541,8 +470,8 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
                   </Button>
                 </div>
 
-                <div className="grid min-h-0 flex-1 gap-6 overflow-y-auto p-5 xl:grid-cols-[0.9fr_1.1fr] sm:p-6">
-                  <Card className="border-border/80 shadow-lg shadow-black/5">
+                <div className="min-h-0 flex-1 overflow-y-auto p-5 sm:p-6">
+                  <Card className="mx-auto max-w-2xl border-border/80 shadow-lg shadow-black/5">
                     <CardHeader>
                       <CardTitle className="text-xl">Tạo phòng livestream</CardTitle>
                       <CardDescription>
@@ -557,7 +486,7 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
                           </label>
                           <Input
                             id="livestream-title"
-                            onChange={(event) => handleTitleChange(event.target.value)}
+                            onChange={(event) => setTitle(event.target.value)}
                             placeholder="Ví dụ: AI Weekly Live #12"
                             value={title}
                           />
@@ -574,9 +503,10 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
                             value={slug}
                           />
                           <p className="text-xs text-muted-foreground">
-                            Gợi ý:{' '}
+                            Có thể trùng tiêu đề; slug phải khác nhau. Để trống hoặc giữ slug ngẫu nhiên
+                            mặc định. Gợi ý từ tiêu đề:{' '}
                             <span className="font-medium text-foreground">
-                              {suggestedSlug || 'slug-tu-dong-tu-title'}
+                              {suggestedSlug || '—'}
                             </span>
                           </p>
                         </div>
@@ -593,22 +523,10 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
                           />
                         </div>
 
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium" htmlFor="livestream-scheduled-at">
-                            Lịch phát
-                          </label>
-                          <Input
-                            id="livestream-scheduled-at"
-                            onChange={(event) => setScheduledAt(event.target.value)}
-                            type="datetime-local"
-                            value={scheduledAt}
-                          />
-                        </div>
-
                         <div className="space-y-3">
                           <span className="text-sm font-medium">Ảnh cover</span>
                           <p className="text-xs text-muted-foreground">
-                            Tải ảnh mới hoặc chọn lại cover từ phòng đã có. Không bắt buộc.
+                            Tải ảnh cover cho phòng livestream. Không bắt buộc.
                           </p>
 
                           {selectedCover ? (
@@ -648,45 +566,6 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
                               />
                             </div>
                           </label>
-
-                          {coverOptions.length > 0 ? (
-                            <div className="space-y-2">
-                              <p className="text-xs font-medium text-muted-foreground">
-                                Hoặc dùng lại cover có sẵn
-                              </p>
-                              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                                {coverOptions.map((media) => {
-                                  const selected = selectedCover?.id === media.id
-                                  return (
-                                    <button
-                                      className={cn(
-                                        'overflow-hidden rounded-2xl border text-left transition-all',
-                                        selected
-                                          ? 'border-primary ring-2 ring-primary/30'
-                                          : 'border-border/70 hover:border-primary/40',
-                                      )}
-                                      key={media.id}
-                                      onClick={() => setSelectedCover(mediaToUploadedCover(media))}
-                                      type="button"
-                                    >
-                                      <div className="relative aspect-video bg-muted">
-                                        <Media
-                                          className="absolute inset-0"
-                                          fill
-                                          imgClassName="object-cover"
-                                          pictureClassName="absolute inset-0 block size-full"
-                                          resource={media}
-                                        />
-                                      </div>
-                                      <div className="truncate px-3 py-2 text-xs text-muted-foreground">
-                                        {media.alt?.trim() || media.filename || `Ảnh #${media.id}`}
-                                      </div>
-                                    </button>
-                                  )
-                                })}
-                              </div>
-                            </div>
-                          ) : null}
                         </div>
 
                         {error ? <p className="text-sm text-destructive">{error}</p> : null}
@@ -702,129 +581,6 @@ export function LivestreamPortalAdminPanel({ heading, description, livestreams }
                           )}
                         </Button>
                       </form>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="min-h-0 border-border/80 shadow-lg shadow-black/5">
-                    <CardHeader className="p-0 md:p-6">
-                      <CardTitle className="text-xl">Danh sách phòng</CardTitle>
-                      <CardDescription>
-                        Chọn phòng có sẵn để mở broadcaster hoặc xem chi tiết.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-0 md:p-6">
-                      <div className="space-y-3">
-                        {livestreams.length === 0 ? (
-                          <div className="rounded-2xl border border-dashed border-border/80 bg-muted/20 p-6 text-sm text-muted-foreground">
-                            Chưa có phòng livestream nào.
-                          </div>
-                        ) : (
-                          livestreams.map((livestream) => {
-                            const scheduled = formatDate(livestream.scheduledAt)
-                            const updated = formatDate(livestream.updatedAt)
-                            const broadcasterHref = `/broadcaster/${encodeURIComponent(livestream.slug)}`
-                            const viewerHref = `/live/${encodeURIComponent(livestream.slug)}`
-                            const coverMedia =
-                              typeof livestream.coverImage === 'object' && livestream.coverImage
-                                ? livestream.coverImage
-                                : null
-
-                            return (
-                              <article
-                                className="overflow-hidden rounded-3xl border border-border/70 bg-background/70 shadow-sm transition-colors hover:bg-background"
-                                key={livestream.id}
-                              >
-                                {coverMedia ? (
-                                  <div className="relative aspect-[21/8] bg-muted">
-                                    <Media
-                                      fill
-                                      imgClassName="object-cover"
-                                      pictureClassName="absolute inset-0"
-                                      resource={coverMedia}
-                                    />
-                                    <div className="absolute inset-0 bg-linear-to-t from-black/50 via-black/0 to-transparent" />
-                                  </div>
-                                ) : null}
-
-                                <div className="p-4">
-                                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                                    <div className="min-w-0 space-y-3">
-                                      <div className="flex flex-wrap items-center gap-2">
-                                        <span
-                                          className={cn(
-                                            'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset',
-                                            statusClass(livestream.status),
-                                          )}
-                                        >
-                                          <Radio className="h-3.5 w-3.5" aria-hidden />
-                                          {statusLabel(livestream.status)}
-                                        </span>
-                                        <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">
-                                          /{livestream.slug}
-                                        </span>
-                                      </div>
-
-                                      <div>
-                                        <h3 className="line-clamp-2 text-lg font-semibold tracking-tight">
-                                          {livestream.title}
-                                        </h3>
-                                        {livestream.description ? (
-                                          <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                                            {livestream.description}
-                                          </p>
-                                        ) : null}
-                                      </div>
-
-                                      <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-                                        {scheduled ? (
-                                          <span className="inline-flex items-center gap-1.5">
-                                            <CalendarDays className="h-3.5 w-3.5" aria-hidden />
-                                            {scheduled}
-                                          </span>
-                                        ) : null}
-                                        {updated ? <span>Cập nhật: {updated}</span> : null}
-                                      </div>
-                                    </div>
-
-                                    <div className="flex shrink-0 flex-col gap-2 sm:min-w-45">
-                                      <SmartLink className="block" href={broadcasterHref}>
-                                        <Button className="w-full" size="sm">
-                                          <Video className="h-4 w-4" aria-hidden />
-                                          Vào broadcaster
-                                        </Button>
-                                      </SmartLink>
-                                      <SmartLink className="block" href={viewerHref}>
-                                        <Button className="w-full" size="sm" variant="outline">
-                                          Xem chi tiết
-                                        </Button>
-                                      </SmartLink>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                <div className="border-t border-border/60 bg-muted/20 px-4 py-3 text-xs text-muted-foreground">
-                                  <div className="flex flex-wrap items-center gap-3">
-                                    <SmartLink
-                                      className="inline-flex items-center gap-1.5 hover:text-foreground"
-                                      href={viewerHref}
-                                    >
-                                      <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-                                      Mở viewer route
-                                    </SmartLink>
-                                    <SmartLink
-                                      className="inline-flex items-center gap-1.5 hover:text-foreground"
-                                      href={broadcasterHref}
-                                    >
-                                      <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-                                      Mở broadcaster route
-                                    </SmartLink>
-                                  </div>
-                                </div>
-                              </article>
-                            )
-                          })
-                        )}
-                      </div>
                     </CardContent>
                   </Card>
                 </div>

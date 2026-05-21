@@ -7,8 +7,10 @@ import { getLivestreamBroadcasterUrl } from '@/utilities/livestreamBroadcasterUr
 
 export function LivestreamBroadcasterLinksField() {
   const { value: slug } = useField<string>({ path: 'slug' })
+  const { value: status } = useField<string>({ path: 'status' })
   const absoluteUrl = getLivestreamBroadcasterUrl(slug)
   const [copied, setCopied] = useState(false)
+  const isEnded = status === 'ended'
 
   const onCopy = useCallback(async () => {
     if (!absoluteUrl) return
@@ -24,7 +26,11 @@ export function LivestreamBroadcasterLinksField() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px' }}>
       <div style={{ fontWeight: 600 }}>Broadcaster URL (Admin)</div>
-      {!slug?.trim() ? (
+      {isEnded ? (
+        <span style={{ color: 'var(--theme-elevation-500)' }}>
+          Phiên đã kết thúc — trang phát sóng broadcaster đã đóng. URL cũ không còn dùng được.
+        </span>
+      ) : !slug?.trim() ? (
         <span style={{ color: 'var(--theme-elevation-500)' }}>No slug — save a slug to preview.</span>
       ) : absoluteUrl ? (
         <>

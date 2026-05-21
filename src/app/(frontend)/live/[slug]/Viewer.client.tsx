@@ -16,6 +16,7 @@ import {
   Maximize2,
   Minimize2,
   Radio,
+  Share2,
   Sparkles,
   User,
   Volume2,
@@ -108,17 +109,22 @@ function formatDate(value: string | null | undefined): string | null {
 }
 
 function LiveCallContent({
+  hasUserEnabledAudio,
   immersive,
   onLiveStatsChange,
+  onShare,
+  onToggleAudio,
   onToggleImmersive,
 }: {
+  hasUserEnabledAudio: boolean
   immersive: boolean
   onLiveStatsChange: (stats: LivestreamCallStats | null) => void
+  onShare: () => void
+  onToggleAudio: () => void
   onToggleImmersive: () => void
 }) {
   const { useCallCallingState } = useCallStateHooks()
   const callingState = useCallCallingState()
-  const [hasUserEnabledAudio, setHasUserEnabledAudio] = useState(false)
 
   const showReconnecting =
     callingState === CallingState.RECONNECTING || callingState === CallingState.MIGRATING
@@ -127,9 +133,12 @@ function LiveCallContent({
     <div className="h-full w-full">
       <LivestreamStatsReporter onChange={onLiveStatsChange} />
       <div className="pointer-events-auto absolute right-3 top-3 z-30 flex items-center gap-2 lg:hidden">
+        <LiveChromeIconButton ariaLabel="Chia sẻ livestream" onClick={onShare}>
+          <Share2 className="h-5 w-5" aria-hidden />
+        </LiveChromeIconButton>
         <LiveChromeIconButton
           ariaLabel={hasUserEnabledAudio ? 'Tắt tiếng livestream' : 'Bật tiếng livestream'}
-          onClick={() => setHasUserEnabledAudio((value) => !value)}
+          onClick={onToggleAudio}
         >
           {hasUserEnabledAudio ? (
             <Volume2 className="h-5 w-5" aria-hidden />
@@ -209,6 +218,8 @@ export function ViewerClient({
   const sectionRef = useRef<HTMLElement>(null)
   const { immersive, toggle: toggleImmersive } = useLiveImmersiveMode(sectionRef)
   const [liveStats, setLiveStats] = useState<LivestreamCallStats | null>(null)
+  const [hasUserEnabledAudio, setHasUserEnabledAudio] = useState(false)
+  const [shareNotice, setShareNotice] = useState<string | null>(null)
 
   const { user: authUser, loading: authLoading } = useAuth()
   const apiKey = streamApiKey.trim()
@@ -262,6 +273,35 @@ export function ViewerClient({
   useEffect(() => {
     if (!live) setLiveStats(null)
   }, [live])
+
+  const shareLiveLink = useCallback(async () => {
+    if (typeof window === 'undefined') return
+    const absoluteHref = window.location.href
+
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({
+          title: livestream.title,
+          text: livestream.title,
+          url: absoluteHref,
+        })
+        setShareNotice(null)
+        return
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') return
+      }
+    }
+
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(absoluteHref)
+      setShareNotice('Đã copy link livestream')
+      window.setTimeout(() => setShareNotice(null), 2500)
+    }
+  }, [livestream.title])
+
+  const toggleAudio = useCallback(() => {
+    setHasUserEnabledAudio((value) => !value)
+  }, [])
 
   useEffect(() => {
     void pollStatus()
@@ -341,14 +381,14 @@ export function ViewerClient({
     <section
       ref={sectionRef}
       className={cn(
-        'relative h-[100svh] w-full overflow-hidden bg-black text-white z-10',
+        'relative h-[100dvh] w-full overflow-hidden bg-black text-white z-10',
         immersive && 'fixed inset-0 z-50',
       )}
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_30%),linear-gradient(180deg,_rgba(0,0,0,0.18)_0%,_rgba(0,0,0,0.78)_100%)]" />
 
-      <div className="relative grid h-[100svh] w-full lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_420px]">
-        <div className="relative flex h-[100svh] min-h-0 flex-col overflow-hidden">
+      <div className="relative grid h-[100dvh] w-full lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_420px]">
+        <div className="relative flex h-[100dvh] min-h-0 flex-col overflow-hidden">
           <div className="absolute left-3 right-3 top-3 z-20 flex items-start justify-between gap-3 sm:left-6 sm:right-6 sm:top-6">
             <div className="max-w-[85%] space-y-3">
               <div className="flex flex-wrap items-center gap-2">
@@ -385,6 +425,45 @@ export function ViewerClient({
                 ) : null}
               </div>
             </div>
+
+            <div className="hidden max-w-[46%] shrink-0 flex-col items-end gap-1.5 lg:flex">
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                <LiveChromeIconButton
+                  ariaLabel={hasUserEnabledAudio ? 'Tắt tiếng livestream' : 'Bật tiếng livestream'}
+                  disabled={!live || !hasStreamingConfig}
+                  onClick={toggleAudio}
+                >
+                  {hasUserEnabledAudio ? (
+                    <Volume2 className="h-5 w-5" aria-hidden />
+                  ) : (
+                    <VolumeX className="h-5 w-5" aria-hidden />
+                  )}
+                </LiveChromeIconButton>
+                <LiveChromeIconButton
+                  ariaLabel="Chia sẻ livestream"
+                  onClick={() => {
+                    void shareLiveLink()
+                  }}
+                >
+                  <Share2 className="h-5 w-5" aria-hidden />
+                </LiveChromeIconButton>
+                <LiveChromeIconButton
+                  ariaLabel={immersive ? 'Thu nhỏ màn hình' : 'Mở rộng toàn màn hình'}
+                  onClick={() => {
+                    void toggleImmersive()
+                  }}
+                >
+                  {immersive ? (
+                    <Minimize2 className="h-5 w-5" aria-hidden />
+                  ) : (
+                    <Maximize2 className="h-5 w-5" aria-hidden />
+                  )}
+                </LiveChromeIconButton>
+              </div>
+              {shareNotice ? (
+                <p className="text-right text-[11px] text-white/55">{shareNotice}</p>
+              ) : null}
+            </div>
           </div>
 
           <div className="relative flex-1">
@@ -393,8 +472,13 @@ export function ViewerClient({
                 <StreamVideo client={client}>
                   <StreamCall call={call}>
                     <LiveCallContent
+                      hasUserEnabledAudio={hasUserEnabledAudio}
                       immersive={immersive}
                       onLiveStatsChange={setLiveStats}
+                      onShare={() => {
+                        void shareLiveLink()
+                      }}
+                      onToggleAudio={toggleAudio}
                       onToggleImmersive={() => {
                         void toggleImmersive()
                       }}

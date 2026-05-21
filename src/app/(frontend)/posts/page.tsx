@@ -1,5 +1,6 @@
 import type { Metadata } from 'next/types'
 
+import { getSiteLabelForMetadata } from '@/utilities/siteMetadata'
 import { CollectionArchive } from '@/components/CollectionArchive'
 import { PageRange } from '@/components/PageRange'
 import { Pagination } from '@/components/Pagination'
@@ -56,8 +57,9 @@ export default async function Page() {
   )
 }
 
-export function generateMetadata(): Metadata {
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await getSiteLabelForMetadata()
   return {
-    title: `Payload Website Template Posts`,
+    title: `Posts | ${site}`,
   }
 }

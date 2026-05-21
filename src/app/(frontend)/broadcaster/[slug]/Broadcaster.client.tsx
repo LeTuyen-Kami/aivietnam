@@ -29,6 +29,7 @@ import {
   VideoOff,
   WandSparkles,
 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -184,6 +185,54 @@ function StudioDeviceControls() {
   )
 }
 
+function BroadcasterLiveToggle({
+  hasStreamingConfig,
+  isEnding,
+  isStarting,
+  live,
+  onEndLive,
+  onStartLive,
+}: {
+  hasStreamingConfig: boolean
+  isEnding: boolean
+  isStarting: boolean
+  live: boolean
+  onEndLive: () => void
+  onStartLive: () => void | Promise<void>
+}) {
+  const pending = live ? isEnding : isStarting
+  const disabled = live ? isEnding : !hasStreamingConfig || isStarting || isEnding
+
+  return (
+    <Button
+      className={cn(
+        'gap-2',
+        live
+          ? 'text-white'
+          : 'bg-white text-black hover:bg-white/90 cursor-pointer active:scale-95',
+      )}
+      disabled={disabled}
+      onClick={() => {
+        if (live) {
+          onEndLive()
+          return
+        }
+        void onStartLive()
+      }}
+      size="sm"
+      type="button"
+      variant={live ? 'destructive' : 'default'}
+    >
+      {live ? (
+        <Square className="h-4 w-4" aria-hidden />
+      ) : (
+        <Radio className="h-4 w-4" aria-hidden />
+      )}
+      {pending ? (live ? 'Đang kết thúc…' : 'Đang bắt đầu…') : live ? 'Kết thúc' : 'Bắt đầu live'}
+    </Button>
+  )
+}
+
 const MOBILE_MENU_ITEM_CLASS =
   'flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm text-white transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-45'
 
@@ -212,7 +261,10 @@ function BroadcasterMobileMenuItems({
     <>
       {live ? (
         <button
-          className={cn(MOBILE_MENU_ITEM_CLASS, 'text-rose-300 hover:bg-rose-500/15')}
+          className={cn(
+            MOBILE_MENU_ITEM_CLASS,
+            'text-rose-300 hover:bg-rose-500/15 cursor-pointer active:scale-95',
+          )}
           disabled={isEnding}
           onClick={onEndLive}
           type="button"
@@ -222,7 +274,7 @@ function BroadcasterMobileMenuItems({
         </button>
       ) : (
         <button
-          className={MOBILE_MENU_ITEM_CLASS}
+          className={cn(MOBILE_MENU_ITEM_CLASS, 'cursor-pointer active:scale-95')}
           disabled={isStarting}
           onClick={() => {
             void onStartLive()
@@ -285,15 +337,18 @@ function BroadcasterMobileChromeIdle(props: BroadcasterMobileChromeProps) {
   const settingsButtonRef = useRef<HTMLButtonElement>(null)
 
   const closeMenu = () => setOpen(false)
-  const menuPortal = renderBroadcasterMobileMenuPortal(open, menuAnchor, closeMenu, (
+  const menuPortal = renderBroadcasterMobileMenuPortal(
+    open,
+    menuAnchor,
+    closeMenu,
     <BroadcasterMobileMenuItems
       {...props}
       onEndLive={() => {
         closeMenu()
         props.onEndLive()
       }}
-    />
-  ))
+    />,
+  )
 
   return (
     <div className="absolute right-3 top-3 z-[70] flex items-center gap-2 lg:hidden sm:right-6">
@@ -343,7 +398,10 @@ function BroadcasterMobileStudioChrome(props: BroadcasterMobileChromeProps) {
   } = useNoiseCancellation()
 
   const closeMenu = () => setOpen(false)
-  const menuPortal = renderBroadcasterMobileMenuPortal(open, menuAnchor, closeMenu, (
+  const menuPortal = renderBroadcasterMobileMenuPortal(
+    open,
+    menuAnchor,
+    closeMenu,
     <>
       <button
         className={MOBILE_MENU_ITEM_CLASS}
@@ -395,8 +453,8 @@ function BroadcasterMobileStudioChrome(props: BroadcasterMobileChromeProps) {
           props.onEndLive()
         }}
       />
-    </>
-  ))
+    </>,
+  )
 
   return (
     <div className="absolute right-3 top-3 z-[70] flex items-center gap-2 lg:hidden sm:right-6">
@@ -437,6 +495,7 @@ export function BroadcasterClient({
   streamSetupMessage,
   streamUser,
 }: BroadcasterClientProps) {
+  const router = useRouter()
   const apiKey = streamApiKey.trim()
   const [error, setError] = useState<string | null>(null)
   const [isStarting, setIsStarting] = useState(false)
@@ -585,12 +644,14 @@ export function BroadcasterClient({
       if (call) {
         void call.endCall().catch(() => null)
       }
+
+      router.replace('/')
     } catch (endError) {
       setError(endError instanceof Error ? endError.message : 'Không thể kết thúc livestream')
     } finally {
       setIsEnding(false)
     }
-  }, [call, livestream.id])
+  }, [call, livestream.id, router])
 
   useEffect(() => {
     if (!live) setLiveStats(null)
@@ -658,14 +719,14 @@ export function BroadcasterClient({
     <section
       ref={sectionRef}
       className={cn(
-        'relative h-[100svh] w-full overflow-hidden bg-black text-white z-10',
+        'relative h-[100dvh] w-full overflow-hidden bg-black text-white z-10',
         immersive && 'fixed inset-0 z-50',
       )}
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_30%),linear-gradient(180deg,_rgba(0,0,0,0.18)_0%,_rgba(0,0,0,0.82)_100%)]" />
 
-      <div className="relative grid h-[100svh] w-full lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_420px]">
-        <div className="relative flex h-[100svh] min-h-0 flex-col overflow-hidden">
+      <div className="relative grid h-[100dvh] w-full lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_420px]">
+        <div className="relative flex h-[100dvh] min-h-0 flex-col overflow-hidden">
           <div className="absolute left-3 right-3 top-3 z-20 flex items-start justify-between gap-3 sm:left-6 sm:right-6 sm:top-6">
             <div className="max-w-[72%] space-y-3">
               <div className="flex flex-wrap items-center gap-2">
@@ -691,69 +752,43 @@ export function BroadcasterClient({
                   {livestream.title}
                 </h1>
               </div>
-
-              <div className="hidden flex-wrap items-center gap-2 text-xs text-white/70 lg:flex">
-                {viewerHref ? (
-                  <button
-                    className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 ring-1 ring-white/10 backdrop-blur transition-colors hover:bg-white/16"
-                    onClick={() => {
-                      void copyViewerLink()
-                    }}
-                    type="button"
-                  >
-                    <Copy className="h-3.5 w-3.5" aria-hidden />
-                    Copy viewer link
-                  </button>
-                ) : null}
-                {viewerHref ? (
-                  <a
-                    className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 ring-1 ring-white/10 backdrop-blur transition-colors hover:bg-white/16"
-                    href={viewerHref}
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-                    Mở viewer
-                  </a>
-                ) : null}
-                {broadcasterHref ? (
-                  <a
-                    className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 ring-1 ring-white/10 backdrop-blur transition-colors hover:bg-white/16"
-                    href={broadcasterHref}
-                  >
-                    <Video className="h-3.5 w-3.5" aria-hidden />
-                    Route broadcaster
-                  </a>
-                ) : null}
-              </div>
             </div>
 
-            <div className="hidden max-w-[46%] shrink-0 flex-col items-end gap-2 sm:max-w-none sm:flex-row sm:flex-wrap sm:justify-end lg:flex">
-              <Button
-                className="gap-2 bg-white text-black hover:bg-white/90"
-                disabled={!hasStreamingConfig || isStarting || isEnding || live}
-                onClick={() => {
-                  void startLivestream()
-                }}
-                size="sm"
-                type="button"
-              >
-                <Radio className="h-4 w-4" aria-hidden />
-                {isStarting ? 'Đang bắt đầu…' : 'Bắt đầu live'}
-              </Button>
-              <Button
-                className="gap-2 text-white"
-                disabled={!live || isEnding}
-                onClick={() => {
-                  setIsEndConfirmOpen(true)
-                }}
-                size="sm"
-                type="button"
-                variant="destructive"
-              >
-                <Square className="h-4 w-4" aria-hidden />
-                {isEnding ? 'Đang kết thúc…' : 'Kết thúc'}
-              </Button>
+            <div className="hidden max-w-[46%] shrink-0 flex-col items-end gap-1.5 lg:flex">
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                <LiveChromeIconButton
+                  ariaLabel="Chia sẻ link xem"
+                  disabled={!viewerHref}
+                  onClick={() => {
+                    void shareViewerLink()
+                  }}
+                >
+                  <Share2 className="h-5 w-5" aria-hidden />
+                </LiveChromeIconButton>
+                <LiveChromeIconButton
+                  ariaLabel={immersive ? 'Thu nhỏ màn hình' : 'Mở rộng toàn màn hình'}
+                  onClick={() => {
+                    void toggleImmersive()
+                  }}
+                >
+                  {immersive ? (
+                    <Minimize2 className="h-5 w-5" aria-hidden />
+                  ) : (
+                    <Maximize2 className="h-5 w-5" aria-hidden />
+                  )}
+                </LiveChromeIconButton>
+                <BroadcasterLiveToggle
+                  hasStreamingConfig={hasStreamingConfig}
+                  isEnding={isEnding}
+                  isStarting={isStarting}
+                  live={live}
+                  onEndLive={() => setIsEndConfirmOpen(true)}
+                  onStartLive={startLivestream}
+                />
+              </div>
+              {shareNotice ? (
+                <p className="text-right text-[11px] text-white/55">{shareNotice}</p>
+              ) : null}
             </div>
           </div>
 

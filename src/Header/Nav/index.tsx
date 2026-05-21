@@ -49,7 +49,8 @@ export const HeaderNav: React.FC<{
 }> = ({ data, variant = 'desktop', onNavigate }) => {
   const navItems =
     data?.navItems?.filter((item) => {
-      if (variant === 'mobile') {
+      // Mobile drawer/bar render a dedicated home control with icon; skip CMS duplicate.
+      if (variant === 'mobile' || variant === 'drawer') {
         return (item?.link?.reference?.value as { slug: string })?.slug !== 'home'
       }
       return true

@@ -33,10 +33,7 @@ export function RowOneLeft({
   const palette = getAccentStyleWithCustomHex(row1LeftAccent ?? 'teal', row1LeftAccentCustomHex)
 
   return (
-    <div
-      style={accentTextVarStyle(palette.text)}
-      className="min-w-0 max-w-full md:overflow-hidden md:max-w-screen"
-    >
+    <div style={accentTextVarStyle(palette.text)} className="min-w-0 max-w-full md:max-w-screen">
       <div
         className="mb-3 h-0.5 mx-4 md:mx-0 md:w-full rounded-sm"
         style={{ backgroundColor: palette.bar }}

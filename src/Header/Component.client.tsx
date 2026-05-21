@@ -263,12 +263,20 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
 
       <Dialog.Root open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
         <Dialog.Portal>
-          <Dialog.Overlay className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-100 bg-black/50" />
+          <Dialog.Overlay
+            className={cn(
+              'fixed inset-0 z-100 bg-black/50',
+              'data-[state=open]:animate-in data-[state=closed]:animate-out',
+              'data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0',
+              'data-[state=open]:duration-300 data-[state=closed]:duration-200',
+            )}
+          />
           <Dialog.Content
             className={cn(
               'fixed inset-y-0 left-0 z-101 flex w-[min(100vw,20rem)] flex-col border-r border-border bg-background shadow-xl outline-none',
-              'transition-transform duration-300 ease-out',
-              'data-[state=closed]:-translate-x-full data-[state=open]:translate-x-0',
+              'data-[state=open]:animate-in data-[state=closed]:animate-out',
+              'data-[state=open]:slide-in-from-left data-[state=closed]:slide-out-to-left',
+              'data-[state=open]:duration-300 data-[state=closed]:duration-200',
             )}
           >
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
@@ -281,13 +289,11 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
                 <X className="h-5 w-5" />
               </Dialog.Close>
             </div>
-            <Dialog.Description className="sr-only">Danh sách liên kết điều hướng trang</Dialog.Description>
+            <Dialog.Description className="sr-only">
+              Danh sách liên kết điều hướng trang
+            </Dialog.Description>
             <div className="min-h-0 flex-1 overflow-y-auto">
-              <HeaderNav
-                data={data}
-                variant="drawer"
-                onNavigate={() => setMobileMenuOpen(false)}
-              />
+              <HeaderNav data={data} variant="drawer" onNavigate={() => setMobileMenuOpen(false)} />
             </div>
           </Dialog.Content>
         </Dialog.Portal>
@@ -302,10 +308,12 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
             )}
           >
             <div className="mb-4 flex items-start justify-between gap-2">
-              <Dialog.Title className="text-lg font-semibold text-foreground">Tài khoản</Dialog.Title>
+              <Dialog.Title className="text-lg font-semibold text-foreground">
+                Tài khoản
+              </Dialog.Title>
               <Dialog.Close
                 type="button"
-                className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+                className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground cursor-pointer active:scale-95"
                 aria-label="Đóng"
               >
                 <X className="size-4" />
@@ -317,11 +325,17 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
             {user ? (
               <div className="flex flex-col gap-4">
                 <div className="min-w-0">
-                  <p className="truncate text-base font-medium text-foreground" title={user.email ?? ''}>
+                  <p
+                    className="truncate text-base font-medium text-foreground"
+                    title={user.email ?? ''}
+                  >
                     {user.name?.trim() || user.email}
                   </p>
                   {user.name?.trim() ? (
-                    <p className="mt-1 truncate text-sm text-muted-foreground" title={user.email ?? ''}>
+                    <p
+                      className="mt-1 truncate text-sm text-muted-foreground"
+                      title={user.email ?? ''}
+                    >
                       {user.email}
                     </p>
                   ) : null}

@@ -13,16 +13,13 @@ export const LiveChromeIconButton = forwardRef<
     disabled?: boolean
     onClick: () => void
   }
->(function LiveChromeIconButton(
-  { ariaLabel, children, className, disabled, onClick },
-  ref,
-) {
+>(function LiveChromeIconButton({ ariaLabel, children, className, disabled, onClick }, ref) {
   return (
     <button
       ref={ref}
       aria-label={ariaLabel}
       className={cn(
-        'flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/55 text-white shadow-lg backdrop-blur transition-colors hover:bg-black/70 disabled:cursor-not-allowed disabled:opacity-45',
+        'flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/55 text-white shadow-lg backdrop-blur transition-colors hover:bg-black/70 disabled:cursor-not-allowed disabled:opacity-45 cursor-pointer active:scale-95',
         className,
       )}
       disabled={disabled}

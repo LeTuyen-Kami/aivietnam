@@ -51,10 +51,15 @@ export default async function BroadcasterPage({ params }: Args) {
 
   const livestream = result.docs[0] as Livestream | undefined
   if (!livestream) notFound()
+
+  if (livestream.status === 'ended') {
+    redirect('/')
+  }
+
   const streamEnv = getPublicStreamEnvStatus()
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main className="min-h-[100dvh] bg-black text-white">
       <BroadcasterClient
         livestream={livestream}
         streamApiKey={streamEnv.apiKey}

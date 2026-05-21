@@ -12,11 +12,19 @@ import { GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
 import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
 import { Plugin } from 'payload'
 
-import { Page, Post } from '@/payload-types'
+import { Page, Post, type GeneralSetting } from '@/payload-types'
 import { getServerSideURL } from '@/utilities/getURL'
 
-const generateTitle: GenerateTitle<Post | Page> = ({ doc }) => {
-  return doc?.title ? `${doc.title} | Payload Website Template` : 'Payload Website Template'
+const generateTitle: GenerateTitle<Post | Page> = async ({ doc, req }) => {
+  const general = (await req.payload.findGlobal({
+    slug: 'general-settings',
+    depth: 0,
+    req,
+  })) as GeneralSetting
+
+  const label = general?.siteName?.trim() || 'Website'
+
+  return doc?.title ? `${doc.title} | ${label}` : label
 }
 
 const generateURL: GenerateURL<Post | Page> = ({ doc }) => {
