@@ -30,9 +30,14 @@ import {
   WandSparkles,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 
 import { LiveViewerEngagement } from '@/app/(frontend)/live/[slug]/LiveViewerEngagement.client'
 import { LiveChromeIconButton } from '@/components/Live/LiveChromeIconButton'
+import { LIVESTREAM_LAYOUT_MINIMAL_OVERLAY } from '@/components/Live/livestreamLayoutProps'
+import { LivestreamHeaderStats } from '@/components/Live/LivestreamHeaderStats'
+import { LivestreamStatsReporter } from '@/components/Live/LivestreamStatsReporter'
+import type { LivestreamCallStats } from '@/hooks/useLivestreamCallStats'
 import { Button } from '@/components/ui/button'
 import { ConfirmModal } from '@/components/ui/confirm'
 import { useLiveImmersiveMode } from '@/hooks/useLiveImmersiveMode'
@@ -182,7 +187,152 @@ function StudioDeviceControls() {
 const MOBILE_MENU_ITEM_CLASS =
   'flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm text-white transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-45'
 
-function BroadcasterDeviceMenuItems() {
+type BroadcasterMobileChromeProps = {
+  immersive: boolean
+  isEnding: boolean
+  isStarting: boolean
+  live: boolean
+  onEndLive: () => void
+  onShare: () => void
+  onStartLive: () => void
+  onToggleImmersive: () => void
+  shareNotice: string | null
+}
+
+function BroadcasterMobileMenuItems({
+  isEnding,
+  isStarting,
+  live,
+  onEndLive,
+  onShare,
+  onStartLive,
+  shareNotice,
+}: BroadcasterMobileChromeProps) {
+  return (
+    <>
+      {live ? (
+        <button
+          className={cn(MOBILE_MENU_ITEM_CLASS, 'text-rose-300 hover:bg-rose-500/15')}
+          disabled={isEnding}
+          onClick={onEndLive}
+          type="button"
+        >
+          <Square className="h-4 w-4 shrink-0" aria-hidden />
+          {isEnding ? 'Đang kết thúc…' : 'Kết thúc live'}
+        </button>
+      ) : (
+        <button
+          className={MOBILE_MENU_ITEM_CLASS}
+          disabled={isStarting}
+          onClick={() => {
+            void onStartLive()
+          }}
+          type="button"
+        >
+          <Radio className="h-4 w-4 shrink-0" aria-hidden />
+          {isStarting ? 'Đang bắt đầu…' : 'Bắt đầu live'}
+        </button>
+      )}
+
+      <button
+        className={MOBILE_MENU_ITEM_CLASS}
+        onClick={() => {
+          void onShare()
+        }}
+        type="button"
+      >
+        <Share2 className="h-4 w-4 shrink-0" aria-hidden />
+        Chia sẻ link xem
+      </button>
+      {shareNotice ? <p className="px-3 py-1.5 text-[11px] text-white/55">{shareNotice}</p> : null}
+    </>
+  )
+}
+
+function renderBroadcasterMobileMenuPortal(
+  open: boolean,
+  menuAnchor: DOMRect | null,
+  onClose: () => void,
+  children: ReactNode,
+) {
+  if (!open || !menuAnchor || typeof document === 'undefined') return null
+
+  return createPortal(
+    <>
+      <button
+        aria-label="Đóng menu"
+        className="fixed inset-0 z-[180] bg-transparent"
+        onClick={onClose}
+        type="button"
+      />
+      <div
+        className="fixed z-[190] w-[min(100vw-2rem,16rem)] overflow-hidden rounded-2xl border border-white/10 bg-black/90 p-1.5 shadow-2xl backdrop-blur-xl"
+        style={{
+          right: Math.max(12, window.innerWidth - menuAnchor.right),
+          top: menuAnchor.bottom + 8,
+        }}
+      >
+        {children}
+      </div>
+    </>,
+    document.body,
+  )
+}
+
+function BroadcasterMobileChromeIdle(props: BroadcasterMobileChromeProps) {
+  const [open, setOpen] = useState(false)
+  const [menuAnchor, setMenuAnchor] = useState<DOMRect | null>(null)
+  const settingsButtonRef = useRef<HTMLButtonElement>(null)
+
+  const closeMenu = () => setOpen(false)
+  const menuPortal = renderBroadcasterMobileMenuPortal(open, menuAnchor, closeMenu, (
+    <BroadcasterMobileMenuItems
+      {...props}
+      onEndLive={() => {
+        closeMenu()
+        props.onEndLive()
+      }}
+    />
+  ))
+
+  return (
+    <div className="absolute right-3 top-3 z-[70] flex items-center gap-2 lg:hidden sm:right-6">
+      <LiveChromeIconButton
+        ariaLabel={props.immersive ? 'Thu nhỏ màn hình' : 'Mở rộng màn hình'}
+        onClick={props.onToggleImmersive}
+      >
+        {props.immersive ? (
+          <Minimize2 className="h-5 w-5" aria-hidden />
+        ) : (
+          <Maximize2 className="h-5 w-5" aria-hidden />
+        )}
+      </LiveChromeIconButton>
+
+      <LiveChromeIconButton
+        ref={settingsButtonRef}
+        ariaLabel="Cài đặt phát sóng"
+        onClick={() => {
+          if (open) {
+            closeMenu()
+            return
+          }
+          setMenuAnchor(settingsButtonRef.current?.getBoundingClientRect() ?? null)
+          setOpen(true)
+        }}
+      >
+        <Settings className="h-5 w-5" aria-hidden />
+      </LiveChromeIconButton>
+
+      {menuPortal}
+    </div>
+  )
+}
+
+function BroadcasterMobileStudioChrome(props: BroadcasterMobileChromeProps) {
+  const [open, setOpen] = useState(false)
+  const [menuAnchor, setMenuAnchor] = useState<DOMRect | null>(null)
+  const settingsButtonRef = useRef<HTMLButtonElement>(null)
+
   const { useCameraState, useMicrophoneState } = useCallStateHooks()
   const { camera, isMute: isCameraMute } = useCameraState()
   const { microphone, isMute: isMicrophoneMute } = useMicrophoneState()
@@ -192,7 +342,8 @@ function BroadcasterDeviceMenuItems() {
     setEnabled,
   } = useNoiseCancellation()
 
-  return (
+  const closeMenu = () => setOpen(false)
+  const menuPortal = renderBroadcasterMobileMenuPortal(open, menuAnchor, closeMenu, (
     <>
       <button
         className={MOBILE_MENU_ITEM_CLASS}
@@ -237,109 +388,45 @@ function BroadcasterDeviceMenuItems() {
             ? 'Tắt noise cancellation'
             : 'Bật noise cancellation'}
       </button>
+      <BroadcasterMobileMenuItems
+        {...props}
+        onEndLive={() => {
+          closeMenu()
+          props.onEndLive()
+        }}
+      />
     </>
-  )
-}
-
-function BroadcasterMobileSettingsMenu({
-  deviceControls,
-  immersive,
-  isEnding,
-  isStarting,
-  live,
-  onEndLive,
-  onShare,
-  onStartLive,
-  onToggleImmersive,
-  shareNotice,
-}: {
-  deviceControls: ReactNode
-  immersive: boolean
-  isEnding: boolean
-  isStarting: boolean
-  live: boolean
-  onEndLive: () => void
-  onShare: () => void
-  onStartLive: () => void
-  onToggleImmersive: () => void
-  shareNotice: string | null
-}) {
-  const [open, setOpen] = useState(false)
+  ))
 
   return (
-    <div className="pointer-events-auto flex items-center gap-2 lg:hidden">
+    <div className="absolute right-3 top-3 z-[70] flex items-center gap-2 lg:hidden sm:right-6">
       <LiveChromeIconButton
-        ariaLabel={immersive ? 'Thu nhỏ màn hình' : 'Mở rộng màn hình'}
-        onClick={onToggleImmersive}
+        ariaLabel={props.immersive ? 'Thu nhỏ màn hình' : 'Mở rộng màn hình'}
+        onClick={props.onToggleImmersive}
       >
-        {immersive ? (
+        {props.immersive ? (
           <Minimize2 className="h-5 w-5" aria-hidden />
         ) : (
           <Maximize2 className="h-5 w-5" aria-hidden />
         )}
       </LiveChromeIconButton>
 
-      <div className="relative">
-        <LiveChromeIconButton ariaLabel="Cài đặt phát sóng" onClick={() => setOpen((value) => !value)}>
-          <Settings className="h-5 w-5" aria-hidden />
-        </LiveChromeIconButton>
+      <LiveChromeIconButton
+        ref={settingsButtonRef}
+        ariaLabel="Cài đặt phát sóng"
+        onClick={() => {
+          if (open) {
+            closeMenu()
+            return
+          }
+          setMenuAnchor(settingsButtonRef.current?.getBoundingClientRect() ?? null)
+          setOpen(true)
+        }}
+      >
+        <Settings className="h-5 w-5" aria-hidden />
+      </LiveChromeIconButton>
 
-        {open ? (
-          <>
-            <button
-              aria-label="Đóng menu"
-              className="fixed inset-0 z-40"
-              onClick={() => setOpen(false)}
-              type="button"
-            />
-            <div className="absolute right-0 top-[calc(100%+0.5rem)] z-50 w-[min(100vw-2rem,16rem)] overflow-hidden rounded-2xl border border-white/10 bg-black/90 p-1.5 shadow-2xl backdrop-blur-xl">
-              {deviceControls}
-
-              {live ? (
-                <button
-                  className={cn(MOBILE_MENU_ITEM_CLASS, 'text-rose-300 hover:bg-rose-500/15')}
-                  disabled={isEnding}
-                  onClick={() => {
-                    setOpen(false)
-                    onEndLive()
-                  }}
-                  type="button"
-                >
-                  <Square className="h-4 w-4 shrink-0" aria-hidden />
-                  {isEnding ? 'Đang kết thúc…' : 'Kết thúc live'}
-                </button>
-              ) : (
-                <button
-                  className={MOBILE_MENU_ITEM_CLASS}
-                  disabled={isStarting}
-                  onClick={() => {
-                    setOpen(false)
-                    onStartLive()
-                  }}
-                  type="button"
-                >
-                  <Radio className="h-4 w-4 shrink-0" aria-hidden />
-                  {isStarting ? 'Đang bắt đầu…' : 'Bắt đầu live'}
-                </button>
-              )}
-
-              <button
-                className={MOBILE_MENU_ITEM_CLASS}
-                onClick={() => {
-                  void onShare()
-                }}
-                type="button"
-              >
-                <Share2 className="h-4 w-4 shrink-0" aria-hidden />
-                Chia sẻ link xem
-              </button>
-              {shareNotice ? (
-                <p className="px-3 py-1.5 text-[11px] text-white/55">{shareNotice}</p>
-              ) : null}
-            </div>
-          </>
-        ) : null}
-      </div>
+      {menuPortal}
     </div>
   )
 }
@@ -367,6 +454,7 @@ export function BroadcasterClient({
   const [client, setClient] = useState<StreamVideoClient | null>(null)
   const [call, setCall] = useState<Call | null>(null)
   const [shareNotice, setShareNotice] = useState<string | null>(null)
+  const [liveStats, setLiveStats] = useState<LivestreamCallStats | null>(null)
   const sectionRef = useRef<HTMLElement>(null)
   const { immersive, toggle: toggleImmersive } = useLiveImmersiveMode(sectionRef)
   const noiseCancellation = useMemo(() => new NoiseCancellation(), [])
@@ -505,6 +593,10 @@ export function BroadcasterClient({
   }, [call, livestream.id])
 
   useEffect(() => {
+    if (!live) setLiveStats(null)
+  }, [live])
+
+  useEffect(() => {
     const shouldWarnBeforeUnload = live || isStarting || isEnding
     if (!shouldWarnBeforeUnload) return
 
@@ -591,6 +683,7 @@ export function BroadcasterClient({
                   ) : null}
                   {statusLabel(callState.status)}
                 </span>
+                <LivestreamHeaderStats stats={live ? liveStats : null} />
               </div>
 
               <div className="space-y-1">
@@ -670,13 +763,9 @@ export function BroadcasterClient({
                 <StreamVideo client={client}>
                   <StreamCall call={call}>
                     <NoiseCancellationProvider noiseCancellation={noiseCancellation}>
-                      <div className="pointer-events-none absolute right-3 top-3 z-30 sm:right-6">
-                        <BroadcasterMobileSettingsMenu
-                          {...mobileChromeProps}
-                          deviceControls={<BroadcasterDeviceMenuItems />}
-                        />
-                      </div>
-                      <LivestreamLayout />
+                      <LivestreamStatsReporter onChange={setLiveStats} />
+                      <BroadcasterMobileStudioChrome {...mobileChromeProps} />
+                      <LivestreamLayout {...LIVESTREAM_LAYOUT_MINIMAL_OVERLAY} />
                       <StudioDeviceControls />
                     </NoiseCancellationProvider>
                   </StreamCall>
@@ -684,9 +773,7 @@ export function BroadcasterClient({
               </div>
             ) : (
               <>
-                <div className="pointer-events-none absolute right-3 top-3 z-30 sm:right-6">
-                  <BroadcasterMobileSettingsMenu {...mobileChromeProps} deviceControls={null} />
-                </div>
+                <BroadcasterMobileChromeIdle {...mobileChromeProps} />
                 {!hasStreamingConfig ? (
                   <BroadcasterStatePanel
                     description={streamSetupMessage ?? getPublicStreamSetupMessage()}

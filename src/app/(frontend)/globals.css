@@ -248,3 +248,7 @@ body.live-immersive header,
 body.live-immersive footer {
   display: none !important;
 }
+
+.str-video__livestream-layout__overlay {
+  pointer-events: none !important;
+}

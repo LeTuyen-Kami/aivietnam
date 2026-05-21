@@ -1,8 +1,16 @@
 import { cn } from '@/utilities/ui'
-import { Loader2 } from 'lucide-react'
 
 function Skeleton({ className }: { className?: string }) {
   return <div aria-hidden className={cn('animate-pulse rounded-md bg-muted', className)} />
+}
+
+function PageLoadingIndicator() {
+  return (
+    <div className="relative size-9 motion-reduce:opacity-70" aria-hidden>
+      <div className="absolute inset-0 rounded-full border-2 border-muted/50" />
+      <div className="absolute inset-0 motion-reduce:animate-none animate-spin rounded-full border-2 border-transparent border-t-foreground animation-duration-[0.9s]" />
+    </div>
+  )
 }
 
 export function PageLoadingSpinner({ className }: { className?: string }) {
@@ -13,7 +21,7 @@ export function PageLoadingSpinner({ className }: { className?: string }) {
       className={cn('flex min-h-[50vh] flex-col items-center justify-center gap-3 px-4', className)}
       role="status"
     >
-      <Loader2 aria-hidden className="h-8 w-8 animate-spin text-muted-foreground" />
+      <PageLoadingIndicator />
       <p className="text-sm text-muted-foreground">Đang tải…</p>
     </div>
   )

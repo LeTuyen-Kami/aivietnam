@@ -24,6 +24,10 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { LiveChromeIconButton } from '@/components/Live/LiveChromeIconButton'
+import { LIVESTREAM_LAYOUT_MINIMAL_OVERLAY } from '@/components/Live/livestreamLayoutProps'
+import { LivestreamHeaderStats } from '@/components/Live/LivestreamHeaderStats'
+import { LivestreamStatsReporter } from '@/components/Live/LivestreamStatsReporter'
+import type { LivestreamCallStats } from '@/hooks/useLivestreamCallStats'
 import { useLiveImmersiveMode } from '@/hooks/useLiveImmersiveMode'
 import { getPublicStreamSetupMessage } from '@/lib/stream/publicClientEnv'
 import type { Livestream } from '@/payload-types'
@@ -105,9 +109,11 @@ function formatDate(value: string | null | undefined): string | null {
 
 function LiveCallContent({
   immersive,
+  onLiveStatsChange,
   onToggleImmersive,
 }: {
   immersive: boolean
+  onLiveStatsChange: (stats: LivestreamCallStats | null) => void
   onToggleImmersive: () => void
 }) {
   const { useCallCallingState } = useCallStateHooks()
@@ -119,6 +125,7 @@ function LiveCallContent({
 
   return (
     <div className="h-full w-full">
+      <LivestreamStatsReporter onChange={onLiveStatsChange} />
       <div className="pointer-events-auto absolute right-3 top-3 z-30 flex items-center gap-2 lg:hidden">
         <LiveChromeIconButton
           ariaLabel={hasUserEnabledAudio ? 'Tắt tiếng livestream' : 'Bật tiếng livestream'}
@@ -156,11 +163,8 @@ function LiveCallContent({
         key={hasUserEnabledAudio ? 'audio-on' : 'audio-off'}
         muted={!hasUserEnabledAudio}
         showMuteButton={false}
-        enableFullScreen={false}
-        showDuration
-        showLiveBadge
-        showParticipantCount
         showSpeakerName
+        {...LIVESTREAM_LAYOUT_MINIMAL_OVERLAY}
       />
     </div>
   )
@@ -204,6 +208,7 @@ export function ViewerClient({
   const [call, setCall] = useState<Call | null>(null)
   const sectionRef = useRef<HTMLElement>(null)
   const { immersive, toggle: toggleImmersive } = useLiveImmersiveMode(sectionRef)
+  const [liveStats, setLiveStats] = useState<LivestreamCallStats | null>(null)
 
   const { user: authUser, loading: authLoading } = useAuth()
   const apiKey = streamApiKey.trim()
@@ -253,6 +258,10 @@ export function ViewerClient({
       callType: body.callType ?? null,
     })
   }, [safeSlug])
+
+  useEffect(() => {
+    if (!live) setLiveStats(null)
+  }, [live])
 
   useEffect(() => {
     void pollStatus()
@@ -357,6 +366,7 @@ export function ViewerClient({
                   ) : null}
                   {statusLabel(statusState.status)}
                 </span>
+                <LivestreamHeaderStats stats={live ? liveStats : null} />
                 {scheduledAt ? (
                   <span className="rounded-full bg-black/40 px-3 py-1 text-[11px] text-white/75 ring-1 ring-white/10 backdrop-blur">
                     {scheduledAt}
@@ -384,6 +394,7 @@ export function ViewerClient({
                   <StreamCall call={call}>
                     <LiveCallContent
                       immersive={immersive}
+                      onLiveStatsChange={setLiveStats}
                       onToggleImmersive={() => {
                         void toggleImmersive()
                       }}
