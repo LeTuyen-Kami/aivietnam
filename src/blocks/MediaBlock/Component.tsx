@@ -1,5 +1,6 @@
 import type { StaticImageData } from 'next/image'
 
+import { blockVisibilityClassName } from '@/utilities/blockVisibility'
 import { cn } from '@/utilities/ui'
 import React from 'react'
 import RichText from '@/components/RichText'
@@ -27,6 +28,7 @@ export const MediaBlock: React.FC<Props> = (props) => {
     media,
     staticImage,
     disableInnerContainer,
+    visible,
   } = props
 
   let caption
@@ -35,7 +37,7 @@ export const MediaBlock: React.FC<Props> = (props) => {
   return (
     <div
       className={cn(
-        '',
+        blockVisibilityClassName(visible),
         {
           container: enableGutter,
         },

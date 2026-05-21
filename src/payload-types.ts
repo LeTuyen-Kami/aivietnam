@@ -771,6 +771,10 @@ export interface ContentBlock {
  */
 export interface MediaBlock {
   media: number | Media;
+  /**
+   * Choose which screen sizes show this block. Default is all devices. Selecting "All devices" shows everywhere.
+   */
+  visible?: ('all' | 'mobile' | 'tablet' | 'desktop')[] | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'mediaBlock';
@@ -2507,6 +2511,7 @@ export interface ContentBlockSelect<T extends boolean = true> {
  */
 export interface MediaBlockSelect<T extends boolean = true> {
   media?: T;
+  visible?: T;
   id?: T;
   blockName?: T;
 }
