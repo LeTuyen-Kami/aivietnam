@@ -1,8 +1,7 @@
 import { MigrateDownArgs, MigrateUpArgs, sql } from '@payloadcms/db-postgres'
 
 /**
- * Pages layout block `mediaBlock`: per-breakpoint visibility (all | mobile | tablet | desktop).
- * hasMany select tables use `order` + `parent_id` (not `_order` / `_parent_id`).
+ * Repair media_block_visible tables if an earlier migration used `_order` / `_parent_id`.
  */
 export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
@@ -18,14 +17,18 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
       WHEN duplicate_object THEN NULL;
     END $$;
 
-    CREATE TABLE IF NOT EXISTS "pages_blocks_media_block_visible" (
+    -- Wrong column names from initial migration: drop and recreate (tables are new / usually empty).
+    DROP TABLE IF EXISTS "pages_blocks_media_block_visible";
+    DROP TABLE IF EXISTS "_pages_v_blocks_media_block_visible";
+
+    CREATE TABLE "pages_blocks_media_block_visible" (
       "order" integer NOT NULL,
       "parent_id" varchar NOT NULL,
       "id" serial PRIMARY KEY NOT NULL,
       "value" "enum_pages_blocks_media_block_visible"
     );
 
-    CREATE TABLE IF NOT EXISTS "_pages_v_blocks_media_block_visible" (
+    CREATE TABLE "_pages_v_blocks_media_block_visible" (
       "order" integer NOT NULL,
       "parent_id" integer NOT NULL,
       "id" serial PRIMARY KEY NOT NULL,
@@ -74,8 +77,5 @@ export async function down({ db }: MigrateDownArgs): Promise<void> {
 
     DROP TABLE IF EXISTS "pages_blocks_media_block_visible";
     DROP TABLE IF EXISTS "_pages_v_blocks_media_block_visible";
-
-    DROP TYPE IF EXISTS "public"."enum_pages_blocks_media_block_visible";
-    DROP TYPE IF EXISTS "public"."enum__pages_v_blocks_media_block_visible";
   `)
 }
