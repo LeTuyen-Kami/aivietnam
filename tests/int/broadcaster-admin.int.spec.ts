@@ -38,13 +38,32 @@ describe('broadcaster admin token API', () => {
     expect(res.status).toBe(401)
   }, 20000)
 
-  it('returns 403 for authenticated non-admin users', async () => {
+  it('returns 403 for authenticated users without broadcast role', async () => {
     authMock.mockResolvedValueOnce({
-      user: { collection: 'users', roles: ['user'], id: 123, email: 'user@example.com' },
+      user: { collection: 'users', roles: ['member'], id: 123, email: 'user@example.com' },
     })
     const route = await import('@/app/(frontend)/api/stream/broadcaster-token/route')
     const res = await route.POST({} as never)
     expect(res.status).toBe(403)
+  }, 20000)
+
+  it('returns token metadata for moderator users', async () => {
+    generateUserTokenMock.mockReturnValueOnce('token-mod')
+    authMock.mockResolvedValueOnce({
+      user: {
+        collection: 'users',
+        roles: ['moderator'],
+        id: 50,
+        email: 'mod@example.com',
+      },
+    })
+
+    const route = await import('@/app/(frontend)/api/stream/broadcaster-token/route')
+    const res = await route.POST({} as never)
+    const body = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(body.token).toBe('token-mod')
   }, 20000)
 
   it('returns token metadata for admin users', async () => {

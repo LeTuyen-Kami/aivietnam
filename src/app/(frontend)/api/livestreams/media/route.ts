@@ -4,7 +4,7 @@ import type { File as PayloadFile } from 'payload'
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 
-import { isUsersCollectionAdmin } from '@/access/isAdminUser'
+import { canBroadcastLivestream } from '@/access/isAdminUser'
 import type { User } from '@/payload-types'
 
 const ACCEPTED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
@@ -20,8 +20,8 @@ export async function POST(req: Request) {
   const requestHeaders = await headers()
   const { user } = await payload.auth({ headers: requestHeaders })
 
-  if (!user || !isUsersCollectionAdmin(user)) {
-    return NextResponse.json({ error: 'Bạn cần quyền admin để tải ảnh' }, { status: 403 })
+  if (!user || !canBroadcastLivestream(user)) {
+    return NextResponse.json({ error: 'Bạn cần quyền phát livestream để tải ảnh' }, { status: 403 })
   }
 
   const formData = await req.formData().catch(() => null)

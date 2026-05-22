@@ -3,7 +3,7 @@ import { headers } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 
-import { isUsersCollectionAdmin } from '@/access/isAdminUser'
+import { canBroadcastLivestream } from '@/access/isAdminUser'
 import { ensureLivestreamChatChannel, isStreamChatEnabled } from '@/lib/stream/chatServer'
 import { getStreamServerClient } from '@/lib/stream/server'
 import { streamUserIdFromPayloadUser } from '@/lib/stream/user'
@@ -24,7 +24,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   const requestHeaders = await headers()
   const { user } = await payload.auth({ headers: requestHeaders })
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  if (!isUsersCollectionAdmin(user))
+  if (!canBroadcastLivestream(user))
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const livestream = await payload.findByID({

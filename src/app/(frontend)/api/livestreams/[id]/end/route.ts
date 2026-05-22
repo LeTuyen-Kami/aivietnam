@@ -3,7 +3,7 @@ import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { isUsersCollectionAdmin } from '@/access/isAdminUser'
+import { canBroadcastLivestream } from '@/access/isAdminUser'
 
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -16,7 +16,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   const requestHeaders = await headers()
   const { user } = await payload.auth({ headers: requestHeaders })
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  if (!isUsersCollectionAdmin(user)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!canBroadcastLivestream(user)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const endedDoc = await payload.update({
     collection: 'livestreams',

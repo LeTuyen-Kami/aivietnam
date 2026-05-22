@@ -13,8 +13,10 @@ type Props = {
   viewerSlot: React.ReactNode
 }
 
-function isAuthUserAdmin(user: { roles?: ('admin' | 'member' | 'editor' | 'moderator')[] } | null) {
-  return Boolean(user?.roles?.includes('admin'))
+function canShowLivestreamAdminPanel(user: {
+  roles?: ('admin' | 'member' | 'editor' | 'moderator')[]
+} | null) {
+  return Boolean(user?.roles?.includes('admin') || user?.roles?.includes('moderator'))
 }
 
 /**
@@ -31,7 +33,7 @@ export function LivestreamPortalView({
 
   const showAdmin = useMemo(() => {
     if (loading) return serverIsAdmin
-    return isAuthUserAdmin(user)
+    return canShowLivestreamAdminPanel(user)
   }, [loading, serverIsAdmin, user])
 
   if (showAdmin) {

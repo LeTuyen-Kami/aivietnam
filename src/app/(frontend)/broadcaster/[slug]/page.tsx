@@ -3,7 +3,7 @@ import { headers } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
 import { getPayload } from 'payload'
 
-import { isUsersCollectionAdmin } from '@/access/isAdminUser'
+import { canBroadcastLivestream } from '@/access/isAdminUser'
 import { getPublicStreamEnvStatus } from '@/lib/stream/publicClientEnv'
 import type { Livestream } from '@/payload-types'
 import { BroadcasterClient } from './Broadcaster.client'
@@ -24,13 +24,13 @@ export default async function BroadcasterPage({ params }: Args) {
     redirect(`/?auth=login_required&returnTo=${encodeURIComponent(`/broadcaster/${decodedSlug}`)}`)
   }
 
-  if (!isUsersCollectionAdmin(user)) {
+  if (!canBroadcastLivestream(user)) {
     return (
       <main className="min-h-screen bg-black px-4 py-12 text-white sm:px-6 sm:py-16">
         <section className="mx-auto max-w-lg rounded-2xl border border-white/10 bg-white/5 p-8 shadow-lg ring-1 ring-white/10 backdrop-blur">
           <h1 className="text-2xl font-semibold tracking-tight">Không có quyền</h1>
           <p className="mt-3 text-pretty text-white/70">
-            Chỉ tài khoản quản trị mới có thể mở trang phát sóng livestream.
+            Chỉ tài khoản quản trị hoặc moderator mới có thể mở trang phát sóng livestream.
           </p>
         </section>
       </main>

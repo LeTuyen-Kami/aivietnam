@@ -5,7 +5,7 @@ import { headers } from 'next/headers'
 import { connection } from 'next/server'
 import { getPayload } from 'payload'
 
-import { isUsersCollectionAdmin } from '@/access/isAdminUser'
+import { canBroadcastLivestream } from '@/access/isAdminUser'
 import { Media } from '@/components/Media'
 import { SmartLink } from '@/components/SmartLink'
 import { Button } from '@/components/ui/button'
@@ -184,7 +184,7 @@ export const LivestreamPortalBlockComponent = async ({
   const payload = await getPayload({ config: configPromise })
   const requestHeaders = await headers()
   const { user } = await payload.auth({ headers: requestHeaders })
-  const serverIsAdmin = isUsersCollectionAdmin(user)
+  const serverIsAdmin = canBroadcastLivestream(user)
   const resolvedHeading = heading?.trim() || 'Livestream'
   const resolvedDescription = description?.trim() || null
 

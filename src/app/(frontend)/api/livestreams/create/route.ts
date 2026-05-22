@@ -3,7 +3,7 @@ import { headers } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { APIError, ValidationError, getPayload } from 'payload'
 
-import { isUsersCollectionAdmin } from '@/access/isAdminUser'
+import { canBroadcastLivestream } from '@/access/isAdminUser'
 import { ensureUniqueLivestreamSlug } from '@/utilities/ensureUniqueLivestreamSlug'
 import { slugifyTitle } from '@/utilities/slugify'
 
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  if (!isUsersCollectionAdmin(user)) {
+  if (!canBroadcastLivestream(user)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

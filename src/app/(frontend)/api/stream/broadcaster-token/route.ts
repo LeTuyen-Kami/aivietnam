@@ -3,7 +3,7 @@ import { headers } from 'next/headers'
 import { getPayload } from 'payload'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { isUsersCollectionAdmin } from '@/access/isAdminUser'
+import { canBroadcastLivestream } from '@/access/isAdminUser'
 import { getStreamServerClient } from '@/lib/stream/server'
 import { streamDisplayName, streamUserIdFromPayloadUser } from '@/lib/stream/user'
 
@@ -16,7 +16,7 @@ export async function POST(_req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  if (!isUsersCollectionAdmin(user)) {
+  if (!canBroadcastLivestream(user)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

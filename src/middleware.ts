@@ -36,7 +36,7 @@ export function middleware(req: NextRequest) {
   }
 
   const roles = getJwtRoles(token)
-  if (!roles.includes('admin')) {
+  if (!roles.includes('admin') && !roles.includes('moderator')) {
     return NextResponse.json({ error: 'Access denied' }, { status: 403 })
   }
 
