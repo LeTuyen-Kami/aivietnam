@@ -47,7 +47,7 @@ export const home: (args: HomeArgs) => RequiredDataFromCollectionSlug<'pages'> =
                   format: 0,
                   mode: 'normal',
                   style: '',
-                  text: 'Payload Website Template',
+                  text: 'AI Việt Nam',
                   version: 1,
                 },
               ],
@@ -666,9 +666,10 @@ export const home: (args: HomeArgs) => RequiredDataFromCollectionSlug<'pages'> =
       },
     ],
     meta: {
-      description: 'An open-source website built with Payload and Next.js.',
+      description:
+        'AI Việt Nam là cộng đồng và cổng thông tin về trí tuệ nhân tạo, ứng dụng AI và hệ sinh thái AI tại Việt Nam.',
       image: heroImage.id,
-      title: 'Payload Website Template',
+      title: 'AI Việt Nam',
     },
     title: 'Home',
   }

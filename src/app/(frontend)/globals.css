@@ -49,6 +49,14 @@
   --font-arial: Arial, sans-serif;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  text-size-adjust: 100%;
+}
+
 @layer utilities {
   .container {
     width: 100%;
@@ -261,17 +269,17 @@ body.live-immersive footer {
 /* iOS Safari auto-zooms focused fields when font-size < 16px */
 @media (width < 48rem) {
   input:not(
-      [type='button'],
-      [type='submit'],
-      [type='reset'],
-      [type='checkbox'],
-      [type='radio'],
-      [type='range'],
-      [type='file'],
-      [type='hidden'],
-      [type='image'],
-      [type='color']
-    ),
+    [type='button'],
+    [type='submit'],
+    [type='reset'],
+    [type='checkbox'],
+    [type='radio'],
+    [type='range'],
+    [type='file'],
+    [type='hidden'],
+    [type='image'],
+    [type='color']
+  ),
   textarea,
   select {
     font-size: 1rem !important;
