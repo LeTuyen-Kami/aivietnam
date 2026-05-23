@@ -181,14 +181,6 @@ function resolveOrbitAndAngles(
   return { anglesDeg: buildAnglesFromWidths(widthsPx, r), orbitRpx: r }
 }
 
-function emphasisTypography() {
-  return 'text-sm font-bold leading-snug tracking-tight text-foreground sm:text-base'
-}
-
-function supportingTypography() {
-  return 'text-[0.6875rem] font-semibold leading-snug tracking-[0.04em] text-foreground/90 sm:text-xs'
-}
-
 function RowOneCircularInfographic({
   row1CenterGraphic,
   row1TagItems,
@@ -316,7 +308,7 @@ function RowOneCircularInfographic({
         const { tag, index, reactKey } = p
         const α = anglesDeg?.[i] ?? p.angleFromTopDeg
         const linkClass = cn(
-          'block max-w-[11rem] text-pretty text-center font-serif sm:max-w-[12.5rem]',
+          'block max-w-[11rem] text-pretty text-center font-serif sm:max-w-[12.5rem] text-sm md:text-base',
           accentHover.link,
         )
 
@@ -325,7 +317,11 @@ function RowOneCircularInfographic({
             {tag.label}
           </SmartLink>
         ) : (
-          <span className={cn('block max-w-44 text-pretty text-center font-serif sm:max-w-50')}>
+          <span
+            className={cn(
+              'block max-w-44 text-pretty text-center font-serif sm:max-w-50 text-sm md:text-base',
+            )}
+          >
             {tag.label}
           </span>
         )

@@ -127,7 +127,7 @@ export default async function Post({ params: paramsPromise }: Args) {
                 {post.title}
               </h1>
 
-              <div className="mt-3 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-muted-foreground sm:mt-4 sm:gap-x-2.5 sm:text-sm">
+              <div className="mt-3 min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-muted-foreground sm:mt-4 sm:gap-x-2.5 sm:text-sm hidden md:flex">
                 <span className="inline-flex items-center gap-1.5">
                   <ViewCounter postId={String(post.id)} initialViews={post.views ?? 0} />
                 </span>
@@ -201,9 +201,6 @@ export default async function Post({ params: paramsPromise }: Args) {
 
               {relatedPosts.length ? (
                 <section className="mt-8 border-t border-border pt-5 sm:mt-10 sm:pt-6">
-                  <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide sm:mb-4 sm:text-base">
-                    Tin liên quan
-                  </h2>
                   <div className="space-y-3 sm:space-y-4">
                     {relatedPosts.map((item) => (
                       <Link
@@ -295,7 +292,7 @@ export default async function Post({ params: paramsPromise }: Args) {
 
               <section>
                 <h2 className="mb-2 text-sm font-bold uppercase tracking-tight text-foreground sm:mb-3 sm:text-[15px]">
-                  Tin xem nhiều
+                  Xem nhiều
                 </h2>
                 <div className="space-y-3 sm:space-y-4">
                   {sidebarItems.slice(0, 6).map((item) => (

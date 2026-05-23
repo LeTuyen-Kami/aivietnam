@@ -129,7 +129,7 @@ export const HeaderNav: React.FC<{
             'inline-flex shrink-0 items-center justify-center rounded-md p-0.5 transition-[box-shadow,transform] active:scale-[0.97]',
           )}
         >
-          <MobileHomeToRootIcon className="h-7 w-7" />
+          <MobileHomeToRootIcon className="size-[26px]" />
         </Link>
         {linkNodes}
       </nav>

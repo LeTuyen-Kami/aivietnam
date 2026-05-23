@@ -50,7 +50,7 @@ export function RowOneRight({
           </h2>
         ))}
       {row1RightCards && row1RightCards.length > 0 && (
-        <div className="grid grid-cols-2 gap-8 px-4">
+        <div className="grid grid-cols-2 gap-8 px-20 md:px-4">
           {row1RightCards.map((card, index) => {
             const href = card.href?.trim()
             const key = card.id != null ? `${card.id}-${index}` : `${card.caption}-${index}`
@@ -64,7 +64,7 @@ export function RowOneRight({
 
             const cardContent = (
               <>
-                <div className="mx-auto w-[130px] shrink-0">
+                <div className="mx-auto w-[90px] md:w-[130px] shrink-0">
                   <div className="relative aspect-square overflow-hidden bg-muted flex items-center justify-center">
                     <div className="h-full w-full">
                       {typeof card.image === 'object' && (
@@ -72,7 +72,7 @@ export function RowOneRight({
                           className="h-full w-full"
                           imgClassName="object-cover transition-transform duration-300 ease-out group-hover:scale-105 size-full"
                           resource={card.image as Media}
-                          size="130px"
+                          size="90px md:130px"
                         />
                       )}
                     </div>

@@ -79,7 +79,7 @@ export function RowOneLeft({
 
             const inner = (
               <>
-                <div className="relative aspect-square overflow-hidden bg-muted rounded-full max-w-[80px] mx-auto">
+                <div className="relative aspect-square overflow-hidden bg-muted rounded-full max-w-[70px] mx-auto md:max-w-[80px]">
                   {typeof cell.icon === 'object' && cell.icon && (
                     <MediaComponent
                       className="h-full w-full"
