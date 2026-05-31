@@ -88,7 +88,7 @@ export function StandardSection({
       </div>
 
       {subPosts.length > 0 && (
-        <div className="mb-2 md:mb-8 px-4 md:space-y-5 md:px-0">
+        <div className="mb-2 md:mb-8 px-4 md:gap-y-4 md:px-0 flex flex-col">
           {subPosts.map((post) => (
             <div
               className="group/sub flex flex-col gap-3 border-t border-border pt-4 md:grid md:grid-cols-[minmax(0,140px)_1fr] md:gap-3 md:border-t-0 md:pt-0 mb-2 md:mb-0 last:mb-0"
@@ -125,8 +125,8 @@ export function StandardSection({
                     />
                   )}
                 </Link>
-                <div className="min-w-0 [&>p]:mt-0 md:col-start-2 md:row-start-2 md:[&>p]:mt-2 ">
-                  <PostExcerpt post={post} />
+                <div className="min-w-0 [&>p]:mt-0 md:col-start-2 md:row-start-2">
+                  <PostExcerpt post={post} className="line-clamp-3" />
                 </div>
               </div>
             </div>

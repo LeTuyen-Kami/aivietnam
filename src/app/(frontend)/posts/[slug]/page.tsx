@@ -6,7 +6,7 @@ import configPromise from '@payload-config'
 import { draftMode } from 'next/headers'
 import Link from 'next/link'
 import { getPayload } from 'payload'
-import React, { cache } from 'react'
+import { cache } from 'react'
 
 import type { GeneralSetting, Media as MediaDoc, Post } from '@/payload-types'
 
@@ -16,11 +16,9 @@ import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { Media } from '@/components/Media'
 import { SmartLink } from '@/components/SmartLink'
 import { formatAuthors } from '@/utilities/formatAuthors'
-import { formatDateTime } from '@/utilities/formatDateTime'
 import { generateMeta } from '@/utilities/generateMeta'
-import { ChevronRight, Clock, Folder, User } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import PageClient from './page.client'
-import { ViewCounter } from './ViewCounter'
 
 export const revalidate = 60
 
@@ -127,7 +125,7 @@ export default async function Post({ params: paramsPromise }: Args) {
                 {post.title}
               </h1>
 
-              <div className="mt-3 min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-muted-foreground sm:mt-4 sm:gap-x-2.5 sm:text-sm hidden md:flex">
+              {/* <div className="mt-3 min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-muted-foreground sm:mt-4 sm:gap-x-2.5 sm:text-sm hidden md:flex">
                 <span className="inline-flex items-center gap-1.5">
                   <ViewCounter postId={String(post.id)} initialViews={post.views ?? 0} />
                 </span>
@@ -181,7 +179,7 @@ export default async function Post({ params: paramsPromise }: Args) {
                     </span>
                   </>
                 ) : null}
-              </div>
+              </div> */}
 
               {post.heroImage && typeof post.heroImage !== 'string' ? (
                 <div className="mt-5 overflow-hidden border border-border sm:mt-6">
@@ -209,7 +207,7 @@ export default async function Post({ params: paramsPromise }: Args) {
                         key={item.id}
                       >
                         {typeof item.meta?.image === 'object' ? (
-                          <div className="w-24 shrink-0 overflow-hidden sm:w-28">
+                          <div className="w-[calc((100vw-32px)/2.3)] shrink-0 overflow-hidden sm:w-28">
                             <Media
                               imgClassName="aspect-video w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
                               resource={item.meta.image}
@@ -218,11 +216,11 @@ export default async function Post({ params: paramsPromise }: Args) {
                           </div>
                         ) : null}
                         <div className="min-w-0 flex-1">
-                          <h3 className="line-clamp-2 text-xs font-semibold leading-snug wrap-break-word group-hover:underline sm:text-sm">
+                          <h3 className="line-clamp-2 text-sm font-semibold leading-snug wrap-break-word group-hover:underline sm:text-sm">
                             {item.title}
                           </h3>
                           {item.meta?.description ? (
-                            <p className="mt-1 line-clamp-2 text-[11px] text-muted-foreground sm:text-xs">
+                            <p className="mt-1 line-clamp-2 text-xs text-muted-foreground sm:text-xs">
                               {item.meta.description}
                             </p>
                           ) : null}
@@ -233,9 +231,13 @@ export default async function Post({ params: paramsPromise }: Args) {
                 </section>
               ) : null}
 
-              <PostComments key={post.id} postId={post.id} />
+              <PostComments
+                key={post.id}
+                postId={post.id}
+                commentsClosed={Boolean((post as { commentsDisabled?: boolean }).commentsDisabled)}
+              />
 
-              {tags?.length ? (
+              {/* {tags?.length ? (
                 <section className="mt-6 border-t border-border pt-4 sm:mt-8 sm:pt-5">
                   <div className="flex flex-wrap gap-1.5 sm:gap-2">
                     {tags.map((category) => (
@@ -249,7 +251,7 @@ export default async function Post({ params: paramsPromise }: Args) {
                     ))}
                   </div>
                 </section>
-              ) : null}
+              ) : null} */}
 
               {footerBlock ? (
                 <div className="mt-6 overflow-hidden border border-border sm:mt-8">
@@ -302,7 +304,7 @@ export default async function Post({ params: paramsPromise }: Args) {
                       key={`side-${item.id}`}
                     >
                       {typeof item.meta?.image === 'object' ? (
-                        <div className="w-[72px] shrink-0 overflow-hidden bg-muted sm:w-[84px]">
+                        <div className="w-[calc((100vw-32px)/2.3)] shrink-0 overflow-hidden bg-muted sm:w-[84px]">
                           <Media
                             imgClassName="aspect-[84/56] w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
                             resource={item.meta.image}
@@ -310,7 +312,7 @@ export default async function Post({ params: paramsPromise }: Args) {
                           />
                         </div>
                       ) : null}
-                      <p className="min-w-0 flex-1 line-clamp-3 text-sm leading-6 text-foreground wrap-break-word transition-colors group-hover:text-primary sm:text-[15px]">
+                      <p className="min-w-0 flex-1 line-clamp-5 text-sm leading-6 text-foreground wrap-break-word transition-colors group-hover:text-primary sm:text-[15px]">
                         {item.title}
                       </p>
                     </Link>

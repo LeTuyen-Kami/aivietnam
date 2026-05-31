@@ -129,7 +129,7 @@ export const HeaderNav: React.FC<{
             'inline-flex shrink-0 items-center justify-center rounded-md p-0.5 transition-[box-shadow,transform] active:scale-[0.97]',
           )}
         >
-          <MobileHomeToRootIcon className="size-[26px]" />
+          <MobileHomeToRootIcon className="size-[22px]" />
         </Link>
         {linkNodes}
       </nav>
@@ -151,7 +151,7 @@ export const HeaderNav: React.FC<{
             isHomeActive ? 'bg-muted/50 text-rose-800' : 'text-foreground',
           )}
         >
-          <MobileHomeToRootIcon className="h-8 w-8 shrink-0" />
+          <MobileHomeToRootIcon className="size-[26px] shrink-0" />
           <span>Trang chủ</span>
         </Link>
         {linkNodes}

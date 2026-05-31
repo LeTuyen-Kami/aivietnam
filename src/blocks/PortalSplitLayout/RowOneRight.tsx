@@ -50,7 +50,7 @@ export function RowOneRight({
           </h2>
         ))}
       {row1RightCards && row1RightCards.length > 0 && (
-        <div className="grid grid-cols-2 gap-8 px-20 md:px-4">
+        <div className="grid grid-cols-2 gap-x-[calc((100vw-32px-180px)/3)] gap-y-4 px-[calc((100vw-32px-180px)/3)] md:gap-8 md:px-4">
           {row1RightCards.map((card, index) => {
             const href = card.href?.trim()
             const key = card.id != null ? `${card.id}-${index}` : `${card.caption}-${index}`

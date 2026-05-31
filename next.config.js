@@ -8,6 +8,14 @@ const NEXT_PUBLIC_SERVER_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
 
 const VIETNAM_PROVINCES_API_ORIGIN = 'https://provinces.open-api.vn'
 
+// In local dev the database (Neon) is shared with the remote server, but the
+// uploaded media files live only on that server's disk. Proxy media file
+// requests to it so relative `/api/media/file/*` URLs resolve to the real files
+// instead of 500-ing on the local disk. Guarded to dev so production (which
+// serves its own files) is unaffected.
+const DEV_MEDIA_ORIGIN =
+  process.env.NEXT_PUBLIC_ENV === 'dev' ? process.env.NEXT_PUBLIC_SERVER_URL : undefined
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
@@ -39,12 +47,25 @@ const nextConfig = {
   },
   reactStrictMode: true,
   async rewrites() {
-    return [
-      {
-        source: '/api/v2/:path*',
-        destination: `${VIETNAM_PROVINCES_API_ORIGIN}/api/v2/:path*`,
-      },
-    ]
+    return {
+      // beforeFiles runs before the Payload `/api/media/file/*` route, so the
+      // request is proxied to the remote server (where the files exist) instead
+      // of being handled locally.
+      beforeFiles: DEV_MEDIA_ORIGIN
+        ? [
+            {
+              source: '/api/media/file/:path*',
+              destination: `${DEV_MEDIA_ORIGIN}/api/media/file/:path*`,
+            },
+          ]
+        : [],
+      afterFiles: [
+        {
+          source: '/api/v2/:path*',
+          destination: `${VIETNAM_PROVINCES_API_ORIGIN}/api/v2/:path*`,
+        },
+      ],
+    }
   },
   redirects,
   typescript: {

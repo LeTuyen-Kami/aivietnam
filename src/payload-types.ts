@@ -376,6 +376,10 @@ export interface Post {
    */
   views?: number | null;
   /**
+   * Tắt bình luận cho bài viết này. Bình luận cũ vẫn hiển thị nhưng không cho gửi mới.
+   */
+  commentsDisabled?: boolean | null;
+  /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
   generateSlug?: boolean | null;
@@ -1658,7 +1662,18 @@ export interface CommentModerationRule {
 export interface Comment {
   id: number;
   post: number | Post;
-  author: number | User;
+  /**
+   * Bỏ trống nếu là bình luận của khách (chưa đăng nhập).
+   */
+  author?: (number | null) | User;
+  /**
+   * Tên hiển thị cho bình luận của khách.
+   */
+  guestName?: string | null;
+  /**
+   * Định danh ẩn danh (cookie) của khách.
+   */
+  guestId?: string | null;
   /**
    * Cho phep tra loi 1 cap (comment -> reply).
    */
@@ -1686,7 +1701,11 @@ export interface Comment {
 export interface CommentLike {
   id: number;
   comment: number | Comment;
-  user: number | User;
+  user?: (number | null) | User;
+  /**
+   * Định danh ẩn danh (cookie) của khách khi thả cảm xúc.
+   */
+  guestId?: string | null;
   reaction: 'like' | 'love' | 'haha' | 'wow' | 'sad' | 'angry';
   updatedAt: string;
   createdAt: string;
@@ -2867,6 +2886,7 @@ export interface PostsSelect<T extends boolean = true> {
         name?: T;
       };
   views?: T;
+  commentsDisabled?: T;
   generateSlug?: T;
   slug?: T;
   updatedAt?: T;
@@ -3084,6 +3104,8 @@ export interface CommentModerationRulesSelect<T extends boolean = true> {
 export interface CommentsSelect<T extends boolean = true> {
   post?: T;
   author?: T;
+  guestName?: T;
+  guestId?: T;
   parentComment?: T;
   body?: T;
   likeCount?: T;
@@ -3099,6 +3121,7 @@ export interface CommentsSelect<T extends boolean = true> {
 export interface CommentLikesSelect<T extends boolean = true> {
   comment?: T;
   user?: T;
+  guestId?: T;
   reaction?: T;
   updatedAt?: T;
   createdAt?: T;

@@ -170,42 +170,48 @@ export const NewsletterSignupBlock: React.FC<NewsletterSignupBlockType> = (props
     <div className="container">
       <div
         className={cn(
-          'rounded-sm border border-neutral-200 px-8 py-10 md:px-10 bg-[#FDFBF7]',
+          'rounded-sm border border-neutral-200 bg-[#FDFBF7] px-5 py-7 sm:px-6 sm:py-8 md:px-10 md:py-10',
           className,
         )}
       >
         {hasSubmitted && form.confirmationType === 'message' && form.confirmationMessage ? (
           <RichText
-            className="font-serif text-neutral-800 [&_a]:underline"
+            className="font-serif text-sm leading-relaxed text-neutral-800 md:text-base [&_a]:underline"
             data={form.confirmationMessage}
             enableGutter={false}
           />
         ) : hasSubmitted ? (
-          <p className="font-serif text-lg text-neutral-800">Cảm ơn bạn đã đăng ký!</p>
+          <p className="font-serif text-base leading-snug text-neutral-800 md:text-lg">
+            Cảm ơn bạn đã đăng ký!
+          </p>
         ) : (
-          <form className="space-y-5" onSubmit={onSubmit} noValidate>
-            <div className="flex items-center gap-2 font-serif text-[15px] text-neutral-500">
-              <Mail aria-hidden className="h-5 w-5 shrink-0 text-amber-500" strokeWidth={2} />
+          <form className="space-y-3.5 md:space-y-5" onSubmit={onSubmit} noValidate>
+            <div className="flex items-center gap-1.5 font-sans text-[10px] font-medium uppercase tracking-[0.12em] text-neutral-500 sm:text-[11px] md:text-xs">
+              <Mail
+                aria-hidden
+                className="h-3 w-3 shrink-0 text-amber-500/90 sm:h-3.5 sm:w-3.5"
+                strokeWidth={2}
+              />
               <span>{eyebrow}</span>
             </div>
 
-            <h2 className="font-serif text-2xl font-bold leading-tight text-neutral-900 md:text-[1.65rem]">
+            <h2 className="font-serif text-xl font-bold leading-snug text-neutral-900 md:text-xl md:leading-tight">
               {headline}
             </h2>
 
             {description ? (
-              <p className="font-serif text-sm leading-relaxed text-neutral-700 md:text-[15px]">
+              <p className="font-serif text-[13px] leading-relaxed text-neutral-700 md:text-[15px]">
                 {description}
               </p>
             ) : null}
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+            <div className="flex flex-col gap-2.5 sm:flex-row sm:items-stretch sm:gap-3">
               <label className="sr-only" htmlFor="newsletter-email">
                 Email
               </label>
               <input
                 autoComplete="email"
-                className="min-h-11 flex-1 rounded-md border border-neutral-300 bg-white px-3 py-2 font-sans text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-200"
+                className="min-h-10 flex-1 rounded-md border border-neutral-300 bg-white px-3 py-2 font-sans text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-200 md:min-h-11 md:text-base"
                 disabled={isLoading}
                 id="newsletter-email"
                 name="email"
@@ -215,7 +221,7 @@ export const NewsletterSignupBlock: React.FC<NewsletterSignupBlockType> = (props
                 value={email}
               />
               <button
-                className="min-h-11 shrink-0 rounded-md bg-[#D93025] px-6 font-sans text-sm font-bold uppercase tracking-wide text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                className="min-h-10 shrink-0 rounded-md bg-[#D93025] px-5 font-sans text-xs font-bold uppercase tracking-wide text-white transition-opacity hover:opacity-90 disabled:opacity-60 md:min-h-11 md:px-6 md:text-sm"
                 disabled={isLoading}
                 type="submit"
               >
@@ -224,14 +230,14 @@ export const NewsletterSignupBlock: React.FC<NewsletterSignupBlockType> = (props
             </div>
 
             {error ? (
-              <p className="text-sm text-red-600" role="alert">
+              <p className="text-xs text-red-600 md:text-sm" role="alert">
                 {error.status ? `${error.status}: ` : ''}
                 {error.message}
               </p>
             ) : null}
 
             {disclaimer ? (
-              <p className="font-serif text-[11px] leading-snug md:text-xs">
+              <p className="font-serif text-[10px] leading-snug sm:text-[11px] md:text-xs">
                 <DisclaimerWithTermsLink
                   termsUrl={termsUrl}
                   termsWord={termsWord}

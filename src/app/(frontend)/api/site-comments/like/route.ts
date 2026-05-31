@@ -7,6 +7,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import type { Comment } from '@/payload-types'
 import { isUsersCollectionAdmin } from '@/access/isAdminUser'
 import { getSiteMemberUser } from '@/access/siteMemberUser'
+import { ensureGuestId, setGuestCookie } from '@/utilities/guestId'
+import type { Where } from 'payload'
 
 async function getCommentIfVisibleForUser(
   commentId: number,
@@ -32,6 +34,7 @@ async function getCommentIfVisibleForUser(
     return null
   }
 
+  // Guests can only act on publicly visible (approved) comments.
   if (comment.status === 'approved') return comment
   return null
 }
@@ -54,21 +57,23 @@ export async function POST(req: NextRequest) {
   const { user } = await payload.auth({ headers: requestHeaders })
 
   const member = getSiteMemberUser(user)
-  if (!member) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const guest = member ? null : ensureGuestId(req)
+  const actorWhere: Where = member
+    ? { user: { equals: member.id } }
+    : { guestId: { equals: guest!.guestId } }
+  const actorData = member ? { user: member.id } : { guestId: guest!.guestId }
 
   const comment = await getCommentIfVisibleForUser(commentId, user, payload)
   if (!comment) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
-  const payloadReq = await createLocalReq({ user: member }, payload)
+  const payloadReq = await createLocalReq(member ? { user: member } : {}, payload)
 
   const existing = await payload.find({
     collection: 'comment-likes',
     where: {
-      and: [{ comment: { equals: commentId } }, { user: { equals: member.id } }],
+      and: [{ comment: { equals: commentId } }, actorWhere],
     },
     limit: 1,
     depth: 0,
@@ -82,19 +87,19 @@ export async function POST(req: NextRequest) {
       collection: 'comment-likes',
       id: existing.docs[0].id,
       req: payloadReq,
-      overrideAccess: false,
+      overrideAccess: true,
     })
   } else {
     await payload.create({
       collection: 'comment-likes',
       data: {
         comment: commentId,
-        user: member.id,
         reaction: 'like',
+        ...actorData,
       },
       draft: false,
       req: payloadReq,
-      overrideAccess: false,
+      overrideAccess: member ? false : true,
       depth: 0,
     })
   }
@@ -106,8 +111,10 @@ export async function POST(req: NextRequest) {
     overrideAccess: true,
   })) as Comment
 
-  return NextResponse.json({
+  const res = NextResponse.json({
     liked: !hadLike,
     likeCount: updated.likeCount ?? 0,
   })
+  if (guest?.isNew) setGuestCookie(res, guest.guestId)
+  return res
 }

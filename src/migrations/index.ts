@@ -27,6 +27,8 @@ import * as migration_20260517_210000_remove_portal_split_mobile_ad_fields from 
 import * as migration_20260517_220000_tas_target_element_id_nullable from './20260517_220000_tas_target_element_id_nullable'
 import * as migration_20260522_120000_media_block_visible from './20260522_120000_media_block_visible'
 import * as migration_20260522_120001_fix_media_block_visible_columns from './20260522_120001_fix_media_block_visible_columns'
+import * as migration_20260531_000000_guest_comments from './20260531_000000_guest_comments'
+import * as migration_20260601_000000_post_comments_disabled from './20260601_000000_post_comments_disabled'
 
 export const migrations = [
   {
@@ -173,5 +175,15 @@ export const migrations = [
     up: migration_20260522_120001_fix_media_block_visible_columns.up,
     down: migration_20260522_120001_fix_media_block_visible_columns.down,
     name: '20260522_120001_fix_media_block_visible_columns',
+  },
+  {
+    up: migration_20260531_000000_guest_comments.up,
+    down: migration_20260531_000000_guest_comments.down,
+    name: '20260531_000000_guest_comments',
+  },
+  {
+    up: migration_20260601_000000_post_comments_disabled.up,
+    down: migration_20260601_000000_post_comments_disabled.down,
+    name: '20260601_000000_post_comments_disabled',
   },
 ]

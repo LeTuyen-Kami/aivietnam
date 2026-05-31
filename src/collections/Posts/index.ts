@@ -313,6 +313,15 @@ export const Posts: CollectionConfig<'posts'> = {
         readOnly: true,
       },
     },
+    {
+      name: 'commentsDisabled',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        position: 'sidebar',
+        description: 'Tắt bình luận cho bài viết này. Bình luận cũ vẫn hiển thị nhưng không cho gửi mới.',
+      },
+    },
     slugField({
       slugify: ({ valueToSlugify }) => slugifyTitle(valueToSlugify),
     }),

@@ -22,7 +22,7 @@ type CommentDoc = {
   body: string
   status: string
   createdAt: string
-  author: { id: number; name: string | null } | null
+  author: { id: number | null; name: string | null } | null
   likeCount: number
   likedByMe: boolean
   parentCommentId: number | null
@@ -40,6 +40,7 @@ type CommentsPage = {
 }
 
 const PAGE_SIZE = 5
+const GUEST_NAME_STORAGE_KEY = 'sc_guest_name'
 const REACTIONS: Array<{ type: ReactionType; label: string; emoji: string; dataName: string }> = [
   { type: 'like', label: 'Thích', emoji: like, dataName: 'like' },
   { type: 'wow', label: 'Ngạc nhiên', emoji: supprise, dataName: 'surprised' },
@@ -122,7 +123,7 @@ function formatCommentTime(value: string) {
   const days = Math.floor(hours / 24)
 
   if (minutes < 1) return 'vừa xong'
-  if (minutes < 60) return `${minutes}’ trước`
+  if (minutes < 60) return `${minutes}' trước`
   if (hours < 24) return `${hours}h trước`
   if (days < 7) return `${days} ngày trước`
 
@@ -195,25 +196,37 @@ function CommentBody({ c }: { c: CommentDoc }) {
   const avatarText = authorName.trim().charAt(0).toUpperCase() || 'U'
 
   return (
-    <div className="flex min-w-0 items-start gap-3">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e6e6e6] text-[17px] font-medium text-[#8b8b8b]">
-        {avatarText}
+    <div className="min-w-0">
+      <div className="flex items-center gap-3">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#e6e6e6] text-[19px] font-medium text-[#8b8b8b]">
+          {avatarText}
+        </div>
+        <div className="min-w-0">
+          <p className="truncate text-[16px] font-bold leading-tight text-[#222]">{authorName}</p>
+          <time
+            className="text-[13px] text-[#8d8d8d]"
+            dateTime={c.createdAt}
+            title={new Date(c.createdAt).toLocaleString('vi-VN')}
+          >
+            {formatCommentTime(c.createdAt)}
+          </time>
+        </div>
       </div>
-      <div className="min-w-0 flex-1">
-        <p className="overflow-hidden text-[15px] leading-[1.45] text-[#3f3f3f] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:3]">
-          <span className="font-bold text-[#222]">{authorName}</span> {c.body}
-        </p>
-        {c.status === 'pending' ? (
-          <span className="mt-1 inline-block rounded bg-secondary px-1.5 py-0.5 text-[10px] uppercase text-muted-foreground">
-            Chờ duyệt
-          </span>
-        ) : null}
-        {c.status === 'rejected' ? (
-          <span className="mt-1 inline-block rounded bg-destructive/15 px-1.5 py-0.5 text-[10px] uppercase text-destructive">
-            Từ chối
-          </span>
-        ) : null}
-      </div>
+
+      <p className="mt-2.5 text-[15px] leading-[1.55] break-words whitespace-pre-wrap text-[#3f3f3f]">
+        {c.body}
+      </p>
+
+      {c.status === 'pending' ? (
+        <span className="mt-1 inline-block rounded bg-secondary px-1.5 py-0.5 text-[10px] uppercase text-muted-foreground">
+          Chờ duyệt
+        </span>
+      ) : null}
+      {c.status === 'rejected' ? (
+        <span className="mt-1 inline-block rounded bg-destructive/15 px-1.5 py-0.5 text-[10px] uppercase text-destructive">
+          Từ chối
+        </span>
+      ) : null}
     </div>
   )
 }
@@ -223,21 +236,18 @@ const pressable =
 
 function CommentActionRow({
   comment,
-  user,
-  openAuthModal,
   reactionPending,
   onReact,
   onReply,
   onReport,
 }: {
   comment: CommentDoc
-  user: unknown
-  openAuthModal: () => void
   reactionPending: boolean
   onReact: (reaction: ReactionType) => void
   onReply?: () => void
   onReport?: () => void
 }) {
+  const reduceMotion = useReducedMotion()
   const [pickerOpen, setPickerOpen] = useState(false)
   const hideTimerRef = useRef<number | null>(null)
 
@@ -276,8 +286,17 @@ function CommentActionRow({
     }
   }, [])
 
+  const selectReaction = (type: ReactionType) => {
+    setPickerOpen(false)
+    if (hideTimerRef.current != null) {
+      window.clearTimeout(hideTimerRef.current)
+      hideTimerRef.current = null
+    }
+    onReact(type)
+  }
+
   return (
-    <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 pl-12 text-[13px] leading-none text-[#777]">
+    <div className="mt-2.5 flex items-center gap-6 text-[15px] leading-none text-[#777]">
       <div
         className="relative"
         onMouseEnter={openPicker}
@@ -285,38 +304,20 @@ function CommentActionRow({
         onFocus={openPicker}
         onBlur={closePickerWithDelay}
       >
-        {totalReactions > 0 ? (
-          <span className="-ml-3 inline-flex items-center gap-1 tabular-nums text-[#777]">
-            <span className="flex -space-x-1">
-              {reactionBadges.map((reaction) => (
-                <img
-                  key={`${comment.id}-${reaction.type}-badge`}
-                  className="h-[17px] w-[17px] rounded-full border border-white"
-                  src={reaction.emoji}
-                  alt={reaction.label}
-                  title={reaction.label}
-                />
-              ))}
-            </span>
-            <span>{totalReactions}</span>
-          </span>
-        ) : (
-          <button
-            type="button"
-            className={cn(
-              pressable,
-              'inline-flex items-center gap-1.5 text-[#777] hover:text-[#c72a55] cursor-pointer',
-              myReaction && 'font-medium text-[#c72a55]',
-            )}
-            onClick={() => {
-              if (!user) return openAuthModal()
-              onReact('like')
-            }}
-          >
-            <ThumbsUp className="h-3.5 w-3.5" />
-            {/*<span>{activeReaction?.label ?? 'Thích'}</span>*/}
-          </button>
-        )}
+        <button
+          type="button"
+          disabled={reactionPending}
+          onContextMenu={(e) => e.preventDefault()}
+          className={cn(
+            pressable,
+            'inline-flex touch-none items-center gap-1.5 cursor-pointer select-none [-webkit-touch-callout:none]',
+            myReaction ? 'font-semibold text-[#c92552]' : 'text-[#777] hover:text-[#c92552]',
+          )}
+          onClick={() => selectReaction(myReaction ?? 'like')}
+        >
+          {myReaction ? null : <ThumbsUp className="h-[18px] w-[18px]" strokeWidth={1.6} />}
+          <span>{activeReaction?.label ?? 'Thích'}</span>
+        </button>
 
         <AnimatePresence>
           {pickerOpen && (
@@ -326,7 +327,8 @@ function CommentActionRow({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, y: 4, scale: 0.98 }}
               transition={{ duration: 0.12 }}
-              className="absolute bottom-full left-0 z-20 mb-2 border border-[#d7d7d7] bg-white py-2 shadow-sm w-[140px] px-2 rounded-full"
+              onContextMenu={(e) => e.preventDefault()}
+              className="absolute bottom-full left-0 z-20 mb-2 w-[140px] select-none rounded-full border border-[#d7d7d7] bg-white px-2 py-2 shadow-sm [-webkit-touch-callout:none]"
             >
               <div
                 className="reactions-menu grid grid-cols-3 gap-4"
@@ -334,20 +336,21 @@ function CommentActionRow({
               >
                 {REACTIONS.map(({ type, label, emoji, dataName }) => (
                   <div key={`${comment.id}-${type}`} className="text-center size-8">
-                    <button
+                    <motion.button
                       type="button"
                       disabled={reactionPending}
                       aria-label={label}
                       title={label}
                       data-name={dataName}
                       data-rel={comment.id}
-                      onClick={() => {
-                        if (!user) return openAuthModal()
-                        onReact(type)
-                      }}
+                      onContextMenu={(e) => e.preventDefault()}
+                      whileHover={reduceMotion ? undefined : { scale: 1.25, y: -2 }}
+                      whileTap={reduceMotion ? undefined : { scale: 0.85 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 18 }}
+                      onClick={() => selectReaction(type)}
                     >
-                      <img className="size-8" src={emoji} alt={label} />
-                    </button>
+                      <img className="size-8 select-none [-webkit-touch-callout:none]" src={emoji} alt={label} draggable={false} />
+                    </motion.button>
                   </div>
                 ))}
               </div>
@@ -369,26 +372,38 @@ function CommentActionRow({
       {onReport ? (
         <button
           type="button"
-          className={cn(pressable, 'text-[#8a8a8a] hover:text-[#c72a55] cursor-pointer')}
+          className={cn(pressable, 'text-[#8a8a8a] hover:text-[#c92552] cursor-pointer')}
           aria-label="Báo cáo bình luận"
           onClick={onReport}
         >
-          <Flag className="h-3.5 w-3.5" />
+          <Flag className="h-[15px] w-[15px]" />
         </button>
       ) : null}
 
-      <time
-        className="ml-auto text-[13px] text-[#8d8d8d]"
-        dateTime={comment.createdAt}
-        title={new Date(comment.createdAt).toLocaleString('vi-VN')}
-      >
-        {formatCommentTime(comment.createdAt)}
-      </time>
+      {totalReactions > 0 ? (
+        <span className="ml-auto inline-flex items-center gap-1.5 tabular-nums text-[#777]">
+          <span className="flex -space-x-1">
+            {reactionBadges.map((reaction) => (
+              <img
+                key={`${comment.id}-${reaction.type}-badge`}
+                className="h-[18px] w-[18px] rounded-full border border-white"
+                src={reaction.emoji}
+                alt={reaction.label}
+                title={reaction.label}
+              />
+            ))}
+          </span>
+          <span>{totalReactions}</span>
+        </span>
+      ) : null}
     </div>
   )
 }
 
-export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
+export const PostComments: React.FC<{ postId: number; commentsClosed?: boolean }> = ({
+  postId,
+  commentsClosed = false,
+}) => {
   const { user, loading, openAuthModal } = useAuth()
   const queryClient = useQueryClient()
   const reduceMotion = useReducedMotion()
@@ -396,6 +411,7 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
   const listIntroDoneRef = useRef(false)
 
   const [body, setBody] = useState('')
+  const [guestName, setGuestName] = useState('')
   const [message, setMessage] = useState<string | null>(null)
   const [messageTone, setMessageTone] = useState<'muted' | 'success'>('muted')
   const [page, setPage] = useState(1)
@@ -443,13 +459,36 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
     return () => window.clearTimeout(t)
   }, [highlightId])
 
+  // Remember the guest's display name across visits.
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(GUEST_NAME_STORAGE_KEY)
+      if (saved) setGuestName(saved)
+    } catch {
+      /* ignore */
+    }
+  }, [])
+
+  useEffect(() => {
+    try {
+      if (guestName.trim()) window.localStorage.setItem(GUEST_NAME_STORAGE_KEY, guestName.trim())
+    } catch {
+      /* ignore */
+    }
+  }, [guestName])
+
   const submitMutation = useMutation({
     mutationFn: async ({ text, parentCommentId }: { text: string; parentCommentId?: number }) => {
       const res = await fetch('/api/site-comments', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ postId, body: text, parentCommentId }),
+        body: JSON.stringify({
+          postId,
+          body: text,
+          parentCommentId,
+          ...(user ? {} : { guestName: guestName.trim() }),
+        }),
       })
       const payload = (await res.json().catch(() => ({}))) as {
         error?: string
@@ -617,12 +656,13 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user) {
-      openAuthModal()
-      return
-    }
     const text = body.trim()
     if (!text) return
+    if (!user && !guestName.trim()) {
+      setMessageTone('muted')
+      setMessage('Vui lòng nhập tên của bạn.')
+      return
+    }
     setMessage(null)
     setMessageTone('muted')
     submitMutation.mutate({ text })
@@ -631,12 +671,13 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
   const submitReply = (e: React.FormEvent) => {
     e.preventDefault()
     if (!replyingToId) return
-    if (!user) {
-      openAuthModal()
-      return
-    }
     const text = replyBody.trim()
     if (!text) return
+    if (!user && !guestName.trim()) {
+      setMessageTone('muted')
+      setMessage('Vui lòng nhập tên của bạn.')
+      return
+    }
     setMessage(null)
     setMessageTone('muted')
     submitMutation.mutate({ text, parentCommentId: replyingToId })
@@ -645,10 +686,6 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
   const submitReport = (e: React.FormEvent) => {
     e.preventDefault()
     if (!reportingId) return
-    if (!user) {
-      openAuthModal()
-      return
-    }
     reportMutation.mutate({
       commentId: reportingId,
       reason: reportReason,
@@ -695,65 +732,72 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
         Ý kiến ({approvedCount})
       </motion.h2>
 
+      {commentsClosed ? (
+        <p className="mt-4 rounded-[3px] border-l-2 border-l-[#c92552] bg-[#f5f5f5] px-4 py-3 text-[15px] text-[#777]">
+          Bình luận đã được tắt cho bài viết này.
+        </p>
+      ) : (
       <form className="mt-4 space-y-2" onSubmit={submit}>
+        {!user && !loading ? (
+          <input
+            type="text"
+            aria-label="Tên của bạn"
+            className="w-full rounded-[3px] border-0 border-l-2 border-l-[#c92552] bg-[#f5f5f5] px-4 py-2.5 text-[15px] focus-visible:outline-none"
+            placeholder="Tên của bạn"
+            value={guestName}
+            onChange={(e) => setGuestName(e.target.value)}
+            maxLength={80}
+          />
+        ) : null}
+
         <div className="relative">
           <Textarea
             aria-label="Nhập ý kiến"
             className="min-h-[52px] resize-none rounded-[3px] border-0 border-l-2 border-l-[#c92552] bg-[#f5f5f5] py-4 pr-12 pl-4 text-[15px] shadow-none focus-visible:ring-0 focus-visible:outline-none"
-            placeholder={
-              loading ? 'Đang tải…' : user ? 'Chia sẻ ý kiến của bạn' : 'Đăng nhập để bình luận'
-            }
+            placeholder={loading ? 'Đang tải…' : 'Chia sẻ ý kiến của bạn'}
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            readOnly={!user && !loading}
-            onClick={() => {
-              if (!loading && !user) openAuthModal()
-            }}
           />
           <button
             type="button"
             className="absolute top-1/2 right-3 -translate-y-1/2 text-[#b9b9b9] hover:text-[#8a8a8a]"
             aria-label="Mở biểu tượng cảm xúc"
-            onClick={() => {
-              if (!loading && !user) openAuthModal()
-            }}
           >
             <Smile className="h-5 w-5" />
           </button>
         </div>
 
-        {user && !body.trim() ? (
+        {!body.trim() ? (
           <p className="text-[13px] leading-none text-[#c92552]">
             Bạn chưa nhập nội dung bình luận.
           </p>
+        ) : !user && !guestName.trim() ? (
+          <p className="text-[13px] leading-none text-[#c92552]">Vui lòng nhập tên của bạn.</p>
         ) : null}
 
         {body.trim() ? (
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-3">
             <Button
               className={cn(pressable, 'bg-[#C92452]')}
-              disabled={submitMutation.isPending || !body.trim()}
+              disabled={submitMutation.isPending || !body.trim() || (!user && !guestName.trim())}
               size="sm"
               type="submit"
             >
               {submitMutation.isPending ? 'Đang gửi…' : 'Gửi ý kiến'}
             </Button>
-          </div>
-        ) : !user ? (
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              className={pressable}
-              disabled={loading}
-              size="sm"
-              type="button"
-              variant="secondary"
-              onClick={openAuthModal}
-            >
-              Đăng nhập để bình luận
-            </Button>
+            {!user ? (
+              <button
+                type="button"
+                className="text-[13px] text-[#777] hover:text-[#c92552]"
+                onClick={openAuthModal}
+              >
+                hoặc Đăng nhập
+              </button>
+            ) : null}
           </div>
         ) : null}
       </form>
+      )}
 
       {submitMutation.isError ? (
         <p className="mt-2 text-sm text-destructive">
@@ -908,17 +952,13 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
                     <CommentBody c={c} />
                     <CommentActionRow
                       comment={c}
-                      openAuthModal={openAuthModal}
                       reactionPending={reactionMutation.isPending}
-                      user={user}
                       onReact={(reaction) => reactToComment(c.id, reaction)}
                       onReply={() => {
-                        if (!user) return openAuthModal()
                         setReplyingToId(c.id)
                         setReportDetails('')
                       }}
                       onReport={() => {
-                        if (!user) return openAuthModal()
                         setReportingId(c.id)
                         setReportReason('spam')
                         setReportDetails('')
@@ -929,9 +969,20 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
 
                     {replyingToId === c.id ? (
                       <form
-                        className="mt-3 ml-12 space-y-2 rounded-[3px] border border-[#e5e5e5] bg-[#fafafa] p-3"
+                        className="mt-3 ml-6 space-y-2 rounded-[3px] border border-[#e5e5e5] bg-[#fafafa] p-3"
                         onSubmit={submitReply}
                       >
+                        {!user && !loading ? (
+                          <input
+                            type="text"
+                            aria-label="Tên của bạn"
+                            className="w-full rounded-[3px] border border-[#dedede] bg-white px-3 py-2 text-[14px] focus-visible:outline-none"
+                            placeholder="Tên của bạn"
+                            value={guestName}
+                            onChange={(e) => setGuestName(e.target.value)}
+                            maxLength={80}
+                          />
+                        ) : null}
                         <Textarea
                           className="min-h-16 resize-none border-[#dedede] bg-white text-[14px] shadow-none focus-visible:ring-0"
                           placeholder="Nhập bình luận trả lời..."
@@ -964,18 +1015,18 @@ export const PostComments: React.FC<{ postId: number }> = ({ postId }) => {
                     ) : null}
 
                     {(c.replies?.length ?? 0) > 0 ? (
-                      <div className="mt-3 ml-12 space-y-4 border-l border-[#ececec] pl-4">
+                      <div className="mt-3 ml-6 space-y-4 border-l border-[#ececec] pl-3">
+                        <p className="-mt-0.5 text-[13px] text-[#8d8d8d]">
+                          ↳ {c.replies?.length} trả lời
+                        </p>
                         {c.replies?.map((reply) => (
                           <div key={reply.id} className="min-w-0">
                             <CommentBody c={reply} />
                             <CommentActionRow
                               comment={reply}
-                              openAuthModal={openAuthModal}
                               reactionPending={reactionMutation.isPending}
-                              user={user}
                               onReact={(reaction) => reactToComment(reply.id, reaction)}
                               onReport={() => {
-                                if (!user) return openAuthModal()
                                 setReportingId(reply.id)
                                 setReportReason('spam')
                                 setReportDetails('')

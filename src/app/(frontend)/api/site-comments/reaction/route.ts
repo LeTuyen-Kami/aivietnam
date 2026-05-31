@@ -1,9 +1,11 @@
 import config from '@payload-config'
 import { createLocalReq, getPayload } from 'payload'
+import type { Where } from 'payload'
 import { headers } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { getSiteMemberUser } from '@/access/siteMemberUser'
+import { ensureGuestId, setGuestCookie } from '@/utilities/guestId'
 
 type ReactionType = 'like' | 'love' | 'haha' | 'wow' | 'sad' | 'angry'
 
@@ -32,27 +34,29 @@ export async function POST(req: NextRequest) {
   const { user } = await payload.auth({ headers: requestHeaders })
 
   const member = getSiteMemberUser(user)
-  if (!member) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const guest = member ? null : ensureGuestId(req)
+  const actorWhere: Where = member
+    ? { user: { equals: member.id } }
+    : { guestId: { equals: guest!.guestId } }
+  const actorData = member ? { user: member.id } : { guestId: guest!.guestId }
 
   const comment = await payload.findByID({
     collection: 'comments',
     id: commentId,
     depth: 0,
-    overrideAccess: false,
-    user: member,
+    overrideAccess: member ? false : true,
+    ...(member ? { user: member } : {}),
   })
   if (!comment) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
-  const payloadReq = await createLocalReq({ user: member }, payload)
+  const payloadReq = await createLocalReq(member ? { user: member } : {}, payload)
 
   const existing = await payload.find({
     collection: 'comment-likes',
     where: {
-      and: [{ comment: { equals: commentId } }, { user: { equals: member.id } }],
+      and: [{ comment: { equals: commentId } }, actorWhere],
     },
     limit: 1,
     depth: 0,
@@ -63,9 +67,9 @@ export async function POST(req: NextRequest) {
   if (!current) {
     await payload.create({
       collection: 'comment-likes',
-      data: { comment: commentId, user: member.id, reaction },
+      data: { comment: commentId, reaction, ...actorData },
       req: payloadReq,
-      overrideAccess: false,
+      overrideAccess: member ? false : true,
       depth: 0,
     })
   } else if (current.reaction === reaction) {
@@ -73,20 +77,20 @@ export async function POST(req: NextRequest) {
       collection: 'comment-likes',
       id: current.id,
       req: payloadReq,
-      overrideAccess: false,
+      overrideAccess: true,
     })
   } else {
     await payload.delete({
       collection: 'comment-likes',
       id: current.id,
       req: payloadReq,
-      overrideAccess: false,
+      overrideAccess: true,
     })
     await payload.create({
       collection: 'comment-likes',
-      data: { comment: commentId, user: member.id, reaction },
+      data: { comment: commentId, reaction, ...actorData },
       req: payloadReq,
-      overrideAccess: false,
+      overrideAccess: member ? false : true,
       depth: 0,
     })
   }
@@ -104,12 +108,18 @@ export async function POST(req: NextRequest) {
   reactions.docs.forEach((row) => {
     const type = (row.reaction ?? 'like') as ReactionType
     summary[type] = (summary[type] ?? 0) + 1
-    const userId = typeof row.user === 'object' && row.user !== null ? row.user.id : row.user
-    if (userId === member.id) myReaction = type
+    if (member) {
+      const userId = typeof row.user === 'object' && row.user !== null ? row.user.id : row.user
+      if (userId === member.id) myReaction = type
+    } else if (guest && (row as { guestId?: string | null }).guestId === guest.guestId) {
+      myReaction = type
+    }
   })
 
-  return NextResponse.json({
+  const res = NextResponse.json({
     myReaction,
     reactionSummary: summary,
   })
+  if (guest?.isNew) setGuestCookie(res, guest.guestId)
+  return res
 }

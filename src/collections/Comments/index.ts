@@ -62,8 +62,28 @@ export const Comments: CollectionConfig = {
       name: 'author',
       type: 'relationship',
       relationTo: 'users',
-      required: true,
+      required: false,
       maxDepth: 1,
+      admin: {
+        description: 'Bỏ trống nếu là bình luận của khách (chưa đăng nhập).',
+      },
+    },
+    {
+      name: 'guestName',
+      type: 'text',
+      maxLength: 80,
+      admin: {
+        description: 'Tên hiển thị cho bình luận của khách.',
+      },
+    },
+    {
+      name: 'guestId',
+      type: 'text',
+      index: true,
+      admin: {
+        readOnly: true,
+        description: 'Định danh ẩn danh (cookie) của khách.',
+      },
     },
     {
       name: 'parentComment',

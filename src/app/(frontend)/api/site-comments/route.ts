@@ -7,11 +7,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import type { Comment, User } from '@/payload-types'
 import { isUsersCollectionAdmin } from '@/access/isAdminUser'
 import { getSiteMemberUser } from '@/access/siteMemberUser'
+import { ensureGuestId, setGuestCookie } from '@/utilities/guestId'
 import type { Where } from 'payload'
 
 type ReactionType = 'like' | 'love' | 'haha' | 'wow' | 'sad' | 'angry'
 
 type ReactionSummary = Partial<Record<ReactionType, number>>
+
+/** Comment doc with the guest columns (present after the guest-comments migration). */
+type CommentWithGuest = Comment & { guestName?: string | null; guestId?: string | null }
 
 function toCommentId(comment: Comment['parentComment'] | number | null | undefined): number | null {
   if (typeof comment === 'number') return comment
@@ -21,11 +25,17 @@ function toCommentId(comment: Comment['parentComment'] | number | null | undefin
   return null
 }
 
-function serializeComment(c: Comment, myReaction: ReactionType | null, reactions: ReactionSummary) {
+function serializeComment(
+  c: CommentWithGuest,
+  myReaction: ReactionType | null,
+  reactions: ReactionSummary,
+) {
   const author =
     typeof c.author === 'object' && c.author !== null
       ? { id: (c.author as User).id, name: (c.author as User).name ?? null }
-      : null
+      : c.guestName
+        ? { id: null, name: c.guestName }
+        : null
   return {
     id: c.id,
     body: c.body,
@@ -66,12 +76,19 @@ export async function GET(req: NextRequest) {
   const requestHeaders = await headers()
   const { user } = await payload.auth({ headers: requestHeaders })
 
+  const member = getSiteMemberUser(user)
+  const guest = member ? null : ensureGuestId(req)
+  const guestId = guest?.guestId ?? null
+
   const filters: Where[] = [{ post: { equals: postId } }, { parentComment: { exists: false } }]
   if (!isUsersCollectionAdmin(user)) {
-    const member = getSiteMemberUser(user)
     if (member) {
       filters.push({
         or: [{ status: { equals: 'approved' } }, { author: { equals: member.id } }],
+      })
+    } else if (guestId) {
+      filters.push({
+        or: [{ status: { equals: 'approved' } }, { guestId: { equals: guestId } }],
       })
     } else {
       filters.push({ status: { equals: 'approved' } })
@@ -121,7 +138,6 @@ export async function GET(req: NextRequest) {
 
   const visibleComments = [...docs, ...repliesResult.docs]
   const allIds = visibleComments.map((c) => c.id)
-  const member = getSiteMemberUser(user)
 
   const reactionDocs =
     allIds.length > 0
@@ -132,7 +148,14 @@ export async function GET(req: NextRequest) {
           depth: 0,
           overrideAccess: true,
         })
-      : { docs: [] as Array<{ comment: number | { id: number }; reaction?: ReactionType; user: number | { id: number } }> }
+      : {
+          docs: [] as Array<{
+            comment: number | { id: number }
+            reaction?: ReactionType
+            user?: number | { id: number } | null
+            guestId?: string | null
+          }>,
+        }
 
   const reactionSummaryByComment = new Map<number, ReactionSummary>()
   const myReactionByComment = new Map<number, ReactionType>()
@@ -151,6 +174,8 @@ export async function GET(req: NextRequest) {
       if (userId === member.id) {
         myReactionByComment.set(commentId, reaction)
       }
+    } else if (guestId && row.guestId === guestId) {
+      myReactionByComment.set(commentId, reaction)
     }
   })
 
@@ -163,7 +188,7 @@ export async function GET(req: NextRequest) {
     repliesByParent.set(parentId, current)
   })
 
-  return NextResponse.json({
+  const res = NextResponse.json({
     sort: sortParam === 'popular' ? 'popular' : 'newest',
     docs: docs.map((c) => {
       const comment = c as Comment
@@ -192,10 +217,13 @@ export async function GET(req: NextRequest) {
     hasPrevPage,
     approvedCount: approvedTotalResult.totalDocs,
   })
+
+  if (guest?.isNew) setGuestCookie(res, guest.guestId)
+  return res
 }
 
 export async function POST(req: NextRequest) {
-  let json: { postId?: unknown; body?: unknown; parentCommentId?: unknown }
+  let json: { postId?: unknown; body?: unknown; parentCommentId?: unknown; guestName?: unknown }
   try {
     json = await req.json()
   } catch {
@@ -226,8 +254,16 @@ export async function POST(req: NextRequest) {
   const { user } = await payload.auth({ headers: requestHeaders })
 
   const member = getSiteMemberUser(user)
+
+  let guest: { guestId: string; isNew: boolean } | null = null
+  let guestName = ''
   if (!member) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    guestName = typeof json.guestName === 'string' ? json.guestName.trim() : ''
+    if (!guestName) {
+      return NextResponse.json({ error: 'Vui lòng nhập tên của bạn' }, { status: 400 })
+    }
+    if (guestName.length > 80) guestName = guestName.slice(0, 80)
+    guest = ensureGuestId(req)
   }
 
   const post = await payload.findByID({
@@ -238,6 +274,9 @@ export async function POST(req: NextRequest) {
   })
   if (!post) {
     return NextResponse.json({ error: 'Post not found' }, { status: 404 })
+  }
+  if ((post as { commentsDisabled?: boolean }).commentsDisabled) {
+    return NextResponse.json({ error: 'Bình luận đã bị tắt cho bài viết này' }, { status: 403 })
   }
 
   if (parentCommentId != null) {
@@ -255,7 +294,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const payloadReq = await createLocalReq({ user: member }, payload)
+  const payloadReq = await createLocalReq(member ? { user: member } : {}, payload)
 
   try {
     const doc = await payload.create({
@@ -264,16 +303,19 @@ export async function POST(req: NextRequest) {
         post: postId,
         body,
         ...(parentCommentId != null ? { parentComment: parentCommentId } : {}),
+        ...(member ? {} : { guestName, guestId: guest!.guestId }),
       } as DataFromCollectionSlug<'comments'>,
       draft: false,
       req: payloadReq,
-      overrideAccess: false,
+      overrideAccess: member ? false : true,
       depth: 1,
     })
 
-    return NextResponse.json({
-      doc: serializeComment(doc as Comment, null, {}),
+    const res = NextResponse.json({
+      doc: serializeComment(doc as CommentWithGuest, null, {}),
     })
+    if (guest?.isNew) setGuestCookie(res, guest.guestId)
+    return res
   } catch (e) {
     if (e instanceof APIError) {
       return NextResponse.json({ error: e.message }, { status: e.status })

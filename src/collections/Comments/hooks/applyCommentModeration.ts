@@ -28,10 +28,7 @@ export const applyCommentModeration: CollectionBeforeChangeHook = async ({
       ? (data.author as number | User | undefined)
       : (data.author ?? originalDoc?.author)
   const resolvedAuthor = typeof authorId === 'object' && authorId !== null ? authorId.id : authorId
-
-  if (resolvedAuthor === undefined || resolvedAuthor === null) {
-    return data
-  }
+  const hasAuthor = resolvedAuthor !== undefined && resolvedAuthor !== null
 
   const bodyRaw =
     typeof data.body === 'string' ? data.body : ((originalDoc?.body as string | undefined) ?? '')
@@ -47,7 +44,7 @@ export const applyCommentModeration: CollectionBeforeChangeHook = async ({
   })
 
   for (const rule of rules.docs as ModerationRuleDoc[]) {
-    if (rule.ruleType === 'blockedUser') {
+    if (rule.ruleType === 'blockedUser' && hasAuthor) {
       const blockedId =
         typeof rule.blockedUser === 'object' && rule.blockedUser !== null
           ? rule.blockedUser.id

@@ -4,6 +4,7 @@ import { headers } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { getSiteMemberUser } from '@/access/siteMemberUser'
+import { ensureGuestId, setGuestCookie } from '@/utilities/guestId'
 
 const REPORT_FORM_TITLE = 'Báo cáo bình luận'
 
@@ -30,19 +31,24 @@ export async function POST(req: NextRequest) {
   const requestHeaders = await headers()
   const { user } = await payload.auth({ headers: requestHeaders })
   const member = getSiteMemberUser(user)
+  const guest = member ? null : ensureGuestId(req)
 
-  if (!member) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const targetComment = await payload.findByID({
-    collection: 'comments',
-    id: commentId,
-    depth: 0,
-    user: member,
-    overrideAccess: false,
-  })
-  if (!targetComment) {
+  const targetComment = member
+    ? await payload.findByID({
+        collection: 'comments',
+        id: commentId,
+        depth: 0,
+        user: member,
+        overrideAccess: false,
+      })
+    : await payload.findByID({
+        collection: 'comments',
+        id: commentId,
+        depth: 0,
+        overrideAccess: true,
+      })
+  // Guests can only report publicly visible (approved) comments.
+  if (!targetComment || (!member && targetComment.status !== 'approved')) {
     return NextResponse.json({ error: 'Comment not found' }, { status: 404 })
   }
 
@@ -64,16 +70,18 @@ export async function POST(req: NextRequest) {
     data: {
       form: reportForm.id,
       submissionData: [
-        { field: 'reporter-email', value: member.email ?? '' },
+        { field: 'reporter-email', value: member?.email ?? '' },
         { field: 'comment-id', value: String(commentId) },
         { field: 'reason', value: reason },
         { field: 'details', value: details || '' },
-        { field: 'reporter-user-id', value: String(member.id) },
+        { field: 'reporter-user-id', value: member ? String(member.id) : `guest:${guest!.guestId}` },
       ],
     },
     depth: 0,
     overrideAccess: true,
   })
 
-  return NextResponse.json({ success: true })
+  const res = NextResponse.json({ success: true })
+  if (guest?.isNew) setGuestCookie(res, guest.guestId)
+  return res
 }
