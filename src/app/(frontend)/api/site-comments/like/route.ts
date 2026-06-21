@@ -1,45 +1,20 @@
 import config from '@payload-config'
 import { createLocalReq, getPayload } from 'payload'
-import type { PayloadRequest } from 'payload'
 import { headers } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
 import type { Comment } from '@/payload-types'
-import { isUsersCollectionAdmin } from '@/access/isAdminUser'
 import { getSiteMemberUser } from '@/access/siteMemberUser'
+import { getCommentIfVisibleForUser } from '@/utilities/commentVisibility'
 import { ensureGuestId, setGuestCookie } from '@/utilities/guestId'
+import { clientIpFromHeaders, rateLimit } from '@/utilities/rateLimit'
 import type { Where } from 'payload'
 
-async function getCommentIfVisibleForUser(
-  commentId: number,
-  user: PayloadRequest['user'],
-  payload: Awaited<ReturnType<typeof getPayload>>,
-): Promise<Comment | null> {
-  const comment = (await payload.findByID({
-    collection: 'comments',
-    id: commentId,
-    depth: 0,
-    overrideAccess: true,
-  })) as Comment | null
-
-  if (!comment) return null
-
-  if (isUsersCollectionAdmin(user)) return comment
-
-  const member = getSiteMemberUser(user)
-  const authorId = typeof comment.author === 'object' && comment.author ? comment.author.id : comment.author
-
-  if (member) {
-    if (comment.status === 'approved' || authorId === member.id) return comment
-    return null
+export async function POST(req: NextRequest) {
+  if (!rateLimit(`comment-like:${clientIpFromHeaders(req)}`, 60, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
   }
 
-  // Guests can only act on publicly visible (approved) comments.
-  if (comment.status === 'approved') return comment
-  return null
-}
-
-export async function POST(req: NextRequest) {
   let json: { commentId?: unknown }
   try {
     json = await req.json()

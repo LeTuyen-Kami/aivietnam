@@ -72,11 +72,12 @@ export const applyCommentModeration: CollectionBeforeChangeHook = async ({
     }
   }
 
-  if (req.user && isUsersCollectionAdmin(req.user)) {
-    return data
+  // Chỉ tự đặt 'approved' khi TẠO MỚI. Trên update KHÔNG hạ pending/rejected
+  // (do admin đặt) xuống approved — nếu không, member sửa comment của mình sẽ tự
+  // re-approve (moderation bypass). Keyword check ở trên vẫn áp cho cả update.
+  if (operation === 'create' && !(req.user && isUsersCollectionAdmin(req.user))) {
+    data.status = 'approved'
+    data.rejectionReason = null
   }
-
-  data.status = 'approved'
-  data.rejectionReason = null
   return data
 }

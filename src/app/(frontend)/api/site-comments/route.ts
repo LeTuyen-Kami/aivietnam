@@ -8,6 +8,7 @@ import type { Comment, User } from '@/payload-types'
 import { isUsersCollectionAdmin } from '@/access/isAdminUser'
 import { getSiteMemberUser } from '@/access/siteMemberUser'
 import { ensureGuestId, setGuestCookie } from '@/utilities/guestId'
+import { clientIpFromHeaders, rateLimit } from '@/utilities/rateLimit'
 import type { Where } from 'payload'
 
 type ReactionType = 'like' | 'love' | 'haha' | 'wow' | 'sad' | 'angry'
@@ -65,12 +66,13 @@ export async function GET(req: NextRequest) {
   const sortParam = req.nextUrl.searchParams.get('sort')
   const page = Math.max(1, pageParam ? Number(pageParam) || 1 : 1)
   const limitRaw = limitParam ? Number(limitParam) : DEFAULT_PAGE_SIZE
-  const limit = Math.min(MAX_PAGE_SIZE, Math.max(1, Number.isFinite(limitRaw) ? limitRaw : DEFAULT_PAGE_SIZE))
+  const limit = Math.min(
+    MAX_PAGE_SIZE,
+    Math.max(1, Number.isFinite(limitRaw) ? limitRaw : DEFAULT_PAGE_SIZE),
+  )
 
   const sort =
-    sortParam === 'popular'
-      ? ('-likeCount,-createdAt' as const)
-      : ('-createdAt' as const)
+    sortParam === 'popular' ? ('-likeCount,-createdAt' as const) : ('-createdAt' as const)
 
   const payload = await getPayload({ config })
   const requestHeaders = await headers()
@@ -127,7 +129,11 @@ export async function GET(req: NextRequest) {
       ? await payload.find({
           collection: 'comments',
           where: {
-            and: [{ post: { equals: postId } }, { parentComment: { in: parentIds } }, ...filters.slice(2)],
+            and: [
+              { post: { equals: postId } },
+              { parentComment: { in: parentIds } },
+              ...filters.slice(2),
+            ],
           },
           depth: 1,
           sort: 'createdAt',
@@ -162,7 +168,9 @@ export async function GET(req: NextRequest) {
 
   reactionDocs.docs.forEach((row) => {
     const commentId =
-      typeof row.comment === 'object' && row.comment !== null ? (row.comment as { id: number }).id : row.comment
+      typeof row.comment === 'object' && row.comment !== null
+        ? (row.comment as { id: number }).id
+        : row.comment
     if (typeof commentId !== 'number') return
     const reaction = (row.reaction ?? 'like') as ReactionType
     const next = { ...(reactionSummaryByComment.get(commentId) ?? {}) }
@@ -223,6 +231,11 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // Chống spam tạo bình luận (guest auto-approved) — rate-limit theo IP (audit M-g).
+  if (!rateLimit(`comment-create:${clientIpFromHeaders(req)}`, 10, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
+
   let json: { postId?: unknown; body?: unknown; parentCommentId?: unknown; guestName?: unknown }
   try {
     json = await req.json()
@@ -320,7 +333,7 @@ export async function POST(req: NextRequest) {
     if (e instanceof APIError) {
       return NextResponse.json({ error: e.message }, { status: e.status })
     }
-    const message = e instanceof Error ? e.message : 'Failed to create comment'
-    return NextResponse.json({ error: message }, { status: 500 })
+    payload.logger.error({ err: e, msg: 'Create comment failed' })
+    return NextResponse.json({ error: 'Không gửi được bình luận' }, { status: 500 })
   }
 }

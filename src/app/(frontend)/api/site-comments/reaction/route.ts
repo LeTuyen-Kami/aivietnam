@@ -5,13 +5,19 @@ import { headers } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { getSiteMemberUser } from '@/access/siteMemberUser'
+import { getCommentIfVisibleForUser } from '@/utilities/commentVisibility'
 import { ensureGuestId, setGuestCookie } from '@/utilities/guestId'
+import { clientIpFromHeaders, rateLimit } from '@/utilities/rateLimit'
 
 type ReactionType = 'like' | 'love' | 'haha' | 'wow' | 'sad' | 'angry'
 
 const ALLOWED_REACTIONS = new Set<ReactionType>(['like', 'love', 'haha', 'wow', 'sad', 'angry'])
 
 export async function POST(req: NextRequest) {
+  if (!rateLimit(`comment-reaction:${clientIpFromHeaders(req)}`, 60, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
+
   let json: { commentId?: unknown; reaction?: unknown }
   try {
     json = await req.json()
@@ -40,13 +46,9 @@ export async function POST(req: NextRequest) {
     : { guestId: { equals: guest!.guestId } }
   const actorData = member ? { user: member.id } : { guestId: guest!.guestId }
 
-  const comment = await payload.findByID({
-    collection: 'comments',
-    id: commentId,
-    depth: 0,
-    overrideAccess: member ? false : true,
-    ...(member ? { user: member } : {}),
-  })
+  // Chỉ cho tương tác với comment hiển thị được (approved / của chính member) —
+  // trước đây reaction bỏ qua kiểm tra status (audit: reaction thiếu gate).
+  const comment = await getCommentIfVisibleForUser(commentId, user, payload)
   if (!comment) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }

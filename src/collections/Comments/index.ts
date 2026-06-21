@@ -6,6 +6,7 @@ import { isUsersCollectionAdmin } from '../../access/isAdminUser'
 import { getSiteMemberUser } from '../../access/siteMemberUser'
 import { applyCommentModeration } from './hooks/applyCommentModeration'
 import { deleteRelatedCommentLikes } from './hooks/deleteRelatedCommentLikes'
+import { enforceCommentsEnabled } from './hooks/enforceCommentsEnabled'
 import { forceCommentAuthor } from './hooks/forceCommentAuthor'
 
 export const Comments: CollectionConfig = {
@@ -29,10 +30,7 @@ export const Comments: CollectionConfig = {
         return { status: { equals: 'approved' } }
       }
       return {
-        or: [
-          { status: { equals: 'approved' } },
-          { author: { equals: member.id } },
-        ],
+        or: [{ status: { equals: 'approved' } }, { author: { equals: member.id } }],
       }
     },
     update: ({ req: { user } }) => {
@@ -80,6 +78,9 @@ export const Comments: CollectionConfig = {
       name: 'guestId',
       type: 'text',
       index: true,
+      access: {
+        read: ({ req: { user } }) => isUsersCollectionAdmin(user),
+      },
       admin: {
         readOnly: true,
         description: 'Định danh ẩn danh (cookie) của khách.',
@@ -141,6 +142,7 @@ export const Comments: CollectionConfig = {
     },
   ],
   hooks: {
+    beforeValidate: [enforceCommentsEnabled],
     beforeChange: [forceCommentAuthor, applyCommentModeration],
     beforeDelete: [deleteRelatedCommentLikes],
   },
