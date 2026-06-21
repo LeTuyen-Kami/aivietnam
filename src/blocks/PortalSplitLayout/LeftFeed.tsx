@@ -3,10 +3,37 @@ import Link from 'next/link'
 import type { Post } from '@/payload-types'
 
 import { Media as MediaComponent } from '@/components/Media'
+import { cn } from '@/utilities/ui'
 
 import { PostExcerpt } from './PostExcerpt'
 
-export function LeftFeed({ posts }: { posts: Post[] }) {
+/**
+ * Map cờ displayOn của bài viết sang class responsive Tailwind.
+ * Mỗi breakpoint range được điều khiển độc lập:
+ *  - mobile  (<768px)  → class không prefix
+ *  - tablet  (>=768px) → md:
+ *  - desktop (>=1024px)→ lg:
+ * Thiếu cờ (bài cũ) coi như hiển thị mọi nơi.
+ */
+function deviceVisibilityClass(post: Post): string {
+  const mobile = post.displayOnMobile !== false
+  const tablet = post.displayOnTablet !== false
+  const desktop = post.displayOnDesktop !== false
+
+  return cn(
+    mobile ? 'block' : 'hidden',
+    tablet ? 'md:block' : 'md:hidden',
+    desktop ? 'lg:block' : 'lg:hidden',
+  )
+}
+
+export function LeftFeed({
+  posts,
+  applyDeviceVisibility = false,
+}: {
+  posts: Post[]
+  applyDeviceVisibility?: boolean
+}) {
   if (posts.length === 0) {
     return null
   }
@@ -15,7 +42,10 @@ export function LeftFeed({ posts }: { posts: Post[] }) {
     <div className="md:space-y-10 space-y-4 px-4 md:px-0">
       {posts.map((post) => (
         <article
-          className="border-t border-border pt-4 md:pt-0 md:border-none last:border-b last:border-border md:last:border-none last:pb-4 md:last:pb-0"
+          className={cn(
+            'border-t border-border pt-4 md:pt-0 md:border-none last:border-b last:border-border md:last:border-none last:pb-4 md:last:pb-0',
+            applyDeviceVisibility && deviceVisibilityClass(post),
+          )}
           key={post.id}
         >
           <Link className="group  flex flex-col" href={`/posts/${post?.slug}`}>

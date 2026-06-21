@@ -322,6 +322,37 @@ export const Posts: CollectionConfig<'posts'> = {
         description: 'Tắt bình luận cho bài viết này. Bình luận cũ vẫn hiển thị nhưng không cho gửi mới.',
       },
     },
+    // Segmented multi-select "Hiển thị trên thiết bị". UI là field `displayOnControl`
+    // (không lưu DB); dữ liệu thực nằm ở 3 boolean ẩn bên dưới. Dùng để lọc feed
+    // "latest" ở cột trái block Portal - 2 column. Xem PortalSplitLayout/LeftFeed.
+    {
+      name: 'displayOnControl',
+      type: 'ui',
+      admin: {
+        position: 'sidebar',
+        components: {
+          Field: '@/components/PostDisplayOn#PostDisplayOn',
+        },
+      },
+    },
+    {
+      name: 'displayOnMobile',
+      type: 'checkbox',
+      defaultValue: true,
+      admin: { hidden: true },
+    },
+    {
+      name: 'displayOnTablet',
+      type: 'checkbox',
+      defaultValue: true,
+      admin: { hidden: true },
+    },
+    {
+      name: 'displayOnDesktop',
+      type: 'checkbox',
+      defaultValue: true,
+      admin: { hidden: true },
+    },
     slugField({
       slugify: ({ valueToSlugify }) => slugifyTitle(valueToSlugify),
     }),

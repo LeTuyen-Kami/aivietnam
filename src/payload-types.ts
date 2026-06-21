@@ -379,6 +379,9 @@ export interface Post {
    * Tắt bình luận cho bài viết này. Bình luận cũ vẫn hiển thị nhưng không cho gửi mới.
    */
   commentsDisabled?: boolean | null;
+  displayOnMobile?: boolean | null;
+  displayOnTablet?: boolean | null;
+  displayOnDesktop?: boolean | null;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
@@ -2887,6 +2890,9 @@ export interface PostsSelect<T extends boolean = true> {
       };
   views?: T;
   commentsDisabled?: T;
+  displayOnMobile?: T;
+  displayOnTablet?: T;
+  displayOnDesktop?: T;
   generateSlug?: T;
   slug?: T;
   updatedAt?: T;

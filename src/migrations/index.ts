@@ -29,6 +29,7 @@ import * as migration_20260522_120000_media_block_visible from './20260522_12000
 import * as migration_20260522_120001_fix_media_block_visible_columns from './20260522_120001_fix_media_block_visible_columns'
 import * as migration_20260531_000000_guest_comments from './20260531_000000_guest_comments'
 import * as migration_20260601_000000_post_comments_disabled from './20260601_000000_post_comments_disabled'
+import * as migration_20260622_000000_post_display_on from './20260622_000000_post_display_on'
 
 export const migrations = [
   {
@@ -185,5 +186,10 @@ export const migrations = [
     up: migration_20260601_000000_post_comments_disabled.up,
     down: migration_20260601_000000_post_comments_disabled.down,
     name: '20260601_000000_post_comments_disabled',
+  },
+  {
+    up: migration_20260622_000000_post_display_on.up,
+    down: migration_20260622_000000_post_display_on.down,
+    name: '20260622_000000_post_display_on',
   },
 ]
