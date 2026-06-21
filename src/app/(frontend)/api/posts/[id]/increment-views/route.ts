@@ -1,61 +1,42 @@
-import type { PayloadRequest } from 'payload'
-
 import config from '@payload-config'
 import { getPayload } from 'payload'
+import { sql } from '@payloadcms/db-postgres'
 import { NextResponse } from 'next/server'
 
 import { cookies } from 'next/headers'
 
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
 
-  if (!id) {
-    return NextResponse.json({ error: 'Post ID is required' }, { status: 400 })
+  const numericId = Number(id)
+  if (!Number.isInteger(numericId) || numericId <= 0) {
+    return NextResponse.json({ error: 'Post ID is invalid' }, { status: 400 })
   }
 
   try {
-    // Check cookie to prevent view buffing
+    // Cookie chống buff view (best-effort).
     const cookieStore = await cookies()
-    const viewedCookie = cookieStore.get(`viewed_${id}`)
-
-    if (viewedCookie) {
-      // User has already viewed this post recently
+    if (cookieStore.get(`viewed_${numericId}`)) {
       return NextResponse.json({ success: true, message: 'Already viewed' })
     }
 
     const payload = await getPayload({ config })
 
-    // Get current post to read views
-    const post = await payload.findByID({
-      collection: 'posts',
-      id,
-      depth: 0,
-      overrideAccess: true,
-    })
+    // Atomic increment ở DB (tránh race read-modify-write) và bỏ qua Payload hooks
+    // nên KHÔNG kích hoạt revalidate trang mỗi lượt xem (audit M6).
+    const result = await payload.db.drizzle.execute(
+      sql`UPDATE "posts" SET "views" = COALESCE("views", 0) + 1 WHERE "id" = ${numericId} RETURNING "views"`,
+    )
 
-    if (!post) {
+    const rows = (result as { rows?: Array<{ views?: number | string }> }).rows ?? []
+    const rawViews = rows[0]?.views
+    if (rawViews == null) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 })
     }
 
-    // Increment views
-    const currentViews = (post.views as number) || 0
-    const newViews = currentViews + 1
-
-    await payload.update({
-      collection: 'posts',
-      id,
-      data: {
-        views: newViews,
-      },
-      overrideAccess: true,
-    })
-
-    // Return new views and set cookie for 1 day
+    const newViews = Number(rawViews)
     const response = NextResponse.json({ views: newViews })
-    response.cookies.set(`viewed_${id}`, 'true', {
+    response.cookies.set(`viewed_${numericId}`, 'true', {
       maxAge: 60 * 60 * 24, // 1 ngày
       path: '/',
       httpOnly: true,

@@ -14,6 +14,7 @@ import {
 import type { ReactNode } from 'react'
 
 import { CodeBlock, CodeBlockProps } from '@/blocks/Code/Component'
+import { sanitizeHref } from '@/utilities/safeHref'
 import Image from 'next/image'
 
 import { BannerBlock } from '@/blocks/Banner/Component'
@@ -163,7 +164,7 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) 
 
       return (
         <a
-          href={href}
+          href={sanitizeHref(href)}
           rel={args.node.fields.newTab ? 'noopener noreferrer' : undefined}
           target={args.node.fields.newTab ? '_blank' : undefined}
         >

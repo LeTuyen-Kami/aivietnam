@@ -6,6 +6,7 @@ import { OAuth2Client } from 'google-auth-library'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { getServerSideURL } from '@/utilities/getURL'
+import { OAUTH_STATE_COOKIE, safeReturnTo } from '@/utilities/safeReturnTo'
 
 function getOAuthClient() {
   const clientId = process.env.GOOGLE_CLIENT_ID!
@@ -31,7 +32,9 @@ export async function GET(req: NextRequest) {
   const err = url.searchParams.get('error')
 
   if (err) {
-    return NextResponse.redirect(new URL(`/?auth=oauth_error&message=${encodeURIComponent(err)}`, base))
+    return NextResponse.redirect(
+      new URL(`/?auth=oauth_error&message=${encodeURIComponent(err)}`, base),
+    )
   }
 
   if (!code || !stateParam) {
@@ -39,18 +42,22 @@ export async function GET(req: NextRequest) {
   }
 
   let returnTo = '/'
+  let stateNonce: string | undefined
   try {
     const parsed = JSON.parse(Buffer.from(stateParam, 'base64url').toString('utf8')) as {
       returnTo?: string
+      n?: string
     }
-    if (
-      typeof parsed.returnTo === 'string' &&
-      parsed.returnTo.startsWith('/') &&
-      !parsed.returnTo.startsWith('//')
-    ) {
-      returnTo = parsed.returnTo
-    }
+    returnTo = safeReturnTo(parsed.returnTo)
+    stateNonce = typeof parsed.n === 'string' ? parsed.n : undefined
   } catch {
+    return NextResponse.redirect(new URL('/?auth=oauth_error&message=invalid_state', base))
+  }
+
+  // CSRF/session-fixation: nonce trong state phải khớp cookie httpOnly đã set lúc
+  // bắt đầu luồng (audit M-b).
+  const cookieNonce = req.cookies.get(OAUTH_STATE_COOKIE)?.value
+  if (!stateNonce || !cookieNonce || stateNonce !== cookieNonce) {
     return NextResponse.redirect(new URL('/?auth=oauth_error&message=invalid_state', base))
   }
 
@@ -109,6 +116,8 @@ export async function GET(req: NextRequest) {
   let userId: number
 
   if (bySub.docs[0]) {
+    // User OAuth-native (đã có googleSub trùng). Reset password tạm chỉ để gọi
+    // payload.login bên dưới — user này không dùng password đăng nhập nên vô hại.
     userId = bySub.docs[0].id as number
     await payload.update({
       collection: usersSlug,
@@ -120,21 +129,10 @@ export async function GET(req: NextRequest) {
       overrideAccess: true,
     })
   } else if (byEmail.docs[0]) {
-    const existing = byEmail.docs[0] as { id: number; googleSub?: string | null }
-    if (existing.googleSub && existing.googleSub !== sub) {
-      return NextResponse.redirect(new URL('/?auth=oauth_error&message=email_linked', base))
-    }
-    userId = existing.id
-    await payload.update({
-      collection: usersSlug,
-      id: userId,
-      data: {
-        password: tempPass,
-        googleSub: sub,
-        ...(name ? { name } : {}),
-      },
-      overrideAccess: true,
-    })
+    // Email đã tồn tại nhưng KHÔNG khớp googleSub (bySub rỗng). KHÔNG tự link và
+    // KHÔNG ghi đè password — chống account-takeover + password-clobber (audit M-a).
+    // Người dùng nên đăng nhập bằng mật khẩu, hoặc admin liên kết thủ công.
+    return NextResponse.redirect(new URL('/?auth=oauth_error&message=email_exists', base))
   } else {
     const created = await payload.create({
       collection: usersSlug,
@@ -170,5 +168,6 @@ export async function GET(req: NextRequest) {
     token: loginResult.token!,
   })
   res.headers.append('Set-Cookie', cookieStr)
+  res.cookies.delete(OAUTH_STATE_COOKIE)
   return res
 }

@@ -1,8 +1,7 @@
-import type { Access, CollectionConfig } from 'payload'
+import type { Access, CollectionConfig, Where } from 'payload'
 
 import { slugField } from 'payload'
 
-import { anyone } from '@/access/anyone'
 import { authenticatedSiteMember } from '@/access/authenticatedSiteMember'
 import { getSiteMemberUser } from '@/access/siteMemberUser'
 import { isUsersCollectionAdmin } from '@/access/isAdminUser'
@@ -21,12 +20,28 @@ const canManageOwnListing: Access = ({ req: { user } }) => {
   }
 }
 
+// Công khai chỉ thấy tin đã publish; member thấy thêm tin nháp của chính mình;
+// admin thấy tất cả. Trước đây `read: anyone` làm lộ tin nháp + SĐT/địa chỉ (audit M-d).
+const canReadListing: Access = ({ req: { user } }) => {
+  if (isUsersCollectionAdmin(user)) return true
+
+  const member = getSiteMemberUser(user)
+  if (member) {
+    const own: Where = {
+      or: [{ _status: { equals: 'published' } }, { createdBy: { equals: member.id } }],
+    }
+    return own
+  }
+
+  return { _status: { equals: 'published' } }
+}
+
 export const Listings: CollectionConfig = {
   slug: 'listings',
   access: {
     create: authenticatedSiteMember,
     delete: canManageOwnListing,
-    read: anyone,
+    read: canReadListing,
     update: canManageOwnListing,
   },
   admin: {

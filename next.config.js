@@ -29,11 +29,18 @@ const nextConfig = {
           protocol: url.protocol.replace(':', ''),
         }
       }),
-      {
-        hostname: '180.93.2.175',
-        protocol: 'http',
-        port: '3000',
-      },
+      // Local dev: render ảnh phục vụ từ ổ đĩa của remote server (HTTP). Chỉ bật ở
+      // dev để production không chứa host HTTP không mã hoá. Đồng bộ với gate của
+      // media proxy bên dưới (NEXT_PUBLIC_ENV === 'dev').
+      ...(process.env.NEXT_PUBLIC_ENV === 'dev'
+        ? [
+            {
+              hostname: '180.93.2.175',
+              protocol: 'http',
+              port: '3000',
+            },
+          ]
+        : []),
     ],
   },
   webpack: (webpackConfig) => {

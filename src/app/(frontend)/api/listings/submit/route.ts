@@ -230,7 +230,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: error.status })
     }
 
-    const message = error instanceof Error ? error.message : 'Không tạo được tin đăng'
-    return NextResponse.json({ error: message }, { status: 500 })
+    payload.logger.error({ err: error, msg: 'Listing submit failed' })
+    return NextResponse.json({ error: 'Không tạo được tin đăng' }, { status: 500 })
   }
 }

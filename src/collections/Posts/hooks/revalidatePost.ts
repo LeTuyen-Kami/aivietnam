@@ -17,16 +17,19 @@ export const revalidatePost: CollectionAfterChangeHook<Post> = ({
 
       revalidatePath(path)
       revalidateTag('posts-sitemap')
+      // Khớp tag cache của getCachedDocument (`${collection}_${slug}`).
+      revalidateTag(`posts_${doc.slug}`)
     }
 
     // If the post was previously published, we need to revalidate the old path
-    if (previousDoc._status === 'published' && doc._status !== 'published') {
+    if (previousDoc?._status === 'published' && doc._status !== 'published') {
       const oldPath = `/posts/${previousDoc?.slug}`
 
       payload.logger.info(`Revalidating old post at path: ${oldPath}`)
 
       revalidatePath(oldPath)
       revalidateTag('posts-sitemap')
+      revalidateTag(`posts_${previousDoc.slug}`)
     }
   }
   return doc
@@ -38,6 +41,7 @@ export const revalidateDelete: CollectionAfterDeleteHook<Post> = ({ doc, req: { 
 
     revalidatePath(path)
     revalidateTag('posts-sitemap')
+    revalidateTag(`posts_${doc?.slug}`)
   }
 
   return doc

@@ -1,4 +1,5 @@
 import { Button, type ButtonProps } from '@/components/ui/button'
+import { sanitizeHref } from '@/utilities/safeHref'
 import { cn } from '@/utilities/ui'
 import Link from 'next/link'
 import React from 'react'
@@ -35,12 +36,14 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
     url,
   } = props
 
-  const href =
+  const rawHref =
     type === 'reference' && typeof reference?.value === 'object' && reference.value.slug
       ? `${reference?.relationTo !== 'pages' ? `/${reference?.relationTo}` : ''}/${
           reference.value.slug
         }`
       : url
+
+  const href = sanitizeHref(rawHref)
 
   if (!href) return null
 
@@ -50,12 +53,7 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
   /* Ensure we don't break any styles set by richText */
   if (appearance === 'inline') {
     return (
-      <Link
-        className={cn(className)}
-        href={href || url || ''}
-        onClick={onClick}
-        {...newTabProps}
-      >
+      <Link className={cn(className)} href={href} onClick={onClick} {...newTabProps}>
         {label && label}
         {children && children}
       </Link>
@@ -64,7 +62,7 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
 
   return (
     <Button asChild className={className} size={size} variant={appearance}>
-      <Link className={cn(className)} href={href || url || ''} onClick={onClick} {...newTabProps}>
+      <Link className={cn(className)} href={href} onClick={onClick} {...newTabProps}>
         {label && label}
         {children && children}
       </Link>

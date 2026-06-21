@@ -99,7 +99,7 @@ export const getLatestLeftPosts = cache(
     const endIndex = normalizedTo
 
     if (startIndex >= docs.length) {
-      return docs
+      return []
     }
 
     return docs.slice(startIndex, endIndex)

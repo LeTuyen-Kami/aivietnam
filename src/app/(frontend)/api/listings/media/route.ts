@@ -5,6 +5,7 @@ import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 
 import { getSiteMemberUser } from '@/access/siteMemberUser'
+import { sniffImageMime } from '@/utilities/sniffImageMime'
 
 const ACCEPTED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
 const MAX_UPLOAD_SIZE = 10 * 1024 * 1024
@@ -49,6 +50,12 @@ export async function POST(req: Request) {
   try {
     const buffer = Buffer.from(await file.arrayBuffer())
 
+    // Không tin file.type do client gửi — xác thực bằng magic bytes thực tế.
+    const sniffedMime = sniffImageMime(buffer)
+    if (!sniffedMime || !ACCEPTED_IMAGE_TYPES.has(sniffedMime)) {
+      return NextResponse.json({ error: 'Tệp tải lên không phải ảnh hợp lệ' }, { status: 400 })
+    }
+
     const doc = await payload.create({
       collection: 'media',
       data: {
@@ -57,11 +64,14 @@ export async function POST(req: Request) {
       depth: 0,
       file: {
         data: buffer,
-        mimetype: file.type,
+        mimetype: sniffedMime,
         name: file.name,
         size: file.size,
       } satisfies PayloadFile,
-      overrideAccess: false,
+      // Media.create = staff (member không gọi thẳng /api/media được). Route này
+      // là cổng đã kiểm soát: đã xác thực member + validate magic-byte/size/alt,
+      // nên override access để member đăng tin vẫn tải được ảnh.
+      overrideAccess: true,
       req: payloadReq,
     })
 
@@ -78,7 +88,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: error.message }, { status: error.status })
     }
 
-    const message = error instanceof Error ? error.message : 'Không tải được ảnh lên'
-    return NextResponse.json({ error: message }, { status: 500 })
+    payload.logger.error({ err: error, msg: 'Listing media upload failed' })
+    return NextResponse.json({ error: 'Không tải được ảnh lên' }, { status: 500 })
   }
 }

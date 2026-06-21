@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import React from 'react'
 
+import { sanitizeHref } from '@/utilities/safeHref'
+
 /** True when the URL must use a native anchor (http(s), mailto, tel), not Next `Link`. */
 export function isNativeHref(href: string): boolean {
   const h = href.trim()
@@ -21,15 +23,24 @@ export type SmartLinkProps = {
 
 /** Next `Link` for in-app paths; native `a` for http(s) (new tab), mailto, tel. */
 export function SmartLink({ href, className, children, style }: SmartLinkProps) {
-  const trimmed = href.trim()
+  const safe = sanitizeHref(href)
 
-  if (isNativeHref(trimmed)) {
-    const isHttp = trimmed.startsWith('http://') || trimmed.startsWith('https://')
+  // href không an toàn (javascript:, data:, //evil.com…) -> không render link.
+  if (!safe) {
+    return (
+      <span className={className} style={style}>
+        {children}
+      </span>
+    )
+  }
+
+  if (isNativeHref(safe)) {
+    const isHttp = safe.startsWith('http://') || safe.startsWith('https://')
     return (
       <a
         className={className}
         style={style}
-        href={trimmed}
+        href={safe}
         {...(isHttp ? { rel: 'noopener noreferrer', target: '_blank' } : {})}
       >
         {children}
@@ -38,7 +49,7 @@ export function SmartLink({ href, className, children, style }: SmartLinkProps) 
   }
 
   return (
-    <Link className={className} href={trimmed} style={style}>
+    <Link className={className} href={safe} style={style}>
       {children}
     </Link>
   )

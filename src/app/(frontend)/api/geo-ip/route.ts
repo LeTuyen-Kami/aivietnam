@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+import { clientIpFromHeaders, rateLimit } from '@/utilities/rateLimit'
+
 const IPGEO_URL = 'https://api.ipgeolocation.io/v3/ipgeo'
 
 /** Fallback khi chưa cấu hình IPGEOLOCATION_API_KEY */
@@ -115,10 +117,7 @@ async function lookupIpApi(ip: string | null): Promise<NextResponse> {
   }
 
   if (data.status !== 'success' || typeof data.lat !== 'number' || typeof data.lon !== 'number') {
-    return NextResponse.json(
-      { error: data.message ?? 'ip-api' },
-      { status: 502 },
-    )
+    return NextResponse.json({ error: data.message ?? 'ip-api' }, { status: 502 })
   }
 
   return NextResponse.json({
@@ -136,6 +135,12 @@ async function lookupIpApi(ip: string | null): Promise<NextResponse> {
  * Thiếu `IPGEOLOCATION_API_KEY` → fallback ip-api (HTTP).
  */
 export async function GET(req: NextRequest): Promise<NextResponse> {
+  // Mỗi request là 1 outbound lookup dùng API key trả phí -> rate-limit theo IP
+  // để tránh bị đốt quota / ban egress (audit M-f).
+  if (!rateLimit(`geo-ip:${clientIpFromHeaders(req)}`, 20, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
+
   const q = req.nextUrl.searchParams.get('ip')?.trim()
   const fromQuery = q && isPublicRoutableIp(q) ? q : null
   const raw = clientIp(req)

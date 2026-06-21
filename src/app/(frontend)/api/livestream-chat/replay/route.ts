@@ -40,6 +40,12 @@ export async function GET(req: NextRequest) {
   const { user } = await payload.auth({ headers: requestHeaders })
   const member = getSiteMemberUser(user)
 
+  // Đối xứng với chat-token (yêu cầu member để xem/chat). Trước đây guest đọc được
+  // toàn bộ lịch sử chat qua replay (audit M-e).
+  if (!member) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const livestreamResult = await payload.find({
     collection: 'livestreams',
     depth: 0,
@@ -75,7 +81,8 @@ export async function GET(req: NextRequest) {
   const docs = mirrored.docs.map((doc) => {
     const row: ReplayMessage = {
       id: doc.streamMessageId,
-      body: doc.text ?? '',
+      // Tin đã bị xoá: không trả lại nội dung (moderator đã gỡ) — audit M-e.
+      body: doc.deletedAt ? '' : (doc.text ?? ''),
       createdAt:
         typeof doc.createdAtStream === 'string'
           ? doc.createdAtStream
