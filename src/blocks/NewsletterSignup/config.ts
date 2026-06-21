@@ -19,9 +19,15 @@ export const NewsletterSignup: Block = {
       type: 'relationship',
       relationTo: 'forms',
       required: true,
+      label: {
+        en: 'Form',
+        vi: 'Biểu mẫu',
+      },
       admin: {
-        description:
-          'Tạo form trong Forms với ít nhất một trường Email. Gửi bài sẽ lưu vào Form Submissions (đọc qua MCP Payload: findFormSubmissions).',
+        description: {
+          en: 'Create a form in Forms with at least one Email field. Submissions are saved to Form Submissions (read via MCP Payload: findFormSubmissions).',
+          vi: 'Tạo form trong Forms với ít nhất một trường Email. Gửi bài sẽ lưu vào Form Submissions (đọc qua MCP Payload: findFormSubmissions).',
+        },
       },
     },
     {
@@ -40,8 +46,7 @@ export const NewsletterSignup: Block = {
       name: 'description',
       type: 'textarea',
       label: { en: 'Description', vi: 'Mô tả' },
-      defaultValue:
-        'AI nóng toàn cầu, sàn giao dịch AI hấp dẫn nhất 24 giờ qua trên AIVIETNAM',
+      defaultValue: 'AI nóng toàn cầu, sàn giao dịch AI hấp dẫn nhất 24 giờ qua trên AIVIETNAM',
     },
     {
       name: 'emailPlaceholder',
@@ -66,7 +71,10 @@ export const NewsletterSignup: Block = {
       type: 'text',
       label: { en: 'Terms link URL', vi: 'URL trang điều khoản' },
       admin: {
-        description: 'URL cho từ “điều khoản” (vd. /terms hoặc https://...).',
+        description: {
+          en: 'URL for the word “terms” (e.g. /terms or https://...).',
+          vi: 'URL cho từ “điều khoản” (vd. /terms hoặc https://...).',
+        },
       },
     },
   ],

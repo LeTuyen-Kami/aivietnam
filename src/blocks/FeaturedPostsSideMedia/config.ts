@@ -8,14 +8,24 @@ export const FeaturedPostsSideMedia: Block = {
   slug: 'featuredPostsSideMedia',
   interfaceName: 'FeaturedPostsSideMediaBlock',
   labels: {
-    singular: 'Featured Posts + Side Media',
-    plural: 'Featured Posts + Side Media',
+    singular: {
+      en: 'Featured posts + side media',
+      vi: 'Bài viết nổi bật + media bên cạnh',
+    },
+    plural: {
+      en: 'Featured posts + side media',
+      vi: 'Bài viết nổi bật + media bên cạnh',
+    },
   },
   fields: [
     {
       name: 'source',
       type: 'select',
       defaultValue: 'manual',
+      label: {
+        en: 'Source',
+        vi: 'Nguồn dữ liệu',
+      },
       options: [
         {
           label: {
@@ -44,6 +54,10 @@ export const FeaturedPostsSideMedia: Block = {
       name: 'mainPost',
       type: 'relationship',
       relationTo: 'posts',
+      label: {
+        en: 'Main post',
+        vi: 'Bài viết chính',
+      },
       admin: {
         condition: (_, siblingData) => siblingData?.source === 'manual',
         description: {
@@ -70,6 +84,10 @@ export const FeaturedPostsSideMedia: Block = {
       type: 'relationship',
       relationTo: 'posts',
       hasMany: true,
+      label: {
+        en: 'Sub posts',
+        vi: 'Bài phụ',
+      },
       admin: {
         condition: (_, siblingData) => siblingData?.source === 'manual',
         description: {
@@ -95,6 +113,10 @@ export const FeaturedPostsSideMedia: Block = {
       name: 'smallRowPromoImage',
       type: 'upload',
       relationTo: 'media',
+      label: {
+        en: 'Promo image (third column)',
+        vi: 'Ảnh quảng bá (cột thứ 3)',
+      },
       admin: {
         condition: (_, siblingData) => siblingData?.source === 'manual',
         description: {
@@ -106,6 +128,10 @@ export const FeaturedPostsSideMedia: Block = {
     {
       name: 'smallRowPromoHref',
       type: 'text',
+      label: {
+        en: 'Promo image link (optional)',
+        vi: 'Liên kết ảnh quảng bá (tùy chọn)',
+      },
       admin: {
         condition: (_, siblingData) => siblingData?.source === 'manual',
         description: {
@@ -119,6 +145,10 @@ export const FeaturedPostsSideMedia: Block = {
       type: 'upload',
       relationTo: 'media',
       required: true,
+      label: {
+        en: 'Side media',
+        vi: 'Media bên cạnh',
+      },
       admin: {
         description: {
           en: 'Image/GIF displayed on the right side.',
@@ -129,6 +159,10 @@ export const FeaturedPostsSideMedia: Block = {
     {
       name: 'sideMediaHref',
       type: 'text',
+      label: {
+        en: 'Side media link (optional)',
+        vi: 'Liên kết media bên cạnh (tùy chọn)',
+      },
       admin: {
         description: {
           en: 'Optional link when the side image is clicked (e.g. /posts/slug or https://…).',

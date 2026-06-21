@@ -32,6 +32,10 @@ const hexColorValidation = (value: unknown) => {
 export const portalAccentField = {
   name: 'accent',
   type: 'select' as const,
+  label: {
+    en: 'Accent color',
+    vi: 'Màu nhấn',
+  },
   defaultValue: 'gold',
   options: accentOptions,
   required: true,
@@ -42,6 +46,10 @@ export const portalAccentField = {
 export const portalAccentCustomHexField = {
   name: 'accentCustomHex',
   type: 'text' as const,
+  label: {
+    en: 'Custom accent HEX',
+    vi: 'Mã HEX màu nhấn tùy chỉnh',
+  },
   validate: hexColorValidation,
   admin: {
     description: {
@@ -58,8 +66,8 @@ export const PortalSplitLayout: Block = {
   dbName: 'psl',
   interfaceName: 'PortalSplitLayoutBlock',
   labels: {
-    singular: 'Portal — 2 columns',
-    plural: 'Portal — 2 columns',
+    singular: { en: 'Portal — 2 columns', vi: 'Portal — 2 cột' },
+    plural: { en: 'Portal — 2 columns', vi: 'Portal — 2 cột' },
   },
   fields: [
     {
@@ -222,6 +230,10 @@ export const PortalSplitLayout: Block = {
             {
               name: 'row1LeftAccent',
               type: 'select',
+              label: {
+                en: 'Left column accent color',
+                vi: 'Màu nhấn cột trái',
+              },
               defaultValue: 'teal',
               enumName: 'psl_r1_l_ac',
               options: accentOptions,
@@ -229,6 +241,10 @@ export const PortalSplitLayout: Block = {
             {
               name: 'row1LeftAccentCustomHex',
               type: 'text',
+              label: {
+                en: 'Left column custom accent HEX',
+                vi: 'Mã HEX màu nhấn cột trái',
+              },
               validate: hexColorValidation,
               admin: {
                 placeholder: '#005C5C',
@@ -240,6 +256,10 @@ export const PortalSplitLayout: Block = {
           name: 'row1CenterGraphic',
           type: 'upload',
           relationTo: 'media',
+          label: {
+            en: 'Center graphic',
+            vi: 'Đồ họa trung tâm',
+          },
           admin: {
             description: {
               en: 'Central graphic (ecosystem diagram).',
@@ -259,10 +279,18 @@ export const PortalSplitLayout: Block = {
               name: 'label',
               type: 'text',
               required: true,
+              label: {
+                en: 'Tag label',
+                vi: 'Nhãn',
+              },
             },
             {
               name: 'href',
               type: 'text',
+              label: {
+                en: 'Link',
+                vi: 'Liên kết',
+              },
               admin: {
                 description: {
                   en: 'Optional URL',
@@ -324,6 +352,10 @@ export const PortalSplitLayout: Block = {
               name: 'icon',
               type: 'upload',
               relationTo: 'media',
+              label: {
+                en: 'Icon',
+                vi: 'Icon',
+              },
               admin: {
                 description: {
                   en: 'Optional small icon',
@@ -335,10 +367,18 @@ export const PortalSplitLayout: Block = {
               name: 'label',
               type: 'text',
               required: true,
+              label: {
+                en: 'Cell label',
+                vi: 'Nhãn ô',
+              },
             },
             {
               name: 'href',
               type: 'text',
+              label: {
+                en: 'Link',
+                vi: 'Liên kết',
+              },
               admin: {
                 description: {
                   en: 'Optional URL (leave empty for text-only cell).',
@@ -376,6 +416,10 @@ export const PortalSplitLayout: Block = {
             {
               name: 'row1RightAccent',
               type: 'select',
+              label: {
+                en: 'Right column accent color',
+                vi: 'Màu nhấn cột phải',
+              },
               defaultValue: 'purple',
               enumName: 'psl_r1_r_ac',
               options: accentOptions,
@@ -383,6 +427,10 @@ export const PortalSplitLayout: Block = {
             {
               name: 'row1RightAccentCustomHex',
               type: 'text',
+              label: {
+                en: 'Right column custom accent HEX',
+                vi: 'Mã HEX màu nhấn cột phải',
+              },
               validate: hexColorValidation,
               admin: {
                 placeholder: '#2D1E5F',
@@ -404,15 +452,27 @@ export const PortalSplitLayout: Block = {
               type: 'upload',
               relationTo: 'media',
               required: true,
+              label: {
+                en: 'Image',
+                vi: 'Hình ảnh',
+              },
             },
             {
               name: 'caption',
               type: 'text',
               required: true,
+              label: {
+                en: 'Caption',
+                vi: 'Chú thích',
+              },
             },
             {
               name: 'href',
               type: 'text',
+              label: {
+                en: 'Link',
+                vi: 'Liên kết',
+              },
               admin: {
                 description: {
                   en: 'Optional URL (leave empty for non-clickable card).',
@@ -474,6 +534,10 @@ export const PortalSplitLayout: Block = {
           type: 'relationship',
           relationTo: 'posts',
           required: true,
+          label: {
+            en: 'Featured post',
+            vi: 'Bài nổi bật',
+          },
           validate: ((value) => {
             if (!value) {
               return 'Select a featured post.'
@@ -486,6 +550,10 @@ export const PortalSplitLayout: Block = {
           type: 'relationship',
           relationTo: 'posts',
           hasMany: true,
+          label: {
+            en: 'Sub posts',
+            vi: 'Bài phụ',
+          },
           admin: {
             description: {
               en: 'Exactly 3 smaller posts',
@@ -504,6 +572,10 @@ export const PortalSplitLayout: Block = {
           type: 'relationship',
           relationTo: 'posts',
           hasMany: true,
+          label: {
+            en: 'Footer posts',
+            vi: 'Bài chân mục',
+          },
           admin: {
             description: {
               en: 'Exactly 6 posts for the 2×3 title grid',
@@ -551,6 +623,10 @@ export const PortalSplitLayout: Block = {
               name: 'image',
               type: 'upload',
               relationTo: 'media',
+              label: {
+                en: 'Image',
+                vi: 'Hình ảnh',
+              },
               admin: {
                 description: {
                   en: 'Optional image or asset.',
@@ -561,6 +637,10 @@ export const PortalSplitLayout: Block = {
             {
               name: 'href',
               type: 'text',
+              label: {
+                en: 'Link',
+                vi: 'Liên kết',
+              },
               admin: {
                 description: {
                   en: 'Optional URL (in-app path, https:, mailto:, tel:).',
@@ -593,6 +673,10 @@ export const PortalSplitLayout: Block = {
               type: 'relationship',
               relationTo: 'posts',
               required: true,
+              label: {
+                en: 'Post',
+                vi: 'Bài viết',
+              },
               admin: {
                 description: {
                   en: 'Pick a post; use its title and slug (or canonical URL) in the list UI.',

@@ -17,17 +17,39 @@ export const MarketplaceStats: Block = {
     {
       name: 'title',
       type: 'text',
+      label: {
+        en: 'Title',
+        vi: 'Tiêu đề',
+      },
       defaultValue: 'SÀN GIAO DỊCH AI VIỆT NAM',
       required: true,
     },
     {
       name: 'subtitle',
       type: 'text',
+      label: {
+        en: 'Subtitle',
+        vi: 'Tiêu đề phụ',
+      },
       defaultValue: 'Nền tảng giao dịch hàng đầu Việt Nam',
     },
     {
       name: 'items',
       type: 'array',
+      label: {
+        en: 'Stat items',
+        vi: 'Các mục thống kê',
+      },
+      labels: {
+        singular: {
+          en: 'Stat item',
+          vi: 'Mục thống kê',
+        },
+        plural: {
+          en: 'Stat items',
+          vi: 'Các mục thống kê',
+        },
+      },
       minRows: 1,
       maxRows: 6,
       defaultValue: [
@@ -51,19 +73,32 @@ export const MarketplaceStats: Block = {
         {
           name: 'icon',
           type: 'select',
+          label: {
+            en: 'Icon',
+            vi: 'Biểu tượng',
+          },
           required: true,
           defaultValue: 'users',
           options: [
             {
-              label: 'Users',
+              label: {
+                en: 'Users',
+                vi: 'Người dùng',
+              },
               value: 'users',
             },
             {
-              label: 'Sale',
+              label: {
+                en: 'Sale',
+                vi: 'Bán',
+              },
               value: 'sale',
             },
             {
-              label: 'Rent',
+              label: {
+                en: 'Rent',
+                vi: 'Thuê',
+              },
               value: 'rent',
             },
           ],
@@ -71,11 +106,19 @@ export const MarketplaceStats: Block = {
         {
           name: 'value',
           type: 'text',
+          label: {
+            en: 'Value',
+            vi: 'Giá trị',
+          },
           required: true,
         },
         {
           name: 'label',
           type: 'text',
+          label: {
+            en: 'Label',
+            vi: 'Nhãn',
+          },
           required: true,
         },
       ],
@@ -83,11 +126,19 @@ export const MarketplaceStats: Block = {
     {
       name: 'buttonLabel',
       type: 'text',
+      label: {
+        en: 'Button label',
+        vi: 'Nhãn nút',
+      },
       defaultValue: 'Bắt đầu ngay',
     },
     {
       name: 'buttonUrl',
       type: 'text',
+      label: {
+        en: 'Button link URL',
+        vi: 'Liên kết của nút',
+      },
       defaultValue: '/listings',
     },
   ],

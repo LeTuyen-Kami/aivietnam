@@ -19,6 +19,10 @@ export const HumanitiesCorner: Block = {
       type: 'upload',
       relationTo: 'media',
       required: true,
+      label: {
+        en: 'Banner image',
+        vi: 'Hình ảnh banner',
+      },
       admin: {
         description: {
           en: 'Image for the left column (vertical banner).',
@@ -29,6 +33,10 @@ export const HumanitiesCorner: Block = {
     {
       name: 'listTitle',
       type: 'text',
+      label: {
+        en: 'List title (optional)',
+        vi: 'Tiêu đề danh sách (tùy chọn)',
+      },
       admin: {
         description: {
           en: 'Optional heading above the list (centered), e.g. section name.',
@@ -55,6 +63,10 @@ export const HumanitiesCorner: Block = {
           name: 'itemType',
           type: 'radio',
           defaultValue: 'post',
+          label: {
+            en: 'Item type',
+            vi: 'Loại mục',
+          },
           admin: {
             layout: 'horizontal',
           },
@@ -79,6 +91,10 @@ export const HumanitiesCorner: Block = {
           name: 'post',
           type: 'relationship',
           relationTo: 'posts',
+          label: {
+            en: 'Post',
+            vi: 'Bài viết',
+          },
           admin: {
             condition: (_, siblingData) => siblingData?.itemType === 'post',
             description: {
@@ -99,6 +115,10 @@ export const HumanitiesCorner: Block = {
         {
           name: 'title',
           type: 'text',
+          label: {
+            en: 'Title',
+            vi: 'Tiêu đề',
+          },
           admin: {
             condition: (_, siblingData) => siblingData?.itemType === 'manual',
           },
@@ -115,6 +135,10 @@ export const HumanitiesCorner: Block = {
         {
           name: 'href',
           type: 'text',
+          label: {
+            en: 'Link',
+            vi: 'Liên kết',
+          },
           admin: {
             condition: (_, siblingData) => siblingData?.itemType === 'manual',
             description: {

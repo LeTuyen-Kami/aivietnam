@@ -2,7 +2,7 @@ import type { Block, Field } from 'payload'
 
 const makeOrbitCardField = (
   name: string,
-  label: string,
+  label: string | Record<string, string>,
   defaultTitle: string,
   required = true,
 ): Field => ({
@@ -15,16 +15,28 @@ const makeOrbitCardField = (
       type: 'text',
       required,
       defaultValue: defaultTitle,
+      label: {
+        en: 'Title',
+        vi: 'Tiêu đề',
+      },
     },
     {
       name: 'image',
       type: 'upload',
       relationTo: 'media',
       required,
+      label: {
+        en: 'Image',
+        vi: 'Hình ảnh',
+      },
     },
     {
       name: 'href',
       type: 'text',
+      label: {
+        en: 'Link',
+        vi: 'Liên kết',
+      },
       admin: {
         description: {
           en: 'Internal path (e.g. /posts/my-slug) or full URL.',
@@ -35,7 +47,11 @@ const makeOrbitCardField = (
   ],
 })
 
-const makeCenterLabelField = (name: string, label: string, defaultValue: string): Field => ({
+const makeCenterLabelField = (
+  name: string,
+  label: string | Record<string, string>,
+  defaultValue: string,
+): Field => ({
   name,
   type: 'text',
   label,
@@ -43,7 +59,7 @@ const makeCenterLabelField = (name: string, label: string, defaultValue: string)
   defaultValue,
 })
 
-const makeCenterLabelHrefField = (name: string, label: string): Field => ({
+const makeCenterLabelHrefField = (name: string, label: string | Record<string, string>): Field => ({
   name,
   type: 'text',
   label,
@@ -68,6 +84,10 @@ export const AIEcosystemMap: Block = {
       type: 'text',
       required: true,
       defaultValue: 'HỆ SINH THÁI AI VIỆT NAM',
+      label: {
+        en: 'Heading',
+        vi: 'Tiêu đề',
+      },
     },
     {
       type: 'collapsible',
@@ -81,10 +101,18 @@ export const AIEcosystemMap: Block = {
           type: 'upload',
           relationTo: 'media',
           required: true,
+          label: {
+            en: 'Center image',
+            vi: 'Hình trung tâm',
+          },
         },
         {
           name: 'centerImageHref',
           type: 'text',
+          label: {
+            en: 'Center image link',
+            vi: 'Liên kết hình trung tâm',
+          },
           admin: {
             description: {
               en: 'Optional link for the center image.',
@@ -95,70 +123,140 @@ export const AIEcosystemMap: Block = {
         {
           type: 'row',
           fields: [
-            makeCenterLabelField('centerTopLeftLabel', 'Top left label', 'Tin tức'),
-            makeCenterLabelField('centerTopMiddleLabel', 'Top middle label', 'Giáo dục'),
-            makeCenterLabelField('centerTopRightLabel', 'Top right label', 'Nghiên cứu'),
+            makeCenterLabelField(
+              'centerTopLeftLabel',
+              { en: 'Top left label', vi: 'Nhãn trên cùng bên trái' },
+              'Tin tức',
+            ),
+            makeCenterLabelField(
+              'centerTopMiddleLabel',
+              { en: 'Top middle label', vi: 'Nhãn trên cùng ở giữa' },
+              'Giáo dục',
+            ),
+            makeCenterLabelField(
+              'centerTopRightLabel',
+              { en: 'Top right label', vi: 'Nhãn trên cùng bên phải' },
+              'Nghiên cứu',
+            ),
           ],
         },
         {
           type: 'row',
           fields: [
-            makeCenterLabelHrefField('centerTopLeftLabelHref', 'Top left label link'),
-            makeCenterLabelHrefField('centerTopMiddleLabelHref', 'Top middle label link'),
-            makeCenterLabelHrefField('centerTopRightLabelHref', 'Top right label link'),
+            makeCenterLabelHrefField('centerTopLeftLabelHref', {
+              en: 'Top left label link',
+              vi: 'Liên kết nhãn trên cùng bên trái',
+            }),
+            makeCenterLabelHrefField('centerTopMiddleLabelHref', {
+              en: 'Top middle label link',
+              vi: 'Liên kết nhãn trên cùng ở giữa',
+            }),
+            makeCenterLabelHrefField('centerTopRightLabelHref', {
+              en: 'Top right label link',
+              vi: 'Liên kết nhãn trên cùng bên phải',
+            }),
           ],
         },
         {
           type: 'row',
           fields: [
-            makeCenterLabelField('centerMiddleLeftLabel', 'Middle left label', 'Ứng dụng'),
-            makeCenterLabelField('centerMiddleRightLabel', 'Middle right label', 'Thương mại'),
-            makeCenterLabelField('centerRightUpperLabel', 'Right upper label', 'Podcasts'),
+            makeCenterLabelField(
+              'centerMiddleLeftLabel',
+              { en: 'Middle left label', vi: 'Nhãn giữa bên trái' },
+              'Ứng dụng',
+            ),
+            makeCenterLabelField(
+              'centerMiddleRightLabel',
+              { en: 'Middle right label', vi: 'Nhãn giữa bên phải' },
+              'Thương mại',
+            ),
+            makeCenterLabelField(
+              'centerRightUpperLabel',
+              { en: 'Right upper label', vi: 'Nhãn phía trên bên phải' },
+              'Podcasts',
+            ),
           ],
         },
         {
           type: 'row',
           fields: [
-            makeCenterLabelHrefField('centerMiddleLeftLabelHref', 'Middle left label link'),
-            makeCenterLabelHrefField('centerMiddleRightLabelHref', 'Middle right label link'),
-            makeCenterLabelHrefField('centerRightUpperLabelHref', 'Right upper label link'),
+            makeCenterLabelHrefField('centerMiddleLeftLabelHref', {
+              en: 'Middle left label link',
+              vi: 'Liên kết nhãn giữa bên trái',
+            }),
+            makeCenterLabelHrefField('centerMiddleRightLabelHref', {
+              en: 'Middle right label link',
+              vi: 'Liên kết nhãn giữa bên phải',
+            }),
+            makeCenterLabelHrefField('centerRightUpperLabelHref', {
+              en: 'Right upper label link',
+              vi: 'Liên kết nhãn phía trên bên phải',
+            }),
           ],
         },
         {
           type: 'row',
           fields: [
-            makeCenterLabelField('centerBottomLeftLabel', 'Bottom left label', 'Hội thảo'),
+            makeCenterLabelField(
+              'centerBottomLeftLabel',
+              { en: 'Bottom left label', vi: 'Nhãn dưới cùng bên trái' },
+              'Hội thảo',
+            ),
             makeCenterLabelField(
               'centerBottomMiddleLabel',
-              'Bottom middle label',
+              { en: 'Bottom middle label', vi: 'Nhãn dưới cùng ở giữa' },
               'AI xoá đói tư duy',
             ),
-            makeCenterLabelField('centerBottomRightLabel', 'Bottom right label', 'Video'),
-          ],
-        },
-        {
-          type: 'row',
-          fields: [
-            makeCenterLabelHrefField('centerBottomLeftLabelHref', 'Bottom left label link'),
-            makeCenterLabelHrefField('centerBottomMiddleLabelHref', 'Bottom middle label link'),
-            makeCenterLabelHrefField('centerBottomRightLabelHref', 'Bottom right label link'),
-          ],
-        },
-        {
-          type: 'row',
-          fields: [
-            makeCenterLabelField('centerBottomFarLeftLabel', 'Bottom far left label', 'Sàn AI'),
-            makeCenterLabelField('centerBottomFarRightLabel', 'Bottom far right label', 'Ảnh'),
-          ],
-        },
-        {
-          type: 'row',
-          fields: [
-            makeCenterLabelHrefField('centerBottomFarLeftLabelHref', 'Bottom far left label link'),
-            makeCenterLabelHrefField(
-              'centerBottomFarRightLabelHref',
-              'Bottom far right label link',
+            makeCenterLabelField(
+              'centerBottomRightLabel',
+              { en: 'Bottom right label', vi: 'Nhãn dưới cùng bên phải' },
+              'Video',
             ),
+          ],
+        },
+        {
+          type: 'row',
+          fields: [
+            makeCenterLabelHrefField('centerBottomLeftLabelHref', {
+              en: 'Bottom left label link',
+              vi: 'Liên kết nhãn dưới cùng bên trái',
+            }),
+            makeCenterLabelHrefField('centerBottomMiddleLabelHref', {
+              en: 'Bottom middle label link',
+              vi: 'Liên kết nhãn dưới cùng ở giữa',
+            }),
+            makeCenterLabelHrefField('centerBottomRightLabelHref', {
+              en: 'Bottom right label link',
+              vi: 'Liên kết nhãn dưới cùng bên phải',
+            }),
+          ],
+        },
+        {
+          type: 'row',
+          fields: [
+            makeCenterLabelField(
+              'centerBottomFarLeftLabel',
+              { en: 'Bottom far left label', vi: 'Nhãn dưới cùng ngoài cùng bên trái' },
+              'Sàn AI',
+            ),
+            makeCenterLabelField(
+              'centerBottomFarRightLabel',
+              { en: 'Bottom far right label', vi: 'Nhãn dưới cùng ngoài cùng bên phải' },
+              'Ảnh',
+            ),
+          ],
+        },
+        {
+          type: 'row',
+          fields: [
+            makeCenterLabelHrefField('centerBottomFarLeftLabelHref', {
+              en: 'Bottom far left label link',
+              vi: 'Liên kết nhãn dưới cùng ngoài cùng bên trái',
+            }),
+            makeCenterLabelHrefField('centerBottomFarRightLabelHref', {
+              en: 'Bottom far right label link',
+              vi: 'Liên kết nhãn dưới cùng ngoài cùng bên phải',
+            }),
           ],
         },
       ],
@@ -170,23 +268,79 @@ export const AIEcosystemMap: Block = {
         vi: 'Các mục xung quanh',
       },
       fields: [
-        makeOrbitCardField('forumCard', 'Forum card', 'Diễn đàn AI Việt Nam'),
-        makeOrbitCardField('studyGroupCard', 'Study group card', 'Cộng đồng học AI nhóm'),
-        makeOrbitCardField('policyCard', 'Policy card', 'Không gian đạo đức & chính sách'),
-        makeOrbitCardField('openSourceCard', 'Open source card', 'Trung tâm AI mã nguồn mở'),
-        makeOrbitCardField('datasetCard', 'Dataset card', 'Kho dữ liệu AI Việt hóa'),
-        makeOrbitCardField('libraryCard', 'Library card', 'Thư viện tài nguyên'),
-        makeOrbitCardField('toolsCard', 'Tools card', 'Bộ công cụ AI phổ biến'),
-        makeOrbitCardField('allianceCard', 'Alliance card', 'Liên minh AI Việt Nam'),
-        makeOrbitCardField('mindsetCard', 'Mindset card', 'Tư duy & Triết lý'),
-        makeOrbitCardField('jobsCard', 'Jobs card', 'Tuyển dụng & Việc làm'),
-        makeOrbitCardField('reportsCard', 'Reports card', 'Báo cáo & Dữ liệu'),
-        makeOrbitCardField('eventsCard', 'Events card', 'Lịch sự kiện AI Việt Nam'),
-        makeOrbitCardField('startupCard', 'Startup card', 'Startup & Đầu tư'),
-        makeOrbitCardField('cooperationCard', 'Cooperation card', 'Hợp tác Quốc tế'),
+        makeOrbitCardField(
+          'forumCard',
+          { en: 'Forum card', vi: 'Thẻ diễn đàn' },
+          'Diễn đàn AI Việt Nam',
+        ),
+        makeOrbitCardField(
+          'studyGroupCard',
+          { en: 'Study group card', vi: 'Thẻ nhóm học tập' },
+          'Cộng đồng học AI nhóm',
+        ),
+        makeOrbitCardField(
+          'policyCard',
+          { en: 'Policy card', vi: 'Thẻ chính sách' },
+          'Không gian đạo đức & chính sách',
+        ),
+        makeOrbitCardField(
+          'openSourceCard',
+          { en: 'Open source card', vi: 'Thẻ mã nguồn mở' },
+          'Trung tâm AI mã nguồn mở',
+        ),
+        makeOrbitCardField(
+          'datasetCard',
+          { en: 'Dataset card', vi: 'Thẻ dữ liệu' },
+          'Kho dữ liệu AI Việt hóa',
+        ),
+        makeOrbitCardField(
+          'libraryCard',
+          { en: 'Library card', vi: 'Thẻ thư viện' },
+          'Thư viện tài nguyên',
+        ),
+        makeOrbitCardField(
+          'toolsCard',
+          { en: 'Tools card', vi: 'Thẻ công cụ' },
+          'Bộ công cụ AI phổ biến',
+        ),
+        makeOrbitCardField(
+          'allianceCard',
+          { en: 'Alliance card', vi: 'Thẻ liên minh' },
+          'Liên minh AI Việt Nam',
+        ),
+        makeOrbitCardField(
+          'mindsetCard',
+          { en: 'Mindset card', vi: 'Thẻ tư duy' },
+          'Tư duy & Triết lý',
+        ),
+        makeOrbitCardField(
+          'jobsCard',
+          { en: 'Jobs card', vi: 'Thẻ việc làm' },
+          'Tuyển dụng & Việc làm',
+        ),
+        makeOrbitCardField(
+          'reportsCard',
+          { en: 'Reports card', vi: 'Thẻ báo cáo' },
+          'Báo cáo & Dữ liệu',
+        ),
+        makeOrbitCardField(
+          'eventsCard',
+          { en: 'Events card', vi: 'Thẻ sự kiện' },
+          'Lịch sự kiện AI Việt Nam',
+        ),
+        makeOrbitCardField(
+          'startupCard',
+          { en: 'Startup card', vi: 'Thẻ khởi nghiệp' },
+          'Startup & Đầu tư',
+        ),
+        makeOrbitCardField(
+          'cooperationCard',
+          { en: 'Cooperation card', vi: 'Thẻ hợp tác' },
+          'Hợp tác Quốc tế',
+        ),
         makeOrbitCardField(
           'communityProjectsCard',
-          'Community projects card',
+          { en: 'Community projects card', vi: 'Thẻ dự án cộng đồng' },
           'Dự án AI cộng đồng',
         ),
       ],

@@ -24,19 +24,20 @@ export const Archive: Block = {
           ]
         },
       }),
-      label: 'Intro Content',
+      label: { en: 'Intro Content', vi: 'Nội dung mở đầu' },
     },
     {
       name: 'populateBy',
       type: 'select',
       defaultValue: 'collection',
+      label: { en: 'Populate by', vi: 'Lấy dữ liệu theo' },
       options: [
         {
-          label: 'Collection',
+          label: { en: 'Collection', vi: 'Theo collection' },
           value: 'collection',
         },
         {
-          label: 'Individual Selection',
+          label: { en: 'Individual Selection', vi: 'Chọn từng mục' },
           value: 'selection',
         },
       ],
@@ -48,10 +49,10 @@ export const Archive: Block = {
         condition: (_, siblingData) => siblingData.populateBy === 'collection',
       },
       defaultValue: 'posts',
-      label: 'Collections To Show',
+      label: { en: 'Collections To Show', vi: 'Collection hiển thị' },
       options: [
         {
-          label: 'Posts',
+          label: { en: 'Posts', vi: 'Bài viết' },
           value: 'posts',
         },
       ],
@@ -63,7 +64,7 @@ export const Archive: Block = {
         condition: (_, siblingData) => siblingData.populateBy === 'collection',
       },
       hasMany: true,
-      label: 'Categories To Show',
+      label: { en: 'Categories To Show', vi: 'Danh mục hiển thị' },
       relationTo: 'categories',
     },
     {
@@ -74,7 +75,7 @@ export const Archive: Block = {
         step: 1,
       },
       defaultValue: 10,
-      label: 'Limit',
+      label: { en: 'Limit', vi: 'Số lượng tối đa' },
     },
     {
       name: 'selectedDocs',
@@ -83,12 +84,12 @@ export const Archive: Block = {
         condition: (_, siblingData) => siblingData.populateBy === 'selection',
       },
       hasMany: true,
-      label: 'Selection',
+      label: { en: 'Selection', vi: 'Mục đã chọn' },
       relationTo: ['posts'],
     },
   ],
   labels: {
-    plural: 'Archives',
-    singular: 'Archive',
+    plural: { en: 'Archives', vi: 'Kho lưu trữ' },
+    singular: { en: 'Archive', vi: 'Kho lưu trữ' },
   },
 }

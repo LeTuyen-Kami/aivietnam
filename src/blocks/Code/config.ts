@@ -8,17 +8,18 @@ export const Code: Block = {
       name: 'language',
       type: 'select',
       defaultValue: 'typescript',
+      label: { en: 'Language', vi: 'Ngôn ngữ' },
       options: [
         {
-          label: 'Typescript',
+          label: { en: 'Typescript', vi: 'Typescript' },
           value: 'typescript',
         },
         {
-          label: 'Javascript',
+          label: { en: 'Javascript', vi: 'Javascript' },
           value: 'javascript',
         },
         {
-          label: 'CSS',
+          label: { en: 'CSS', vi: 'CSS' },
           value: 'css',
         },
       ],

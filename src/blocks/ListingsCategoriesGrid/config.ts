@@ -18,12 +18,20 @@ export const ListingsCategoriesGrid: Block = {
       name: 'title',
       type: 'text',
       defaultValue: 'Danh mục Listings',
+      label: {
+        en: 'Title',
+        vi: 'Tiêu đề',
+      },
     },
     {
       name: 'source',
       type: 'select',
       required: true,
       defaultValue: 'all',
+      label: {
+        en: 'Source',
+        vi: 'Nguồn dữ liệu',
+      },
       options: [
         {
           label: {
@@ -46,6 +54,10 @@ export const ListingsCategoriesGrid: Block = {
       type: 'relationship',
       relationTo: 'listing-categories',
       hasMany: true,
+      label: {
+        en: 'Categories',
+        vi: 'Danh mục',
+      },
       admin: {
         condition: (_, siblingData) => siblingData?.source === 'manual',
       },
@@ -56,6 +68,10 @@ export const ListingsCategoriesGrid: Block = {
       min: 1,
       max: 30,
       defaultValue: 10,
+      label: {
+        en: 'Limit',
+        vi: 'Số lượng tối đa',
+      },
       admin: {
         description: {
           en: 'Only used when source is "All categories".',

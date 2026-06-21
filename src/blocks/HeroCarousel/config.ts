@@ -21,6 +21,10 @@ export const HeroCarousel: Block = {
       type: 'number',
       defaultValue: 5000,
       min: 0,
+      label: {
+        en: 'Autoplay delay (ms)',
+        vi: 'Thời gian tự chuyển slide (ms)',
+      },
       admin: {
         description: {
           en: 'Autoplay delay in milliseconds. Set 0 to disable autoplay.',
@@ -33,6 +37,16 @@ export const HeroCarousel: Block = {
       type: 'array',
       minRows: 1,
       required: true,
+      labels: {
+        singular: {
+          en: 'Slide',
+          vi: 'Slide',
+        },
+        plural: {
+          en: 'Slides',
+          vi: 'Các slide',
+        },
+      },
       admin: {
         initCollapsed: true,
       },
@@ -42,6 +56,10 @@ export const HeroCarousel: Block = {
           type: 'select',
           required: true,
           defaultValue: 'image',
+          label: {
+            en: 'Slide type',
+            vi: 'Loại slide',
+          },
           options: [
             {
               label: {
@@ -64,10 +82,18 @@ export const HeroCarousel: Block = {
           type: 'upload',
           relationTo: 'media',
           required: true,
+          label: {
+            en: 'Media',
+            vi: 'Media',
+          },
         },
         {
           name: 'href',
           type: 'text',
+          label: {
+            en: 'Link (optional)',
+            vi: 'Liên kết (tùy chọn)',
+          },
           admin: {
             condition: (_, siblingData) => siblingData?.type === 'image',
             description: {
