@@ -7,7 +7,7 @@ import {
 } from '@payloadcms/richtext-lexical'
 
 import { anyone } from '../access/anyone'
-import { authenticated } from '../access/authenticated'
+import { staff } from '../access/staff'
 import sharp from 'sharp'
 
 export const Media: CollectionConfig = {
@@ -17,10 +17,10 @@ export const Media: CollectionConfig = {
     defaultColumns: ['filename', 'url', 'alt', 'updatedAt'],
   },
   access: {
-    create: authenticated,
-    delete: authenticated,
+    create: staff,
+    delete: staff,
     read: anyone,
-    update: authenticated,
+    update: staff,
   },
   fields: [
     {

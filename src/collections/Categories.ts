@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { anyone } from '../access/anyone'
-import { authenticated } from '../access/authenticated'
+import { staff } from '../access/staff'
 import { slugField } from 'payload'
 
 import { slugifyTitle } from '../utilities/slugify'
@@ -9,10 +9,10 @@ import { slugifyTitle } from '../utilities/slugify'
 export const Categories: CollectionConfig = {
   slug: 'categories',
   access: {
-    create: authenticated,
-    delete: authenticated,
+    create: staff,
+    delete: staff,
     read: anyone,
-    update: authenticated,
+    update: staff,
   },
   admin: {
     useAsTitle: 'title',

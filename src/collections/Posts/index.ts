@@ -17,8 +17,8 @@ import {
   UploadFeature,
 } from '@payloadcms/richtext-lexical'
 
-import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
+import { staff } from '../../access/staff'
 import { Banner } from '../../blocks/Banner/config'
 import { Code } from '../../blocks/Code/config'
 import { EnhancedMediaBlock } from '../../blocks/EnhancedMediaBlock/config'
@@ -41,10 +41,10 @@ import { slugifyTitle } from '../../utilities/slugify'
 export const Posts: CollectionConfig<'posts'> = {
   slug: 'posts',
   access: {
-    create: authenticated,
-    delete: authenticated,
+    create: staff,
+    delete: staff,
     read: authenticatedOrPublished,
-    update: authenticated,
+    update: staff,
   },
   // This config controls what's populated by default when a post is referenced
   // https://payloadcms.com/docs/queries/select#defaultpopulate-collection-config-property
@@ -319,7 +319,8 @@ export const Posts: CollectionConfig<'posts'> = {
       defaultValue: false,
       admin: {
         position: 'sidebar',
-        description: 'Tắt bình luận cho bài viết này. Bình luận cũ vẫn hiển thị nhưng không cho gửi mới.',
+        description:
+          'Tắt bình luận cho bài viết này. Bình luận cũ vẫn hiển thị nhưng không cho gửi mới.',
       },
     },
     // Segmented multi-select "Hiển thị trên thiết bị". UI là field `displayOnControl`

@@ -3,16 +3,16 @@ import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 
 import { anyone } from '@/access/anyone'
-import { authenticated } from '@/access/authenticated'
+import { staff } from '@/access/staff'
 import { slugifyTitle } from '@/utilities/slugify'
 
 export const ListingCategories: CollectionConfig = {
   slug: 'listing-categories',
   access: {
-    create: authenticated,
-    delete: authenticated,
+    create: staff,
+    delete: staff,
     read: anyone,
-    update: authenticated,
+    update: staff,
   },
   admin: {
     defaultColumns: ['title', 'thumbnail', 'updatedAt'],

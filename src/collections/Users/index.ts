@@ -50,7 +50,7 @@ export const Users: CollectionConfig = {
         description: 'Google account subject (sub). Set automatically for OAuth sign-in.',
       },
       access: {
-        read: () => true,
+        read: ({ req: { user } }) => isUsersCollectionAdmin(user),
         update: ({ req: { user } }) => isUsersCollectionAdmin(user),
       },
     },

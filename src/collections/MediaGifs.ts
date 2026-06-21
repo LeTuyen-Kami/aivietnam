@@ -1,16 +1,16 @@
 import type { CollectionConfig } from 'payload'
 
 import { anyone } from '../access/anyone'
-import { authenticated } from '../access/authenticated'
+import { staff } from '../access/staff'
 
 export const MediaGifs: CollectionConfig = {
   slug: 'media-gifs',
   folders: true,
   access: {
-    create: authenticated,
-    delete: authenticated,
+    create: staff,
+    delete: staff,
     read: anyone,
-    update: authenticated,
+    update: staff,
   },
   fields: [
     {

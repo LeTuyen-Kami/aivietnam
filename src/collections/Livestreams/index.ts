@@ -1,9 +1,8 @@
 import type { CollectionConfig } from 'payload'
 
-import { canAccessAdminPanel } from '@/access/isAdminUser'
+import { canAccessAdminPanel, canBroadcastLivestream } from '@/access/isAdminUser'
 import { getLivestreamViewerAbsoluteUrl } from '@/utilities/livestreamViewerUrl'
 import { slugifyTitle } from '@/utilities/slugify'
-import moderator from '../Users/access/mod'
 
 export const Livestreams: CollectionConfig<'livestreams'> = {
   slug: 'livestreams',
@@ -17,8 +16,8 @@ export const Livestreams: CollectionConfig<'livestreams'> = {
     useAsTitle: 'title',
   },
   access: {
-    create: moderator,
-    delete: moderator,
+    create: ({ req: { user } }) => canBroadcastLivestream(user),
+    delete: ({ req: { user } }) => canBroadcastLivestream(user),
     read: ({ req: { user } }) => {
       if (!user) {
         return {
@@ -28,7 +27,7 @@ export const Livestreams: CollectionConfig<'livestreams'> = {
       if (canAccessAdminPanel(user)) return true
       return { status: { not_equals: 'draft' } }
     },
-    update: moderator,
+    update: ({ req: { user } }) => canBroadcastLivestream(user),
   },
   fields: [
     {

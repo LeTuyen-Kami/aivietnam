@@ -5,6 +5,7 @@ import {
   InlineToolbarFeature,
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
+import { adminOnly } from '@/access/adminOnly'
 import { revalidateGeneralSettings } from './hooks/revalidateGeneralSettings'
 
 export const GeneralSettings: GlobalConfig = {
@@ -16,6 +17,7 @@ export const GeneralSettings: GlobalConfig = {
   },
   access: {
     read: () => true,
+    update: adminOnly,
   },
   admin: {
     description: {

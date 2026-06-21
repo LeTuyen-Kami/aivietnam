@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
+import { adminOnly } from '@/access/adminOnly'
 import { canAccessAdminPanel } from '@/access/isAdminUser'
-import admin from '../Users/access/admin'
 
 export const LivestreamChatEventReceipts: CollectionConfig = {
   slug: 'livestream-chat-event-receipts',
@@ -10,10 +10,10 @@ export const LivestreamChatEventReceipts: CollectionConfig = {
     useAsTitle: 'eventId',
   },
   access: {
-    create: admin,
+    create: adminOnly,
     read: ({ req: { user } }) => canAccessAdminPanel(user),
-    update: admin,
-    delete: admin,
+    update: adminOnly,
+    delete: adminOnly,
   },
   fields: [
     {
