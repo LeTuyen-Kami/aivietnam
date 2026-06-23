@@ -101,10 +101,16 @@ jobs:
 
       - name: Discord Success
         if: success()
+        env:
+          # Truyền qua env (không nội suy thẳng vào script) để commit message có
+          # ký tự đặc biệt / nhiều dòng không phá vỡ jq và không bị script-injection.
+          BRANCH: ${{ github.ref_name }}
+          COMMIT: ${{ github.event.head_commit.message }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
           jq -n \
-            --arg branch "${{ github.ref_name }}" \
-            --arg commit "${{ github.event.head_commit.message || 'No commit message' }}" \
+            --arg branch "$BRANCH" \
+            --arg commit "${COMMIT:-No commit message}" \
             '{
               embeds: [{
                 title: "✅ Deploy Success",
@@ -113,18 +119,18 @@ jobs:
                 fields: [
                   {
                     name: "Branch",
-                    value: $branch
+                    value: ($branch | .[0:1000])
                   },
                   {
                     name: "Commit",
-                    value: $commit
+                    value: ($commit | .[0:1000])
                   }
                 ]
               }]
             }' | curl -H "Content-Type: application/json" \
               -X POST \
               -d @- \
-              "${{ secrets.DISCORD_WEBHOOK }}"
+              "$DISCORD_WEBHOOK"
 
       - name: Discord Fail
         if: failure()
