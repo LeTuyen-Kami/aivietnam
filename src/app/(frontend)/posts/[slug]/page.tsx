@@ -255,7 +255,7 @@ export default async function Post({ params: paramsPromise }: Args) {
             </div>
 
             <aside className="min-w-0 w-full space-y-6 border-t border-border pt-6 sm:space-y-8 sm:pt-8 lg:sticky lg:top-24 lg:h-fit lg:w-[270px] lg:border-t-0 lg:pt-0">
-              <section>
+              <section className="hidden sm:block">
                 <h2 className="mb-2 text-sm font-bold uppercase tracking-tight text-foreground sm:mb-3 sm:text-[15px]">
                   Danh mục
                 </h2>
