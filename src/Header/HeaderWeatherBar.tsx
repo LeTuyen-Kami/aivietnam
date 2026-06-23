@@ -5,99 +5,27 @@ import { Droplets, Thermometer } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import React, { useEffect, useMemo, useState } from 'react'
 
-const DIVISIONS_URL = 'https://dbthoitiet.com/api/divisions?depth=1'
-
-type Division = {
-  code: number
-  name: string
-  lat: number
-  lng: number
-}
-
 type WeatherResponse = {
-  success: boolean
-  province_name?: string
   current?: {
     temperature_2m: number
     relative_humidity_2m: number
   }
 }
 
-let divisionsCache: Division[] | null = null
-let divisionsInflight: Promise<Division[]> | null = null
-
-async function loadDivisions(): Promise<Division[]> {
-  if (divisionsCache) return divisionsCache
-  if (!divisionsInflight) {
-    divisionsInflight = fetch(DIVISIONS_URL)
-      .then((r) => {
-        if (!r.ok) throw new Error('divisions')
-        return r.json() as Promise<{ success: boolean; data: Division[] }>
-      })
-      .then((body) => {
-        if (!body.success || !Array.isArray(body.data)) throw new Error('divisions')
-        divisionsCache = body.data
-        return divisionsCache
-      })
-      .finally(() => {
-        divisionsInflight = null
-      })
-  }
-  return divisionsInflight
-}
-
-function normalizeVi(s: string): string {
-  return s
-    .normalize('NFD')
-    .replace(/\p{M}/gu, '')
-    .replace(/đ/gi, 'd')
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim()
-}
-
-function matchDivisionByProvinceHint(hint: string, divisions: Division[]): Division | null {
-  const cleaned = hint
-    .replace(/\bcity\b/gi, '')
-    .replace(/\bprovince\b/gi, '')
-    .trim()
-  if (!cleaned) return null
-  const h = normalizeVi(cleaned)
-  const hintWords = h.split(/\s+/).filter((w) => w.length > 1)
-  if (hintWords.length === 0) return null
-
-  let best: Division | null = null
-  let bestScore = 0
-  for (const d of divisions) {
-    const dn = normalizeVi(d.name)
-    const score = hintWords.filter((w) => dn.includes(w)).length
-    if (score > bestScore) {
-      bestScore = score
-      best = d
-    }
-  }
-  return bestScore === hintWords.length ? best : null
-}
-
-/** Ba thành phố cố định: gợi ý để khớp tên trong DB dbthoitiet. */
-const FIXED_CITIES: { label: string; divisionHints: string[] }[] = [
-  { label: 'Hà Nội', divisionHints: ['Hà Nội', 'Thành phố Hà Nội'] },
-  { label: 'Đà Nẵng', divisionHints: ['Đà Nẵng', 'Thành phố Đà Nẵng'] },
-  {
-    label: 'Hồ Chí Minh',
-    divisionHints: ['Thành phố Hồ Chí Minh', 'Hồ Chí Minh', 'Ho Chi Minh'],
-  },
+/** Ba thành phố cố định kèm toạ độ để truy vấn Open-Meteo (miễn phí, không cần API key). */
+const FIXED_CITIES: { label: string; lat: number; lng: number }[] = [
+  { label: 'Hà Nội', lat: 21.0285, lng: 105.8542 },
+  { label: 'Đà Nẵng', lat: 16.0544, lng: 108.2022 },
+  { label: 'Hồ Chí Minh', lat: 10.7626, lng: 106.6602 },
 ]
 
-function resolveDivision(
-  { divisionHints }: (typeof FIXED_CITIES)[number],
-  divisions: Division[],
-): Division | null {
-  for (const hint of divisionHints) {
-    const d = matchDivisionByProvinceHint(hint, divisions)
-    if (d) return d
-  }
-  return null
+function weatherUrl(lat: number, lng: number): string {
+  const params = new URLSearchParams({
+    latitude: String(lat),
+    longitude: String(lng),
+    current: 'temperature_2m,relative_humidity_2m',
+  })
+  return `https://api.open-meteo.com/v1/forecast?${params.toString()}`
 }
 
 function formatVietnameseDate(date: Date): string {
@@ -142,36 +70,29 @@ export const HeaderWeatherBar: React.FC<{ isMobile: boolean }> = ({ isMobile }) 
 
     const run = async () => {
       setLoadError(null)
-      try {
-        const divisions = await loadDivisions()
-        if (cancelled) return
 
-        const results = await Promise.all(
-          FIXED_CITIES.map(async (city) => {
-            const division = resolveDivision(city, divisions)
-            if (!division) {
-              return { label: city.label, temp: null, humidity: null } satisfies CityWeather
-            }
-            try {
-              const weatherRes = await fetch(
-                `https://dbthoitiet.com/api/weather?province_code=${encodeURIComponent(String(division.code))}`,
-              )
-              if (!weatherRes.ok) throw new Error('weather')
-              const weather = (await weatherRes.json()) as WeatherResponse
-              if (!weather.success || !weather.current) throw new Error('weather')
-              return {
-                label: city.label,
-                temp: String(Math.round(weather.current.temperature_2m)),
-                humidity: `${Math.round(weather.current.relative_humidity_2m)}%`,
-              } satisfies CityWeather
-            } catch {
-              return { label: city.label, temp: null, humidity: null } satisfies CityWeather
-            }
-          }),
-        )
-        if (!cancelled) setCityWeathers(results)
-      } catch {
-        if (!cancelled) setLoadError('Không tải được thời tiết')
+      const results = await Promise.all(
+        FIXED_CITIES.map(async (city) => {
+          try {
+            const res = await fetch(weatherUrl(city.lat, city.lng))
+            if (!res.ok) throw new Error('weather')
+            const weather = (await res.json()) as WeatherResponse
+            if (!weather.current) throw new Error('weather')
+            return {
+              label: city.label,
+              temp: `${Math.round(weather.current.temperature_2m)}°`,
+              humidity: `${Math.round(weather.current.relative_humidity_2m)}%`,
+            } satisfies CityWeather
+          } catch {
+            return { label: city.label, temp: null, humidity: null } satisfies CityWeather
+          }
+        }),
+      )
+
+      if (cancelled) return
+      setCityWeathers(results)
+      if (results.every((c) => c.temp === null)) {
+        setLoadError('Không tải được thời tiết')
       }
     }
 
@@ -183,8 +104,7 @@ export const HeaderWeatherBar: React.FC<{ isMobile: boolean }> = ({ isMobile }) 
 
   const isDateSlot = activeSlot === FIXED_CITIES.length
   const city = !isDateSlot ? cityWeathers[activeSlot] : null
-  const showPlaceholders =
-    !isDateSlot && (city?.temp === null || city?.humidity === null) && !loadError
+  const showPlaceholders = !isDateSlot && (city?.temp === null || city?.humidity === null)
 
   const renderCityRow = () => {
     if (!city) return null
@@ -231,7 +151,7 @@ export const HeaderWeatherBar: React.FC<{ isMobile: boolean }> = ({ isMobile }) 
           >
             {isDateSlot ? (
               dateLabel
-            ) : loadError && showPlaceholders ? (
+            ) : loadError ? (
               <span className="text-muted-foreground">{loadError}</span>
             ) : (
               renderCityRow()
