@@ -25,3 +25,6 @@ node_modules/
 /.cursor
 
 /media
+
+# Database dumps (chứa PII) — không commit
+*.dump

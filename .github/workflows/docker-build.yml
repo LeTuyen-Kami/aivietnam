@@ -75,6 +75,9 @@ jobs:
 
             mkdir -p /opt/aivietnam/media
 
+            # Đảm bảo network dùng chung app <-> postgres luôn tồn tại (idempotent).
+            docker network create aivietnam-net 2>/dev/null || true
+
             docker pull ghcr.io/letuyen-kami/aivietnam:latest
 
             docker stop aivietnam || true
@@ -83,6 +86,7 @@ jobs:
             docker run -d \
               --name aivietnam \
               --restart unless-stopped \
+              --network aivietnam-net \
               --env-file /var/www/aivietnam/.env \
               -p 3000:3000 \
               -v /opt/aivietnam/media:/app/media \
