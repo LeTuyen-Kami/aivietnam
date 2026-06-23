@@ -44,11 +44,13 @@ Package manager is **pnpm** (engines: pnpm 9/10) for app commands; seed/migratio
 
 ## Postgres migrations (critical — see AGENTS.md for full rules)
 
-The DB adapter sets `push: false` because dev shares a remote Postgres instance — **migrations are the source of truth, schema is never auto-pushed.** After any schema change:
+The DB adapter sets `push: false` because dev shares the production Postgres instance — **migrations are the source of truth, schema is never auto-pushed.** After any schema change:
 1. Hand-author a **small, narrowly scoped** migration in `src/migrations/*.ts` and register it in `src/migrations/index.ts`.
-2. `CI=true PAYLOAD_MIGRATING=true bunx payload migrate` → `pnpm generate:types` → `npx tsc --noEmit`.
+2. With the DB tunnel open (see Environment), `CI=true PAYLOAD_MIGRATING=true bunx payload migrate` → `pnpm generate:types` → `npx tsc --noEmit`. This applies **directly to production** — for additive migrations run it before pushing/deploying; coordinate destructive ones.
 - Do **not** use `payload migrate:create` here — it generates unrelated drops/renames from schema drift. Write idempotent SQL (`IF NOT EXISTS`, `DO $$ ... EXCEPTION WHEN duplicate_object`). Keep `blockType`/field names stable; renames need an explicit migration.
 
 ## Environment
 
 Copy `.env.example` to `.env`. Key vars: `DATABASE_URL` (Postgres connection string), `PAYLOAD_SECRET`, `NEXT_PUBLIC_SERVER_URL`, `CRON_SECRET` (gates Payload job execution — Vercel cron auth), and Stream.io keys for livestream/chat. In dev, set `NEXT_PUBLIC_ENV=dev` to proxy `/api/media/file/*` to the remote server (uploaded files live on its disk, not locally).
+
+**Database (self-hosted).** Postgres now runs in a container (`aivietnam-db`, Postgres 17) on the production VPS, bound to `127.0.0.1:5432` — it is **not** publicly reachable. Local dev connects to it through an SSH tunnel (`scripts/db-tunnel.sh`: local `5433` → VPS `5432`), and `DATABASE_URL` in `.env` points at `localhost:5433`. **`pnpm dev` auto-opens the tunnel** (via `scripts/dev.sh`) and closes it on exit; use `pnpm dev:no-tunnel` to skip. ⚠️ Local dev therefore talks to the **live production DB** — never run seeders (`pnpm seed*`) against it, and be aware admin autosave/edits write to prod. The app is deployed as a Docker container (GitHub Actions → GHCR → VPS) on the `aivietnam-net` network alongside the DB; daily `pg_dump` backups run on the VPS. (Neon was the previous provider; migrated off after hitting free-tier compute limits.)
