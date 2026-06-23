@@ -77,8 +77,8 @@ export const PostDisplayOn: React.FC = () => {
           color: 'var(--theme-elevation-500)',
         }}
       >
-        Chỉ áp dụng cho feed bài mới nhất ở cột trái block Portal - 2 column. Bỏ chọn một thiết bị để
-        ẩn bài này trên thiết bị đó. Không ảnh hưởng khi bài được chọn đích danh.
+        Áp dụng cho cột trái (left source) của block Portal - 2 column — cả khi chọn thủ công lẫn
+        lấy bài mới nhất. Bỏ chọn một thiết bị để ẩn bài này trên thiết bị đó.
       </p>
     </div>
   )

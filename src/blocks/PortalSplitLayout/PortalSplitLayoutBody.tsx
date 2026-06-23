@@ -21,7 +21,6 @@ export const PortalSplitLayoutBody: React.FC<
     humanitarianItems,
     humanitarianPostsResolved,
     leftPostsResolved,
-    leftSource,
     row1CenterGraphic,
     row1GridItems,
     row1LeftAccent,
@@ -51,7 +50,7 @@ export const PortalSplitLayoutBody: React.FC<
     <section className="container">
       <div className="grid grid-cols-1 lg:grid-cols-12 lg:gap-12 gap-4 lg:gap-x-6 gap-x-5 divide-x divide-border/60">
         <aside className="lg:col-span-4 pr-0 lg:pr-6">
-          <LeftFeed applyDeviceVisibility={leftSource === 'latest'} posts={leftPostsResolved} />
+          <LeftFeed posts={leftPostsResolved} />
         </aside>
 
         <HumanitarianCornerPanel items={humanitarianItems} />

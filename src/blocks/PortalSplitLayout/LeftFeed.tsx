@@ -14,6 +14,7 @@ import { PostExcerpt } from './PostExcerpt'
  *  - tablet  (>=768px) → md:
  *  - desktop (>=1024px)→ lg:
  * Thiếu cờ (bài cũ) coi như hiển thị mọi nơi.
+ * Áp dụng cho MỌI bài ở cột trái (cả manual lẫn latest).
  */
 function deviceVisibilityClass(post: Post): string {
   const mobile = post.displayOnMobile !== false
@@ -27,13 +28,7 @@ function deviceVisibilityClass(post: Post): string {
   )
 }
 
-export function LeftFeed({
-  posts,
-  applyDeviceVisibility = false,
-}: {
-  posts: Post[]
-  applyDeviceVisibility?: boolean
-}) {
+export function LeftFeed({ posts }: { posts: Post[] }) {
   if (posts.length === 0) {
     return null
   }
@@ -44,7 +39,7 @@ export function LeftFeed({
         <article
           className={cn(
             'border-t border-border pt-4 md:pt-0 md:border-none last:border-b last:border-border md:last:border-none last:pb-4 md:last:pb-0',
-            applyDeviceVisibility && deviceVisibilityClass(post),
+            deviceVisibilityClass(post),
           )}
           key={post.id}
         >

@@ -324,8 +324,9 @@ export const Posts: CollectionConfig<'posts'> = {
       },
     },
     // Segmented multi-select "Hiển thị trên thiết bị". UI là field `displayOnControl`
-    // (không lưu DB); dữ liệu thực nằm ở 3 boolean ẩn bên dưới. Dùng để lọc feed
-    // "latest" ở cột trái block Portal - 2 column. Xem PortalSplitLayout/LeftFeed.
+    // (không lưu DB); dữ liệu thực nằm ở 3 boolean ẩn bên dưới. Dùng để lọc cột trái
+    // (left source — cả manual lẫn latest) của block Portal - 2 column.
+    // Xem PortalSplitLayout/LeftFeed.
     {
       name: 'displayOnControl',
       type: 'ui',
