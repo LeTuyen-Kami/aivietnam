@@ -252,26 +252,6 @@ export default async function Post({ params: paramsPromise }: Args) {
                   </div>
                 </section>
               ) : null} */}
-
-              {footerBlock ? (
-                <div className="mt-6 overflow-hidden border border-border sm:mt-8">
-                  {footerBlock.href ? (
-                    <SmartLink className="block" href={footerBlock.href}>
-                      <Media
-                        imgClassName="w-full object-cover"
-                        resource={footerBlock.resource}
-                        size="(max-width: 1024px) 100vw, 760px"
-                      />
-                    </SmartLink>
-                  ) : (
-                    <Media
-                      imgClassName="w-full object-cover"
-                      resource={footerBlock.resource}
-                      size="(max-width: 1024px) 100vw, 760px"
-                    />
-                  )}
-                </div>
-              ) : null}
             </div>
 
             <aside className="min-w-0 w-full space-y-6 border-t border-border pt-6 sm:space-y-8 sm:pt-8 lg:sticky lg:top-24 lg:h-fit lg:w-[270px] lg:border-t-0 lg:pt-0">
@@ -352,6 +332,28 @@ export default async function Post({ params: paramsPromise }: Args) {
             submitLabel="Đăng ký"
             className="my-6 sm:my-8"
           />
+        ) : null}
+
+        {footerBlock ? (
+          <div className="container mb-6 px-4 sm:mb-8 sm:px-6">
+            <div className="overflow-hidden border border-border">
+              {footerBlock.href ? (
+                <SmartLink className="block" href={footerBlock.href}>
+                  <Media
+                    imgClassName="w-full object-cover"
+                    resource={footerBlock.resource}
+                    size="(max-width: 1024px) 100vw, 1024px"
+                  />
+                </SmartLink>
+              ) : (
+                <Media
+                  imgClassName="w-full object-cover"
+                  resource={footerBlock.resource}
+                  size="(max-width: 1024px) 100vw, 1024px"
+                />
+              )}
+            </div>
+          </div>
         ) : null}
       </article>
     </>

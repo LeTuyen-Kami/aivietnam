@@ -202,7 +202,7 @@ function CommentBody({ c }: { c: CommentDoc }) {
           {avatarText}
         </div>
         <div className="min-w-0">
-          <p className="truncate text-[16px] font-bold leading-tight text-[#222]">{authorName}</p>
+          <p className="truncate text-[14px] font-bold leading-tight text-[#222]">{authorName}</p>
           <time
             className="text-[13px] text-[#8d8d8d]"
             dateTime={c.createdAt}
@@ -213,7 +213,7 @@ function CommentBody({ c }: { c: CommentDoc }) {
         </div>
       </div>
 
-      <p className="mt-2.5 text-[15px] leading-[1.55] break-words whitespace-pre-wrap text-[#3f3f3f]">
+      <p className="mt-2.5 text-[13px] leading-[1.55] break-words whitespace-pre-wrap text-[#3f3f3f]">
         {c.body}
       </p>
 
@@ -296,7 +296,7 @@ function CommentActionRow({
   }
 
   return (
-    <div className="mt-2.5 flex items-center gap-6 text-[15px] leading-none text-[#777]">
+    <div className="mt-2.5 flex items-center gap-6 text-[13px] leading-none text-[#777]">
       <div
         className="relative"
         onMouseEnter={openPicker}
@@ -349,7 +349,12 @@ function CommentActionRow({
                       transition={{ type: 'spring', stiffness: 500, damping: 18 }}
                       onClick={() => selectReaction(type)}
                     >
-                      <img className="size-8 select-none [-webkit-touch-callout:none]" src={emoji} alt={label} draggable={false} />
+                      <img
+                        className="size-8 select-none [-webkit-touch-callout:none]"
+                        src={emoji}
+                        alt={label}
+                        draggable={false}
+                      />
                     </motion.button>
                   </div>
                 ))}
@@ -737,66 +742,66 @@ export const PostComments: React.FC<{ postId: number; commentsClosed?: boolean }
           Bình luận đã được tắt cho bài viết này.
         </p>
       ) : (
-      <form className="mt-4 space-y-2" onSubmit={submit}>
-        {!user && !loading ? (
-          <input
-            type="text"
-            aria-label="Tên của bạn"
-            className="w-full rounded-[3px] border-0 border-l-2 border-l-[#c92552] bg-[#f5f5f5] px-4 py-2.5 text-[15px] focus-visible:outline-none"
-            placeholder="Tên của bạn"
-            value={guestName}
-            onChange={(e) => setGuestName(e.target.value)}
-            maxLength={80}
-          />
-        ) : null}
+        <form className="mt-4 space-y-2" onSubmit={submit}>
+          {!user && !loading ? (
+            <input
+              type="text"
+              aria-label="Tên của bạn"
+              className="w-full rounded-[3px] border-0 border-l-2 border-l-[#c92552] bg-[#f5f5f5] px-4 py-2.5 text-[15px] focus-visible:outline-none"
+              placeholder="Tên của bạn"
+              value={guestName}
+              onChange={(e) => setGuestName(e.target.value)}
+              maxLength={80}
+            />
+          ) : null}
 
-        <div className="relative">
-          <Textarea
-            aria-label="Nhập ý kiến"
-            className="min-h-[52px] resize-none rounded-[3px] border-0 border-l-2 border-l-[#c92552] bg-[#f5f5f5] py-4 pr-12 pl-4 text-[15px] shadow-none focus-visible:ring-0 focus-visible:outline-none"
-            placeholder={loading ? 'Đang tải…' : 'Chia sẻ ý kiến của bạn'}
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-          />
-          <button
-            type="button"
-            className="absolute top-1/2 right-3 -translate-y-1/2 text-[#b9b9b9] hover:text-[#8a8a8a]"
-            aria-label="Mở biểu tượng cảm xúc"
-          >
-            <Smile className="h-5 w-5" />
-          </button>
-        </div>
-
-        {!body.trim() ? (
-          <p className="text-[13px] leading-none text-[#c92552]">
-            Bạn chưa nhập nội dung bình luận.
-          </p>
-        ) : !user && !guestName.trim() ? (
-          <p className="text-[13px] leading-none text-[#c92552]">Vui lòng nhập tên của bạn.</p>
-        ) : null}
-
-        {body.trim() ? (
-          <div className="flex flex-wrap items-center gap-3">
-            <Button
-              className={cn(pressable, 'bg-[#C92452]')}
-              disabled={submitMutation.isPending || !body.trim() || (!user && !guestName.trim())}
-              size="sm"
-              type="submit"
+          <div className="relative">
+            <Textarea
+              aria-label="Nhập ý kiến"
+              className="min-h-[52px] resize-none rounded-[3px] border-0 border-l-2 border-l-[#c92552] bg-[#f5f5f5] py-4 pr-12 pl-4 text-[15px] shadow-none focus-visible:ring-0 focus-visible:outline-none"
+              placeholder={loading ? 'Đang tải…' : 'Chia sẻ ý kiến của bạn'}
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+            />
+            <button
+              type="button"
+              className="absolute top-1/2 right-3 -translate-y-1/2 text-[#b9b9b9] hover:text-[#8a8a8a]"
+              aria-label="Mở biểu tượng cảm xúc"
             >
-              {submitMutation.isPending ? 'Đang gửi…' : 'Gửi ý kiến'}
-            </Button>
-            {!user ? (
-              <button
-                type="button"
-                className="text-[13px] text-[#777] hover:text-[#c92552]"
-                onClick={openAuthModal}
-              >
-                hoặc Đăng nhập
-              </button>
-            ) : null}
+              <Smile className="h-5 w-5" />
+            </button>
           </div>
-        ) : null}
-      </form>
+
+          {!body.trim() ? (
+            <p className="text-[13px] leading-none text-[#c92552]">
+              Bạn chưa nhập nội dung bình luận.
+            </p>
+          ) : !user && !guestName.trim() ? (
+            <p className="text-[13px] leading-none text-[#c92552]">Vui lòng nhập tên của bạn.</p>
+          ) : null}
+
+          {body.trim() ? (
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                className={cn(pressable, 'bg-[#C92452]')}
+                disabled={submitMutation.isPending || !body.trim() || (!user && !guestName.trim())}
+                size="sm"
+                type="submit"
+              >
+                {submitMutation.isPending ? 'Đang gửi…' : 'Gửi ý kiến'}
+              </Button>
+              {!user ? (
+                <button
+                  type="button"
+                  className="text-[13px] text-[#777] hover:text-[#c92552]"
+                  onClick={openAuthModal}
+                >
+                  hoặc Đăng nhập
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+        </form>
       )}
 
       {submitMutation.isError ? (
