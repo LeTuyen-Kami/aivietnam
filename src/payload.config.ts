@@ -44,9 +44,6 @@ export default buildConfig({
       beforeLogin: ['@/components/BeforeLogin'],
       // Login form enhancer: password show/hide toggle + autocomplete fix.
       afterLogin: ['@/components/admin/LoginEnhancements'],
-      // The `BeforeDashboard` component renders the 'welcome' block that you see after logging into your admin panel.
-      // Feel free to delete this at any time. Simply remove the line below.
-      beforeDashboard: ['@/components/BeforeDashboard'],
     },
     importMap: {
       baseDir: path.resolve(dirname),
