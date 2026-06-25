@@ -58,6 +58,45 @@ jobs:
           build-args: |
             PAYLOAD_SECRET=${{ secrets.PAYLOAD_SECRET }}
 
+      # Build failures skip the entire deploy job (needs: build), so the
+      # Discord Fail step there never runs. Notify here too for build errors.
+      - name: Discord Fail (build)
+        if: failure()
+        env:
+          BRANCH: ${{ github.ref_name }}
+          COMMIT: ${{ github.event.head_commit.message }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          jq -n \
+            --arg branch "$BRANCH" \
+            --arg commit "${COMMIT:-No commit message}" \
+            --arg run "$RUN_URL" \
+            '{
+              embeds: [{
+                title: "❌ Build Failed",
+                description: "AIVietnam image build failed (deploy did not run)",
+                color: 15548997,
+                fields: [
+                  {
+                    name: "Branch",
+                    value: ($branch | .[0:1000])
+                  },
+                  {
+                    name: "Commit",
+                    value: ($commit | .[0:1000])
+                  },
+                  {
+                    name: "Logs",
+                    value: ($run | .[0:1000])
+                  }
+                ]
+              }]
+            }' | curl -H "Content-Type: application/json" \
+              -X POST \
+              -d @- \
+              "$DISCORD_WEBHOOK"
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
