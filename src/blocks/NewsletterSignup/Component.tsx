@@ -170,7 +170,7 @@ export const NewsletterSignupBlock: React.FC<NewsletterSignupBlockType> = (props
     <div className="container">
       <div
         className={cn(
-          'rounded-sm border border-neutral-200 bg-[#FDFBF7] px-5 py-7 sm:px-6 sm:py-8 md:px-10 md:py-10',
+          'rounded-sm border border-neutral-200 bg-[#FDFBF7] px-4 py-5 sm:px-6 sm:py-8 md:px-10 md:py-10',
           className,
         )}
       >
@@ -185,7 +185,7 @@ export const NewsletterSignupBlock: React.FC<NewsletterSignupBlockType> = (props
             Cảm ơn bạn đã đăng ký!
           </p>
         ) : (
-          <form className="space-y-3.5 md:space-y-5" onSubmit={onSubmit} noValidate>
+          <form className="space-y-2.5 md:space-y-5" onSubmit={onSubmit} noValidate>
             <div className="flex items-center gap-1.5 font-sans text-[10px] font-medium uppercase tracking-[0.12em] text-neutral-500 sm:text-[11px] md:text-xs">
               <Mail
                 aria-hidden
@@ -195,7 +195,7 @@ export const NewsletterSignupBlock: React.FC<NewsletterSignupBlockType> = (props
               <span>{eyebrow}</span>
             </div>
 
-            <h2 className="font-serif text-xl font-bold leading-snug text-neutral-900 md:text-xl md:leading-tight">
+            <h2 className="font-serif text-lg font-bold leading-snug text-neutral-900 md:text-xl md:leading-tight">
               {headline}
             </h2>
 
@@ -205,7 +205,7 @@ export const NewsletterSignupBlock: React.FC<NewsletterSignupBlockType> = (props
               </p>
             ) : null}
 
-            <div className="flex flex-col gap-2.5 sm:flex-row sm:items-stretch sm:gap-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch sm:gap-3">
               <label className="sr-only" htmlFor="newsletter-email">
                 Email
               </label>
