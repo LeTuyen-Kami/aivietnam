@@ -1,4 +1,5 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { resendAdapter } from '@payloadcms/email-resend'
 import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
 import sharp from 'sharp'
@@ -130,6 +131,14 @@ export default buildConfig({
     // }),
   ],
   secret: process.env.PAYLOAD_SECRET,
+  // Email: dùng Resend khi có RESEND_API_KEY, ngược lại Payload ghi mail ra console (dev).
+  email: process.env.RESEND_API_KEY
+    ? resendAdapter({
+        defaultFromAddress: process.env.EMAIL_FROM_ADDRESS || 'onboarding@resend.dev',
+        defaultFromName: process.env.EMAIL_FROM_NAME || 'AI VIETNAM',
+        apiKey: process.env.RESEND_API_KEY
+      })
+    : undefined,
   sharp,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
