@@ -167,7 +167,7 @@ export const NewsletterSignupBlock: React.FC<NewsletterSignupBlockType> = (props
   const termsWord = 'điều khoản'
 
   return (
-    <div className="container">
+    <div className="container my-6 sm:my-0">
       <div
         className={cn(
           'rounded-sm border border-neutral-200 bg-[#FDFBF7] px-4 py-5 sm:px-6 sm:py-8 md:px-10 md:py-10',
