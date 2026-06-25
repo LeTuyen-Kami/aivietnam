@@ -1,0 +1,217 @@
+/* =========================================================================
+   AI VIETNAM — admin login redesign
+   Scoped to the `.login` screen only. Brand: cream #FDFBF7 + red #D93025.
+   The rest of the admin UI is untouched.
+   ========================================================================= */
+
+.login {
+  --aivn-cream: #fdfbf7;
+  --aivn-card: #ffffff;
+  --aivn-red: #d93025;
+  --aivn-red-press: #b8261d;
+  --aivn-ink: #1c1917;
+  --aivn-muted: #6f6960;
+  --aivn-border: #e7e2d8;
+  --aivn-input-border: #d8d2c6;
+
+  position: relative;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 2.5rem 1.25rem;
+  background:
+    radial-gradient(1100px 480px at 50% -12%, rgba(217, 48, 37, 0.07), transparent 62%),
+    var(--aivn-cream);
+
+  /* ---- brand logo ---- */
+  &__brand {
+    margin: 0 0 1.5rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  .aivn-admin-logo {
+    width: auto;
+    height: 60px;
+    object-fit: contain;
+  }
+
+  /* ---- intro heading (BeforeLogin) ---- */
+  .aivn-login-intro {
+    width: 100%;
+    max-width: 25rem;
+    margin: 0 0 1.25rem;
+    text-align: center;
+
+    &__eyebrow {
+      display: inline-block;
+      margin-bottom: 0.6rem;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--aivn-red);
+    }
+
+    &__title {
+      margin: 0 0 0.5rem;
+      font-size: 1.5rem;
+      line-height: 1.2;
+      font-weight: 700;
+      color: var(--aivn-ink);
+    }
+
+    &__sub {
+      margin: 0 auto;
+      max-width: 22rem;
+      font-size: 0.875rem;
+      line-height: 1.55;
+      color: var(--aivn-muted);
+    }
+  }
+
+  /* ---- the form, rendered as a card ---- */
+  &__form {
+    width: 100%;
+    max-width: 25rem;
+    padding: 1.75rem;
+    background: var(--aivn-card);
+    border: 1px solid var(--aivn-border);
+    border-radius: 14px;
+    box-shadow:
+      0 1px 2px rgba(28, 25, 23, 0.04),
+      0 18px 40px -24px rgba(28, 25, 23, 0.25);
+  }
+
+  /* labels + inputs */
+  .field-type label,
+  .field-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--aivn-ink);
+  }
+
+  .field-type input {
+    height: 2.75rem;
+    border-radius: 10px;
+    border: 1px solid var(--aivn-input-border);
+    background: #fff;
+    color: var(--aivn-ink);
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+
+    &::placeholder {
+      color: #a8a29a;
+    }
+
+    &:hover {
+      border-color: #c4bdaf;
+    }
+
+    &:focus,
+    &:focus-visible {
+      outline: none;
+      border-color: var(--aivn-red);
+      box-shadow: 0 0 0 3px rgba(217, 48, 37, 0.16);
+    }
+  }
+
+  /* password show/hide toggle (injected by LoginEnhancements) */
+  .aivn-pw-field {
+    position: relative;
+
+    input {
+      padding-right: 2.9rem;
+    }
+  }
+
+  [data-aivn-pw-toggle] {
+    position: absolute;
+    right: 0.3rem;
+    bottom: 0;
+    height: var(--aivn-input-h, 2.75rem);
+    width: 2.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--aivn-muted);
+    cursor: pointer;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: var(--aivn-ink);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--aivn-red);
+      outline-offset: 2px;
+    }
+  }
+
+  /* primary submit button */
+  .form-submit {
+    margin-top: 1.5rem;
+
+    .btn {
+      width: 100%;
+      margin: 0;
+    }
+
+    .btn__content {
+      justify-content: center;
+    }
+
+    .btn--style-primary {
+      background: var(--aivn-red);
+      border-color: var(--aivn-red);
+      color: #fff;
+      border-radius: 10px;
+      font-weight: 600;
+      box-shadow: 0 10px 24px -12px rgba(217, 48, 37, 0.7);
+      transition:
+        background 0.15s ease,
+        transform 0.05s ease;
+
+      &:hover {
+        background: var(--aivn-red-press);
+        border-color: var(--aivn-red-press);
+      }
+
+      &:active {
+        transform: translateY(1px);
+      }
+    }
+  }
+
+  /* forgot-password link */
+  form.login__form a {
+    color: var(--aivn-muted);
+    text-decoration: none;
+    font-size: 0.8125rem;
+
+    &:hover {
+      color: var(--aivn-red);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+  }
+}
+
+/* Reduced motion: drop the press feedback. */
+@media (prefers-reduced-motion: reduce) {
+  .login .btn--style-primary {
+    transition: none;
+
+    &:active {
+      transform: none;
+    }
+  }
+}

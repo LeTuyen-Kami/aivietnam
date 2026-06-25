@@ -2,10 +2,12 @@ import React from 'react'
 
 const BeforeLogin: React.FC = () => {
   return (
-    <div>
-      <p>
-        <b>Welcome to your dashboard!</b>
-        {' This is where site admins will log in to manage your website.'}
+    <div className="aivn-login-intro">
+      <span className="aivn-login-intro__eyebrow">Bảng quản trị</span>
+      <h1 className="aivn-login-intro__title">Đăng nhập AI VIETNAM</h1>
+      <p className="aivn-login-intro__sub">
+        Khu vực dành cho quản trị viên và biên tập. Đăng nhập để quản lý nội dung, marketplace và
+        livestream.
       </p>
     </div>
   )
