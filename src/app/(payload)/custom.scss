@@ -1,54 +1,52 @@
 /* =========================================================================
    AI VIETNAM — admin login redesign
-   Scoped to the `.login` screen only. Brand: cream #FDFBF7 + red #D93025.
-   The rest of the admin UI is untouched.
+   Scoped to the `.login` screen only. Surfaces follow Payload's theme tokens
+   (so the login matches the dashboard in both light and dark mode); the red
+   #D93025 brand accent is applied only to the eyebrow, focus ring and CTA.
+   The page background + centering come from Payload's `.template-minimal`.
    ========================================================================= */
 
 .login {
-  --aivn-cream: #fdfbf7;
-  --aivn-card: #ffffff;
   --aivn-red: #d93025;
   --aivn-red-press: #b8261d;
-  --aivn-ink: #1c1917;
-  --aivn-muted: #6f6960;
-  --aivn-border: #e7e2d8;
-  --aivn-input-border: #d8d2c6;
 
-  position: relative;
-  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 0;
-  padding: 2.5rem 1.25rem;
-  background:
-    radial-gradient(1100px 480px at 50% -12%, rgba(217, 48, 37, 0.07), transparent 62%),
-    var(--aivn-cream);
+  text-align: center;
+  width: 100%;
 
   /* ---- brand logo ---- */
   &__brand {
+    width: 100%;
     margin: 0 0 1.5rem;
     display: flex;
     justify-content: center;
   }
 
   .aivn-admin-logo {
+    display: block;
     width: auto;
-    height: 60px;
+    height: 56px;
     object-fit: contain;
+  }
+
+  /* The raster logo has a dark "VIỆT NAM" wordmark; keep it legible on the
+     dark theme with a subtle light plate (light mode is unaffected). */
+  html[data-theme='dark'] & .aivn-admin-logo {
+    padding: 0.45rem 0.7rem;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.92);
   }
 
   /* ---- intro heading (BeforeLogin) ---- */
   .aivn-login-intro {
     width: 100%;
-    max-width: 25rem;
-    margin: 0 0 1.25rem;
-    text-align: center;
+    margin: 0 0 1.5rem;
 
     &__eyebrow {
       display: inline-block;
-      margin-bottom: 0.6rem;
+      margin-bottom: 0.55rem;
       font-size: 0.6875rem;
       font-weight: 600;
       letter-spacing: 0.14em;
@@ -57,64 +55,33 @@
     }
 
     &__title {
-      margin: 0 0 0.5rem;
+      margin: 0;
       font-size: 1.5rem;
       line-height: 1.2;
       font-weight: 700;
-      color: var(--aivn-ink);
-    }
-
-    &__sub {
-      margin: 0 auto;
-      max-width: 22rem;
-      font-size: 0.875rem;
-      line-height: 1.55;
-      color: var(--aivn-muted);
+      color: var(--theme-elevation-1000);
     }
   }
 
-  /* ---- the form, rendered as a card ---- */
+  /* ---- the form, rendered as a card on a theme surface ---- */
   &__form {
     width: 100%;
-    max-width: 25rem;
+    text-align: left;
     padding: 1.75rem;
-    background: var(--aivn-card);
-    border: 1px solid var(--aivn-border);
-    border-radius: 14px;
+    background: var(--theme-elevation-0);
+    border: 1px solid var(--theme-elevation-100);
+    border-radius: 12px;
     box-shadow:
-      0 1px 2px rgba(28, 25, 23, 0.04),
-      0 18px 40px -24px rgba(28, 25, 23, 0.25);
+      0 1px 2px rgba(0, 0, 0, 0.04),
+      0 18px 40px -28px rgba(0, 0, 0, 0.25);
   }
 
-  /* labels + inputs */
-  .field-type label,
-  .field-label {
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: var(--aivn-ink);
-  }
-
+  /* inputs: keep Payload's theme colors, add rounded corners + red focus */
   .field-type input {
-    height: 2.75rem;
-    border-radius: 10px;
-    border: 1px solid var(--aivn-input-border);
-    background: #fff;
-    color: var(--aivn-ink);
-    transition:
-      border-color 0.15s ease,
-      box-shadow 0.15s ease;
-
-    &::placeholder {
-      color: #a8a29a;
-    }
-
-    &:hover {
-      border-color: #c4bdaf;
-    }
+    border-radius: 8px;
 
     &:focus,
     &:focus-visible {
-      outline: none;
       border-color: var(--aivn-red);
       box-shadow: 0 0 0 3px rgba(217, 48, 37, 0.16);
     }
@@ -142,12 +109,12 @@
     border: 0;
     border-radius: 8px;
     background: transparent;
-    color: var(--aivn-muted);
+    color: var(--theme-elevation-500);
     cursor: pointer;
     transition: color 0.15s ease;
 
     &:hover {
-      color: var(--aivn-ink);
+      color: var(--theme-elevation-800);
     }
 
     &:focus-visible {
@@ -156,7 +123,7 @@
     }
   }
 
-  /* primary submit button */
+  /* primary submit button — brand red via Payload's own custom props */
   .form-submit {
     margin-top: 1.5rem;
 
@@ -170,20 +137,13 @@
     }
 
     .btn--style-primary {
-      background: var(--aivn-red);
-      border-color: var(--aivn-red);
-      color: #fff;
+      --color: #fff;
+      --bg-color: var(--aivn-red);
+      --hover-bg: var(--aivn-red-press);
+      --hover-color: #fff;
       border-radius: 10px;
       font-weight: 600;
-      box-shadow: 0 10px 24px -12px rgba(217, 48, 37, 0.7);
-      transition:
-        background 0.15s ease,
-        transform 0.05s ease;
-
-      &:hover {
-        background: var(--aivn-red-press);
-        border-color: var(--aivn-red-press);
-      }
+      transition: transform 0.05s ease;
 
       &:active {
         transform: translateY(1px);
@@ -193,9 +153,9 @@
 
   /* forgot-password link */
   form.login__form a {
-    color: var(--aivn-muted);
-    text-decoration: none;
     font-size: 0.8125rem;
+    text-decoration: none;
+    color: var(--theme-elevation-500);
 
     &:hover {
       color: var(--aivn-red);

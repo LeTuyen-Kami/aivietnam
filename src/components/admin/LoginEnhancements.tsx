@@ -26,12 +26,16 @@ function enhance(): boolean {
   if (!form) return false
 
   const email = form.querySelector<HTMLInputElement>('input[type="email"], input[name="email"], input[name="username"]')
-  if (email) email.setAttribute('autocomplete', email.name === 'password' ? 'username' : 'username email')
+  if (email) {
+    email.setAttribute('autocomplete', 'username')
+    email.setAttribute('placeholder', 'Nhập email')
+  }
 
   const pwd = form.querySelector<HTMLInputElement>('input[type="password"], input[name="password"]')
   if (!pwd) return false
 
   pwd.setAttribute('autocomplete', 'current-password')
+  pwd.setAttribute('placeholder', 'Nhập mật khẩu')
 
   const field = pwd.closest<HTMLElement>('.field-type') ?? pwd.parentElement
   if (!field || field.querySelector('[data-aivn-pw-toggle]')) return true
