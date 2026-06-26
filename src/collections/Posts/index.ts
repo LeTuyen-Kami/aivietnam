@@ -367,7 +367,10 @@ export const Posts: CollectionConfig<'posts'> = {
   versions: {
     drafts: {
       autosave: {
-        interval: 100, // We set this interval for optimal live preview
+        // 800ms (Payload default) instead of 100ms: a 100ms interval fires autosave
+        // ~10x/sec and, with Postgres many-to-many rels tables, races produced duplicate
+        // relatedPosts/categories/authors rows in posts_rels. Live preview stays smooth at 800ms.
+        interval: 800,
       },
       schedulePublish: true,
     },

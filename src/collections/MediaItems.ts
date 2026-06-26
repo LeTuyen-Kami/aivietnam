@@ -276,7 +276,8 @@ export const MediaItems: CollectionConfig = {
   versions: {
     drafts: {
       autosave: {
-        interval: 100,
+        // 800ms (Payload default): avoid 100ms autosave races that duplicate rels rows.
+        interval: 800,
       },
       schedulePublish: true,
     },

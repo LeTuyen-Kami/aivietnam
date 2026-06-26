@@ -167,7 +167,9 @@ export const Pages: CollectionConfig<'pages'> = {
   versions: {
     drafts: {
       autosave: {
-        interval: 100, // We set this interval for optimal live preview
+        // 800ms (Payload default): a 100ms interval races autosave writes against
+        // Postgres rels tables and can duplicate relationship rows. See Posts for details.
+        interval: 800,
       },
       schedulePublish: true,
     },
