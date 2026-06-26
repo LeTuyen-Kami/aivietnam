@@ -72,7 +72,7 @@ export const HumanitarianCornerPanel: React.FC<{
             >
               <ItemBlock href={row.href} image={row.image} />
               <HumanitarianItemShareButton
-                className="absolute bottom-4 right-4 z-10 flex text-sm transition-all duration-200 active:scale-95"
+                className="absolute bottom-4 right-4 z-10"
                 fragmentId={fragmentId}
               />
             </div>

@@ -256,7 +256,7 @@ export async function Footer() {
               <div className="relative w-full max-w-md overflow-hidden rounded-lg">
                 <Media
                   className="w-full"
-                  imgClassName="max-h-40 w-full object-cover sm:max-h-52 md:max-h-56 lg:max-h-64"
+                  imgClassName="h-auto w-full object-contain"
                   resource={featureImage}
                 />
               </div>

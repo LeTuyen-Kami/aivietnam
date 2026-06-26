@@ -86,7 +86,7 @@ const SmallRowPromo: React.FC<{
         )}
       </article>
       <article
-        className="relative flex min-h-[200px] overflow-hidden sm:min-h-0 sm:h-full sm:flex-col cursor-pointer order-2 md:order-last md:hidden p-4"
+        className="relative flex min-h-[200px] overflow-hidden sm:min-h-0 sm:h-full sm:flex-col cursor-pointer order-2 md:order-last md:hidden md:p-4"
         style={aspectRatioStyle}
       >
         {!raw ? (

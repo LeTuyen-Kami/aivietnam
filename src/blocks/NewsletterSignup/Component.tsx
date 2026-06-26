@@ -170,7 +170,7 @@ export const NewsletterSignupBlock: React.FC<NewsletterSignupBlockType> = (props
     <div className="container my-6 px-4 sm:my-0 sm:px-0">
       <div
         className={cn(
-          'rounded-sm border border-neutral-200 bg-[#FDFBF7] px-4 py-5 sm:px-6 sm:py-8 md:px-10 md:py-10',
+          'border-x border-neutral-200 bg-[#FDFBF7] px-4 py-2 sm:px-6 sm:py-2 md:px-10 md:py-10',
           className,
         )}
       >
@@ -185,7 +185,7 @@ export const NewsletterSignupBlock: React.FC<NewsletterSignupBlockType> = (props
             Cảm ơn bạn đã đăng ký!
           </p>
         ) : (
-          <form className="space-y-2.5 md:space-y-5" onSubmit={onSubmit} noValidate>
+          <form className="space-y-1.5 md:space-y-5" onSubmit={onSubmit} noValidate>
             <div className="flex items-center gap-1.5 font-sans text-[10px] font-medium uppercase tracking-[0.12em] text-neutral-500 sm:text-[11px] md:text-xs">
               <Mail
                 aria-hidden
@@ -211,7 +211,7 @@ export const NewsletterSignupBlock: React.FC<NewsletterSignupBlockType> = (props
               </label>
               <input
                 autoComplete="email"
-                className="min-h-10 flex-1 rounded-md border border-neutral-300 bg-white px-3 py-2 font-sans text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-200 md:min-h-11 md:text-base"
+                className="h-9 md:h-10 flex-1 rounded-md border border-neutral-300 bg-white px-3 py-2 font-sans text-[13px]! text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-200 md:min-h-11 md:text-xs"
                 disabled={isLoading}
                 id="newsletter-email"
                 name="email"
@@ -221,7 +221,7 @@ export const NewsletterSignupBlock: React.FC<NewsletterSignupBlockType> = (props
                 value={email}
               />
               <button
-                className="min-h-10 shrink-0 rounded-md bg-[#D93025] px-5 font-sans text-xs font-bold uppercase tracking-wide text-white transition-opacity hover:opacity-90 disabled:opacity-60 md:min-h-11 md:px-6 md:text-sm"
+                className="h-9 md:h-10 shrink-0 rounded-md bg-[#D93025] px-3 font-sans text-[10px] font-bold uppercase tracking-wide text-white transition-opacity hover:opacity-90 disabled:opacity-60 md:min-h-11 md:px-4 md:text-[11px]"
                 disabled={isLoading}
                 type="submit"
               >

@@ -1,6 +1,8 @@
 'use client'
 
-import { Forward } from 'lucide-react'
+import { Share2 } from 'lucide-react'
+
+import { cn } from '@/utilities/ui'
 
 type Props = {
   fragmentId: string
@@ -10,7 +12,11 @@ type Props = {
 export function HumanitarianItemShareButton({ fragmentId, className }: Props) {
   return (
     <button
-      className={className}
+      aria-label="Chia sẻ"
+      className={cn(
+        'flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/55 text-white shadow-lg backdrop-blur transition-colors hover:bg-black/70 cursor-pointer active:scale-95',
+        className,
+      )}
       type="button"
       onClick={async () => {
         const { origin, pathname, search } = window.location
@@ -34,8 +40,7 @@ export function HumanitarianItemShareButton({ fragmentId, className }: Props) {
         }
       }}
     >
-      <Forward className="mr-2 h-4 w-4" />
-      Chia sẻ
+      <Share2 aria-hidden className="h-5 w-5" />
     </button>
   )
 }

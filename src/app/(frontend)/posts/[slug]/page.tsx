@@ -326,7 +326,6 @@ export default async function Post({ params: paramsPromise }: Args) {
           <NewsletterSignupBlock
             description="Đăng ký để nhận bản tin AI nổi bật mỗi ngày."
             emailPlaceholder="Nhập email của bạn"
-            eyebrow="Đọc trên AIVIETNAM"
             form={sidebarForm}
             headline="Đừng bỏ lỡ tin AI quan trọng"
             submitLabel="Đăng ký"

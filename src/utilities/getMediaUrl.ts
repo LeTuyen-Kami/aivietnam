@@ -2,8 +2,9 @@ import { getServerSideURL } from './getURL'
 
 /**
  * Processes media resource URL to ensure proper formatting.
- * Relative paths are resolved with NEXT_PUBLIC_SERVER_URL so SSR and the browser
- * produce the same absolute URL (avoids hydration mismatch from HOSTNAME / window).
+ * Same-origin paths are always returned as relative URLs so SSR and the browser
+ * produce identical markup (avoids hydration mismatch from env-dependent absolute URLs).
+ * External CDN URLs are kept absolute.
  */
 export const getMediaUrl = (url: string | null | undefined, cacheTag?: string | null): string => {
   if (!url) return ''
@@ -12,30 +13,28 @@ export const getMediaUrl = (url: string | null | undefined, cacheTag?: string | 
     cacheTag = encodeURIComponent(cacheTag)
   }
 
+  let path: string
+
   if (url.startsWith('http://') || url.startsWith('https://')) {
-    return cacheTag ? `${url}?${cacheTag}` : url
+    try {
+      const parsed = new URL(url)
+      const baseParsed = new URL(getServerSideURL())
+      const sameOrigin =
+        parsed.protocol === baseParsed.protocol &&
+        parsed.hostname === baseParsed.hostname &&
+        parsed.port === baseParsed.port
+
+      if (!sameOrigin) {
+        return cacheTag ? `${url}?${cacheTag}` : url
+      }
+
+      path = `${parsed.pathname}${parsed.search}`
+    } catch {
+      return cacheTag ? `${url}?${cacheTag}` : url
+    }
+  } else {
+    path = url.startsWith('/') ? url : `/${url}`
   }
 
-  const baseUrl = getServerSideURL().replace(/\/$/, '')
-  const path = url.startsWith('/') ? url : `/${url}`
-  const absoluteUrl = `${baseUrl}${path}`
-  const _url = process?.env?.NEXT_PUBLIC_ENV === 'dev' ? absoluteUrl : path
-
-  return cacheTag ? `${_url}?${cacheTag}` : _url
+  return cacheTag ? `${path}?${cacheTag}` : path
 }
-
-// docker stop aivietnam
-// docker rm aivietnam
-
-// docker rm aivietnam 2>/dev/null || true
-
-// docker run -d --name aivietnam --env-file /var/www/aivietnam/.env -p 3000:3000 --pull always ghcr.io/letuyen-kami/aivietnam:latest
-
-// docker stop aivietnam
-// docker rm aivietnam
-// docker run -d \
-//   --name aivietnam \
-//   --env-file /var/www/aivietnam/.env \
-//   -p 3000:3000 \
-//   --pull always \
-//   ghcr.io/letuyen-kami/aivietnam:latest
