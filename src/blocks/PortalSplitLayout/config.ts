@@ -578,13 +578,13 @@ export const PortalSplitLayout: Block = {
           },
           admin: {
             description: {
-              en: 'Exactly 6 posts for the 2×3 title grid',
-              vi: 'Đúng 6 bài cho lưới tiêu đề 2×3',
+              en: 'Up to 6 posts for the title grid',
+              vi: 'Tối đa 6 bài cho lưới tiêu đề',
             },
           },
           validate: ((value) => {
-            if (!Array.isArray(value) || value.length !== 6) {
-              return 'Select exactly 6 posts.'
+            if (Array.isArray(value) && value.length > 6) {
+              return 'Select at most 6 posts.'
             }
             return true
           }) as RelationshipFieldManyValidation,
