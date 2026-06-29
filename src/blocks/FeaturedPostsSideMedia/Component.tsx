@@ -157,34 +157,39 @@ const FeaturedPostsSideMediaBlockComponent: React.FC<Props> = ({
               </article>
             )}
 
-            {smallPosts.map((post) => (
-              <article
-                className="flex h-full min-h-0 flex-col overflow-hidden order-3 md:order-3 mx-4 md:mx-0 md:px-0 border-t border-border pt-4 md:pt-0 md:border-none"
-                key={post.id}
-              >
-                <Link className="group flex h-full min-h-0 flex-col" href={`/posts/${post?.slug}`}>
-                  <div className="pb-2">
-                    <h4 className="line-clamp-2 text-lg md:text-sm font-semibold leading-snug text-foreground transition-colors duration-200 underline-offset-2 group-hover:underline">
-                      {post.title}
-                    </h4>
-                    {post.meta?.description ? (
-                      <p className="mt-2 line-clamp-5 text-base text-muted-foreground md:hidden font-arial">
-                        {post.meta.description}
-                      </p>
-                    ) : null}
-                  </div>
-                  {typeof post.meta?.image === 'object' && (
-                    <div className="mt-auto overflow-hidden">
-                      <Media
-                        imgClassName="aspect-video w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
-                        resource={post.meta.image}
-                        size="(max-width: 768px) 100vw, 33vw"
-                      />
+            <div className="contents">
+              {smallPosts.map((post) => (
+                <article
+                  className="flex h-full min-h-0 flex-col overflow-hidden order-3 md:order-3 mx-4 md:mx-0 md:px-0 border-t border-border pt-4 md:pt-0 md:border-none last:border-b-0.5 last:pb-4 md:last:border-none md:last:pb-0"
+                  key={post.id}
+                >
+                  <Link
+                    className="group flex h-full min-h-0 flex-col"
+                    href={`/posts/${post?.slug}`}
+                  >
+                    <div className="pb-2">
+                      <h4 className="line-clamp-2 text-lg md:text-sm font-semibold leading-snug text-foreground transition-colors duration-200 underline-offset-2 group-hover:underline">
+                        {post.title}
+                      </h4>
+                      {post.meta?.description ? (
+                        <p className="mt-2 line-clamp-5 text-base text-muted-foreground md:hidden font-arial">
+                          {post.meta.description}
+                        </p>
+                      ) : null}
                     </div>
-                  )}
-                </Link>
-              </article>
-            ))}
+                    {typeof post.meta?.image === 'object' && (
+                      <div className="mt-auto overflow-hidden">
+                        <Media
+                          imgClassName="aspect-video w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+                          resource={post.meta.image}
+                          size="(max-width: 768px) 100vw, 33vw"
+                        />
+                      </div>
+                    )}
+                  </Link>
+                </article>
+              ))}
+            </div>
             <SmallRowPromo href={smallRowPromoHref} image={smallRowPromoImage} />
           </div>
         </div>
