@@ -126,7 +126,7 @@ export function StandardSection({
                   )}
                 </Link>
                 <div className="min-w-0 [&>p]:mt-0 md:col-start-2 md:row-start-2">
-                  <PostExcerpt post={post} className="line-clamp-3" />
+                  <PostExcerpt post={post} />
                 </div>
               </div>
             </div>

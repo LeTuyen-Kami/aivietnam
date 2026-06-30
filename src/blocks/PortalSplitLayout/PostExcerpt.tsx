@@ -8,9 +8,5 @@ export function PostExcerpt({ post, className }: { post: Post; className?: strin
     return null
   }
 
-  return (
-    <p className={cn('mt-2 line-clamp-4 text-base text-muted-foreground font-arial', className)}>
-      {text}
-    </p>
-  )
+  return <p className={cn('mt-2 text-base text-muted-foreground font-arial', className)}>{text}</p>
 }

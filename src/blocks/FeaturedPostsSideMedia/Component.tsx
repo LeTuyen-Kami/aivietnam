@@ -172,7 +172,7 @@ const FeaturedPostsSideMediaBlockComponent: React.FC<Props> = ({
                         {post.title}
                       </h4>
                       {post.meta?.description ? (
-                        <p className="mt-2 line-clamp-5 text-base text-muted-foreground md:hidden font-arial">
+                        <p className="mt-2 text-base text-muted-foreground md:hidden font-arial">
                           {post.meta.description}
                         </p>
                       ) : null}
