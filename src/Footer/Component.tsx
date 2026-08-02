@@ -163,7 +163,10 @@ export async function Footer() {
                 <div className="flex flex-wrap gap-2 sm:gap-3">
                   {data.appStoreUrl?.trim() &&
                     (appStoreBadge ? (
-                      <SmartLink className="inline-block max-w-full shrink-0" href={data.appStoreUrl.trim()}>
+                      <SmartLink
+                        className="inline-block max-w-full shrink-0"
+                        href={data.appStoreUrl.trim()}
+                      >
                         <NextImage
                           alt="App Store"
                           className="h-9 w-auto max-w-full sm:h-10"
@@ -182,7 +185,10 @@ export async function Footer() {
                     ))}
                   {data.googlePlayUrl?.trim() &&
                     (googlePlayBadge ? (
-                      <SmartLink className="inline-block max-w-full shrink-0" href={data.googlePlayUrl.trim()}>
+                      <SmartLink
+                        className="inline-block max-w-full shrink-0"
+                        href={data.googlePlayUrl.trim()}
+                      >
                         <NextImage
                           alt="Google Play"
                           className="h-9 w-auto max-w-full sm:h-10"
@@ -212,7 +218,10 @@ export async function Footer() {
                   {data.hotlines?.map((h, i) => (
                     <li className="min-w-0 wrap-break-word" key={h.id ?? i}>
                       <span className="text-foreground">{h.label} </span>
-                      <SmartLink className={cn('text-sm break-all', accentClass)} href={h.href.trim()}>
+                      <SmartLink
+                        className={cn('text-sm break-all', accentClass)}
+                        href={h.href.trim()}
+                      >
                         {h.phone}
                       </SmartLink>
                     </li>
@@ -240,7 +249,9 @@ export async function Footer() {
                           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-neutral-200/80 sm:h-9 sm:w-9 dark:bg-neutral-700/80">
                             <ContactIcon icon={row.icon} />
                           </span>
-                          <span className="min-w-0 flex-1 font-medium wrap-break-word">{row.link.label}</span>
+                          <span className="min-w-0 flex-1 font-medium wrap-break-word">
+                            {row.link.label}
+                          </span>
                         </SmartLink>
                       </li>
                     )
@@ -253,7 +264,7 @@ export async function Footer() {
           {/* Center */}
           <div className="flex min-w-0 w-full flex-col items-center gap-3 text-center sm:gap-4 lg:items-center">
             {featureImage && (
-              <div className="relative w-full max-w-md overflow-hidden rounded-lg">
+              <div className="relative hidden w-full max-w-md overflow-hidden rounded-lg lg:block">
                 <Media
                   className="w-full"
                   imgClassName="h-auto w-full object-contain"
@@ -262,18 +273,24 @@ export async function Footer() {
               </div>
             )}
             {data.brandTitle?.trim() && (
-              <p className="px-1 text-base font-bold uppercase tracking-wide sm:text-lg">
-                {data.brandTitle.trim()}
-              </p>
+              <p
+                className={cn(
+                  'px-1 lg:text-base font-bold tracking-wide sm:text-lg whitespace-pre-line',
+                  'text-sm font-bold leading-snug',
+                )}
+                dangerouslySetInnerHTML={{ __html: data.brandTitle.trim() }}
+              ></p>
             )}
             {data.brandTagline?.trim() && (
-              <p className="max-w-md px-1 text-sm italic text-muted-foreground sm:px-0">
+              <p className="max-w-md px-1 text-sm text-muted-foreground sm:px-0">
                 {data.brandTagline.trim()}
               </p>
             )}
             <div className="w-full max-w-md space-y-2.5 text-left text-sm leading-relaxed sm:space-y-3 lg:max-w-none">
               {data.contentResponsibility?.trim() && (
-                <p className="wrap-break-word text-foreground">{data.contentResponsibility.trim()}</p>
+                <p className="wrap-break-word text-foreground">
+                  {data.contentResponsibility.trim()}
+                </p>
               )}
               {(data.headquartersAddress?.trim() || data.headquartersLabel?.trim()) && (
                 <p className="wrap-break-word text-foreground">
@@ -351,8 +368,18 @@ export async function Footer() {
               </div>
             )}
 
+            {featureImage && (
+              <div className="relative w-full max-w-md overflow-hidden rounded-lg lg:hidden">
+                <Media
+                  className="w-full"
+                  imgClassName="h-auto w-full object-contain"
+                  resource={featureImage}
+                />
+              </div>
+            )}
+
             {(data.promoTitle?.trim() || data.promoSubtitle?.trim()) && (
-              <div>
+              <div className="hidden lg:block">
                 {data.promoHref?.trim() ? (
                   <SmartLink
                     className="block rounded border border-neutral-300 p-3 text-center transition-colors hover:bg-neutral-50 sm:p-4 dark:hover:bg-neutral-900/40"
