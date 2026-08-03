@@ -275,14 +275,14 @@ export async function Footer() {
             {data.brandTitle?.trim() && (
               <p
                 className={cn(
-                  'px-1 lg:text-base font-bold tracking-wide sm:text-lg whitespace-pre-line',
-                  'text-sm font-bold leading-snug',
+                  'px-1 lg:text-base font-bold tracking-wide sm:text-lg whitespace-pre-line hidden lg:block',
+                  'text-sm font-bold',
                 )}
                 dangerouslySetInnerHTML={{ __html: data.brandTitle.trim() }}
               ></p>
             )}
             {data.brandTagline?.trim() && (
-              <p className="max-w-md px-1 text-sm text-muted-foreground sm:px-0">
+              <p className="max-w-md px-1 text-sm text-muted-foreground sm:px-0 hidden lg:block">
                 {data.brandTagline.trim()}
               </p>
             )}
@@ -377,6 +377,22 @@ export async function Footer() {
                 />
               </div>
             )}
+
+            <div className="block lg:hidden space-y-2">
+              {data.brandTitle?.trim() && (
+                <p
+                  className={cn(
+                    'px-1 lg:text-base font-bold tracking-wide sm:text-lg whitespace-pre-line block lg:hidden text-center leading-6! [&_span]:text-sm',
+                  )}
+                  dangerouslySetInnerHTML={{ __html: data.brandTitle.trim() }}
+                ></p>
+              )}
+              {data.brandTagline?.trim() && (
+                <p className="max-w-md px-1 text-sm text-muted-foreground sm:px-0 block lg:hidden text-center">
+                  {data.brandTagline.trim()}
+                </p>
+              )}
+            </div>
 
             {(data.promoTitle?.trim() || data.promoSubtitle?.trim()) && (
               <div className="hidden lg:block">
