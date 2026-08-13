@@ -378,11 +378,11 @@ export async function Footer() {
               </div>
             )}
 
-            <div className="block lg:hidden space-y-2">
+            <div className="block lg:hidden space-y-1 -mt-3">
               {data.brandTitle?.trim() && (
                 <p
                   className={cn(
-                    'px-1 lg:text-base font-bold tracking-wide sm:text-lg whitespace-pre-line block lg:hidden text-center leading-6! [&_span]:text-sm',
+                    'px-1 lg:text-base font-bold tracking-wide sm:text-lg whitespace-pre-line block lg:hidden text-center leading-6! [&_span]:text-[12px] [&_span]:whitespace-nowrap',
                   )}
                   dangerouslySetInnerHTML={{ __html: data.brandTitle.trim() }}
                 ></p>
